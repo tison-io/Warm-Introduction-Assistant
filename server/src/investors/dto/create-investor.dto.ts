@@ -3,17 +3,17 @@ import { IsString, IsNotEmpty, IsArray, IsOptional } from 'class-validator';
 export class CreateInvestorDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsArray()
   @IsString({ each: true })
-  tags: string[];
+  tags!: string[];
 
   @IsString()
   @IsNotEmpty()
-  preferred_intro_format: string;
+  preferred_intro_format!: string;
 
-  @IsString  ()
+  @IsString()
   @IsOptional()
-  notes?: string
-}   
+  notes?: string;
+}
