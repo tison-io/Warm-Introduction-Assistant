@@ -1,20 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable validation
+  app.useGlobalPipes(new ValidationPipe());
+
   // Enable CORS for frontend
   app.enableCors({
     origin: [
-      'http://localhost:3000',        // for local development
+      'http://localhost:3000',         // for local development
     ],
-  });
-  
-  // Get Mongoose connection after Nest bootstraps
+  });                                     
+                                                                       
+  // mongoose connection events logging
   const connection = app.get<Connection>(getConnectionToken());
 
   if (connection.readyState === 1) {
@@ -26,7 +29,7 @@ async function bootstrap() {
   });
 
   connection.on('error', (err) => {
-    Logger.error(`😔 MongoDB connection error: ${err}`, '', 'Database');
+    Logger.error(`😔 MongoDB connection error: ${err}`, 'Database');
   });
 
   connection.on('disconnected', () => {
@@ -35,4 +38,8 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 4000);
 }
-bootstrap();
+
+bootstrap().catch(error => {
+  Logger.error('Application failed to start', error);
+  process.exit(1);
+});                       
