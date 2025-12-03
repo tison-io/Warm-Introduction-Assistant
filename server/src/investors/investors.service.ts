@@ -30,8 +30,8 @@ export class InvestorsService {
   }
 
   async update(id: string, updateInvestorDto: UpdateInvestorDto, ownerId: string) {
-    const investor = await this.investorModel.findOneAndUpdate(
-      { _id: id, ownerId },
+    const investor = await this.investorModel.findOneAndUpdate(           
+      { _id: id, ownerId },    
       updateInvestorDto,
       { new: true }
     ).exec();
@@ -48,4 +48,5 @@ export class InvestorsService {
     }
     return { message: 'Investor deleted successfully' };
   }
-}
+}  
+         

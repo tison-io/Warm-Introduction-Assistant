@@ -14,6 +14,7 @@ export class Reminder extends Document {
 
   @Prop({ enum: ['pending', 'sent', 'cancelled'], default: 'pending' })
   status: string;
-}
-
-export const ReminderSchema = SchemaFactory.createForClass(Reminder);
+}     
+     
+                     
+export const ReminderSchema = SchemaFactory.createForClass(Reminder);    

@@ -12,7 +12,7 @@ export class InvestorsController {
   @Post()
   create(@Body() createInvestorDto: CreateInvestorDto, @Request() req) {
     return this.investorsService.create(createInvestorDto, req.user.userId);
-  }
+  }                  
 
   @Get()
   findAll(@Request() req) {
@@ -33,4 +33,4 @@ export class InvestorsController {
   remove(@Param('id') id: string, @Request() req) {
     return this.investorsService.remove(id, req.user.userId);
   }
-}
+}  

@@ -13,7 +13,7 @@ export class CreateInvestorDto {
   @IsNotEmpty()
   preferred_intro_format: string;
 
-  @IsString()
+  @IsString  ()
   @IsOptional()
-  notes?: string;
-}
+  notes?: string
+}   

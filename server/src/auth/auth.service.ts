@@ -17,15 +17,15 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
+    
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const token = jwt.sign(
+     }          
+                                                   
+          const token = jwt.sign(
       { userId: user._id, email: user.email },
-      process.env.JWT_SECRET || 'fallback-secret',
+      process.env.JWT_SECRET || 'fallback-secret',              
       { expiresIn: '24h' }
     );
 
@@ -35,15 +35,14 @@ export class AuthService {
         id: user._id,
         name: user.name,
         email: user.email,
-      },
-    };
+      }, 
+    };                    
   }
-
   async getUserProfile(userId: string) {
     const user = await this.userModel.findById(userId).select('-password');
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return user;
+    return user;       
   }
 }
