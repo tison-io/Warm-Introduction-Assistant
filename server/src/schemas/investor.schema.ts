@@ -6,19 +6,19 @@ export type InvestorDocument = Investor & Document;
 @Schema({ timestamps: true })
 export class Investor {
   @Prop({ required: true })
-  name: string;
+  name!: string;
 
   @Prop({ type: [String], default: [] })
-  tags: string[];
+  tags!: string[];
 
   @Prop({ required: true })
-  preferred_intro_format: string;
+  preferred_intro_format!: string;
 
   @Prop()
   notes?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  ownerId: Types.ObjectId;
+  ownerId!: Types.ObjectId;
 }
 
 export const InvestorSchema = SchemaFactory.createForClass(Investor);
