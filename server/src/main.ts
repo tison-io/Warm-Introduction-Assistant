@@ -17,7 +17,7 @@ async function bootstrap() {
     ],
   });                                     
                                                                        
-  // mongosse   connection events logging       
+  // mongoose connection events logging
   const connection = app.get<Connection>(getConnectionToken());
 
   if (connection.readyState === 1) {
@@ -29,7 +29,7 @@ async function bootstrap() {
   });
 
   connection.on('error', (err) => {
-    Logger.error(`😔 MongoDB connection error: ${err}`, '', 'Database');
+    Logger.error(`😔 MongoDB connection error: ${err}`, 'Database');
   });
 
   connection.on('disconnected', () => {
@@ -38,4 +38,8 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 4000);
 }
-bootstrap();                       
+
+bootstrap().catch(error => {
+  Logger.error('Application failed to start', error);
+  process.exit(1);
+});                       
