@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Investor } from '../schemas/investor.schema';
+import { Investor, InvestorDocument } from '../schemas/investor.schema';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
 
 @Injectable()
 export class InvestorsService {
-  constructor(@InjectModel(Investor.name) private investorModel: Model<Investor>) {}
+  constructor(@InjectModel(Investor.name) private investorModel: Model<InvestorDocument>) {}
 
   async create(createInvestorDto: CreateInvestorDto, ownerId: string) {
     const investor = new this.investorModel({

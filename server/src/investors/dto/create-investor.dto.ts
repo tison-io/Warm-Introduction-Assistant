@@ -1,19 +1,19 @@
 import { IsString, IsNotEmpty, IsArray, IsOptional } from 'class-validator';
 
 export class CreateInvestorDto {
-  @IsString({ message: 'Name must be a string' })
-  @IsNotEmpty({ message: 'Name is required' })
+  @IsString()
+  @IsNotEmpty()
   name!: string;
 
-  @IsArray({ message: 'Tags must be an array' })
-  @IsString({ each: true, message: 'Each tag must be a string' })
+  @IsArray()
+  @IsString({ each: true })
   tags!: string[];
 
-  @IsString({ message: 'Preferred intro format must be a string' })
-  @IsNotEmpty({ message: 'Preferred intro format is required' })
+  @IsString()
+  @IsNotEmpty()
   preferred_intro_format!: string;
 
-  @IsString({ message: 'Notes must be a string' })
+  @IsString()
   @IsOptional()
   notes?: string;
 }
