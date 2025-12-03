@@ -2,13 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Reminder } from '../schemas/reminder.schema';
+import { Reminder, ReminderDocument } from '../schemas/reminder.schema';
 
 @Injectable()
 export class ReminderService {
   private readonly logger = new Logger(ReminderService.name);
 
-  constructor(@InjectModel(Reminder.name) private reminderModel: Model<Reminder>) {}
+  constructor(@InjectModel(Reminder.name) private reminderModel: Model<ReminderDocument>) {}
 
   @Cron(CronExpression.EVERY_HOUR)
   async checkReminders() {
@@ -25,7 +25,7 @@ export class ReminderService {
     this.logger.log(`Processed ${reminders.length} reminders`);
   }
 
-  private async processReminder(reminder: Reminder) {
+  private async processReminder(reminder: ReminderDocument) {
     // Create notification record
     this.logger.log(`Processing reminder for intro ${reminder.introId}`);
     
