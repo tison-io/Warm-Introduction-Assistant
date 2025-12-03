@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Founder, FounderDocument } from './entities/founder.entity';
 import { CreateFounderDto } from './dto/create-founder.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { FounderResponse } from './types/founder-response';
 
 @Injectable()
