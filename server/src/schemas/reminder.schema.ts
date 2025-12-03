@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+<<<<<<< HEAD
 @Schema({ timestamps: true })
 export class Reminder extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
@@ -14,6 +15,23 @@ export class Reminder extends Document {
 
   @Prop({ enum: ['pending', 'sent', 'cancelled'], default: 'pending' })
   status: string;
+=======
+export type ReminderDocument = Reminder & Document;
+
+@Schema({ timestamps: true })
+export class Reminder {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  ownerId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, required: true })
+  introId!: Types.ObjectId;
+
+  @Prop({ required: true })
+  date!: Date;
+
+  @Prop({ enum: ['pending', 'sent', 'cancelled'], default: 'pending' })
+  status!: string;
+>>>>>>> feature/reminder-scheduler
 }
 
 export const ReminderSchema = SchemaFactory.createForClass(Reminder);
