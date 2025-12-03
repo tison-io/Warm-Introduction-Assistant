@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { InvestorsModule } from './investors/investors.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from './auth/auth.module';
       }),
     }),
     AuthModule,
+    InvestorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
