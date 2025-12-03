@@ -6,16 +6,16 @@ export type ReminderDocument = Reminder & Document;
 @Schema({ timestamps: true })
 export class Reminder {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  ownerId: Types.ObjectId;
+  ownerId!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, required: true })
-  introId: Types.ObjectId;
+  introId!: Types.ObjectId;
 
   @Prop({ required: true })
-  date: Date;
+  date!: Date;
 
   @Prop({ enum: ['pending', 'sent', 'cancelled'], default: 'pending' })
-  status: string;
+  status!: string;
 }
 
 export const ReminderSchema = SchemaFactory.createForClass(Reminder);
