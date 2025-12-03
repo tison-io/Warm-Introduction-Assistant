@@ -1,11 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable validation
+  app.useGlobalPipes(new ValidationPipe());
 
   // Enable CORS for frontend
   app.enableCors({
