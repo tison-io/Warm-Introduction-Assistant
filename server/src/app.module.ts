@@ -5,7 +5,7 @@ import { Module, BadRequestException } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FounderModule } from './founder/founder.module';
-import { AuthModule } from './auth/auth.module';
+
 import { InvestorsModule } from './investors/investors.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 
@@ -27,7 +27,6 @@ import { SchedulerModule } from './scheduler/scheduler.module';
       },
     }),
     FounderModule,
-    AuthModule,
     InvestorsModule,
     SchedulerModule,
   ],

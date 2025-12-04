@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request }
 import { InvestorsService } from './investors.service';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 interface AuthenticatedRequest {
   user: {
