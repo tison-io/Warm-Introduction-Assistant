@@ -64,7 +64,7 @@ export default function LoginPage() {
           borderRadius: '16px',
           padding: '2.5rem 2rem',
           boxShadow: '0 2px 16px rgba(0, 0, 0, 0.1)',
-          maxWidth: '370px',
+          maxWidth: '420px',
           width: '100%',
           border: '1px solid #E5E7EB',
           display: 'flex',
