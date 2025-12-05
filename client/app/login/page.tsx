@@ -73,7 +73,7 @@ export default function LoginPage() {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-          <img src="/logo.png" alt="Logo" style={{ height: 32, marginBottom: 10, display: 'block', margin: '0 auto 10px auto' }} />
+          <img src="/logo.png" alt="Logo" style={{ height: 48, marginBottom: 10, display: 'block', margin: '0 auto 10px auto' }} />
           <h2 style={{ margin: 0, fontWeight: 700 }}>Welcome back</h2>
           <div style={{ color: '#666', fontSize: 15 }}>warm Introduction Assistant</div>
         </div>
@@ -166,9 +166,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div style={{ width: '100%', textAlign: 'center', color: '#aaa', fontSize: 14 }}>
-          <span style={{ background: '#fff', padding: '0 8px' }}>or sign in with email</span>
-        </div>
 
         <SocialAuthButtons type="login" onError={setSocialError} />
 
