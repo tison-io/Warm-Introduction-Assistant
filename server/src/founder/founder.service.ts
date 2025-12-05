@@ -101,6 +101,12 @@ export class FounderService {
   }
 
   async socialLogin(provider: string) {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+
+    if (!jwtSecret) {
+      throw new UnauthorizedException('JWT configuration error');
+    }
+
     const mockUser = {
       _id: 'social_user_id',
       name: `${provider} User`,
@@ -118,7 +124,14 @@ export class FounderService {
     };
   }
 
+
   async socialSignup(provider: string) {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+
+    if (!jwtSecret) {
+      throw new UnauthorizedException('JWT configuration error');
+    }
+
     const mockUser = {
       _id: 'social_signup_id',
       name: `${provider} New User`,
