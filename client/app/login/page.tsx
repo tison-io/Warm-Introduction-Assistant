@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SocialAuthButtons } from '../components/SocialAuthButtons';
-import { useSocialAuth } from '../hooks/useSocialAuth';
+import { SocialAuthButtons } from '../../components/SocialAuthButtons';
+import { useSocialAuth } from '../../hooks/useSocialAuth';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
