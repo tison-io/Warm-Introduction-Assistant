@@ -99,4 +99,27 @@ export class FounderService {
 
     return user;       
   }
+
+  async socialLogin(provider: string) {
+    // For now, return a mock response
+    // In production, implement OAuth flow with the provider
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    
+    const mockUser = {
+      _id: 'social_user_id',
+      name: `${provider} User`,
+      email: `user@${provider}.com`,
+    };
+
+    const token = jwt.sign(
+      { userId: mockUser._id, email: mockUser.email },
+      jwtSecret,
+      { expiresIn: '24h' }
+    );
+
+    return {
+      token,
+      user: mockUser,
+    };
+  }
 }
