@@ -9,10 +9,17 @@ const providers = [
 
 interface SocialAuthButtonsProps {
   type: 'login' | 'signup';
+  onError?: (error: string) => void;
 }
 
-export const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({ type }) => {
-  const { handleSocialAuth } = useSocialAuth();
+export const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({ type, onError }) => {
+  const { handleSocialAuth, error } = useSocialAuth();
+
+  React.useEffect(() => {
+    if (error && onError) {
+      onError(error);
+    }
+  }, [error, onError]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0', gap: 16 }}>
