@@ -33,6 +33,21 @@ export class FounderController {
   async facebookLogin() {
     return this.founderService.socialLogin('facebook');
   }
+
+  @Post('signup/google')
+  async googleSignup() {
+    return this.founderService.socialSignup('google');
+  }
+
+  @Post('signup/apple')
+  async appleSignup() {
+    return this.founderService.socialSignup('apple');
+  }
+
+  @Post('signup/facebook')
+  async facebookSignup() {
+    return this.founderService.socialSignup('facebook');
+  }
   
   @UseGuards(JwtAuthGuard)
   @Get('me')
