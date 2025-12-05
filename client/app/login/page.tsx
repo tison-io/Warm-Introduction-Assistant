@@ -2,12 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-const providers = [
-  { name: 'Google', icon: '/google.svg' },
-  { name: 'Apple', icon: '/apple.svg' },
-  { name: 'Facebook', icon: '/facebook.svg' },
-];
+import { SocialAuthButtons } from '../components/SocialAuthButtons';
+import { useSocialAuth } from '../hooks/useSocialAuth';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -47,21 +43,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleSocialLogin = async (provider: string) => {
-    try {
-      const response = await fetch(`http://localhost:4000/founder/login/${provider.toLowerCase()}`, {
-        method: 'POST',
-      });
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/');
-      }
-    } catch (err) {
-      setError(`${provider} login failed`);
-    }
-  };
+  const { error: socialError, setError: setSocialError } = useSocialAuth();
 
   return (
     <div
@@ -158,9 +140,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {error && (
+          {(error || socialError) && (
             <div style={{ color: 'red', fontSize: '14px', marginBottom: '10px', textAlign: 'center' }}>
-              {error}
+              {error || socialError}
             </div>
           )}
 
@@ -188,29 +170,7 @@ export default function LoginPage() {
           <span style={{ background: '#fff', padding: '0 8px' }}>or sign in with email</span>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0', gap: 16 }}>
-          {providers.map((p) => (
-            <button
-              key={p.name}
-              onClick={() => handleSocialLogin(p.name)}
-              style={{
-                background: '#F3F4F6',
-                border: 'none',
-                borderRadius: '50%',
-                padding: 8,
-                width: 38,
-                height: 38,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              aria-label={p.name}
-            >
-              <img src={p.icon} alt={p.name} style={{ width: 22, height: 22 }} />
-            </button>
-          ))}
-        </div>
+        <SocialAuthButtons type="login" />
 
         <div style={{ textAlign: 'center', fontSize: 14, color: '#666', marginTop: 8 }}>
           Don't have an account?{' '}
