@@ -43,7 +43,7 @@ export default function LoginPage() {
     }
   };
 
-  const { error: socialError, setError: setSocialError } = useSocialAuth();
+  const [socialError, setSocialError] = useState('');
 
   return (
     <div
@@ -170,7 +170,7 @@ export default function LoginPage() {
           <span style={{ background: '#fff', padding: '0 8px' }}>or sign in with email</span>
         </div>
 
-        <SocialAuthButtons type="login" />
+        <SocialAuthButtons type="login" onError={setSocialError} />
 
         <div style={{ textAlign: 'center', fontSize: 14, color: '#666', marginTop: 8 }}>
           Don't have an account?{' '}
