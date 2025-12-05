@@ -1,3 +1,4 @@
 # ignored variables and secrets 
 venv 
 .env 
+__pycache__ 
