@@ -28,33 +28,13 @@ const Footer: React.FC = () => {
                         </p>
                     </div>
 
-                    {/* Column 2: Product Links */}
-                    <div>
-                        <h3 className="text-md font-semibold mb-4 text-gray-900">Product</h3>
-                        <ul className="space-y-3">
-                            <li><Link href="/features" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Features</Link></li>
-                            <li><Link href="/pricing" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Pricing</Link></li>
-                            <li><Link href="/demo" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Request Demo</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Column 3: Company Links */}
+                    {/* Column 2: Company Links */}
                     <div>
                         <h3 className="text-md font-semibold mb-4 text-gray-900">Company</h3>
                         <ul className="space-y-3">
                             <li><Link href="/about" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">About Us</Link></li>
-                            <li><Link href="/careers" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Careers</Link></li>
-                            <li><Link href="/contact" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Contact</Link></li>
-                        </ul>
-                    </div>
-
-                    {/* Column 4: Legal & Support */}
-                    <div>
-                        <h3 className="text-md font-semibold mb-4 text-gray-900">Legal</h3>
-                        <ul className="space-y-3">
-                            <li><Link href="/privacy" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Privacy Policy</Link></li>
                             <li><Link href="/terms" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Terms of Service</Link></li>
-                            <li><Link href="/help" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Help Center</Link></li>
+                            <li><Link href="/contact" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Contact</Link></li>
                         </ul>
                     </div>
 
