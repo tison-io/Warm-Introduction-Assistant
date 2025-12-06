@@ -99,4 +99,53 @@ export class FounderService {
 
     return user;       
   }
+
+  async socialLogin(provider: string) {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+
+    if (!jwtSecret) {
+      throw new UnauthorizedException('JWT configuration error');
+    }
+
+    const mockUser = {
+      _id: 'social_user_id',
+      name: `${provider} User`,
+      email: `user@${provider}.com`,
+    };
+
+    const token = this.jwtService.sign({
+      userId: mockUser._id,
+      email: mockUser.email,
+    });
+
+    return {
+      token,
+      user: mockUser,
+    };
+  }
+
+
+  async socialSignup(provider: string) {
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+
+    if (!jwtSecret) {
+      throw new UnauthorizedException('JWT configuration error');
+    }
+
+    const mockUser = {
+      _id: 'social_signup_id',
+      name: `${provider} New User`,
+      email: `newuser@${provider}.com`,
+    };
+
+    const token = this.jwtService.sign({
+      userId: mockUser._id,
+      email: mockUser.email,
+    });
+
+    return {
+      token,
+      user: mockUser,
+    };
+  }
 }

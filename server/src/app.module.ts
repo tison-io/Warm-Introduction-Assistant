@@ -8,6 +8,8 @@ import { FounderModule } from './founder/founder.module';
 
 import { InvestorsModule } from './investors/investors.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { MailService } from './mail/mail.service';
+import { ContactModule } from './contact/contact.module';
 import { StartupsModule } from './startups/startups.module';
 
 @Module({
@@ -30,9 +32,8 @@ import { StartupsModule } from './startups/startups.module';
     FounderModule,
     InvestorsModule,
     SchedulerModule,
-    StartupsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, MailService],
 })
 export class AppModule {}
