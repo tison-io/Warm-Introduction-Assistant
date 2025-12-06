@@ -11,6 +11,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { MailService } from './mail/mail.service';
 import { ContactModule } from './contact/contact.module';
 import { StartupsModule } from './startups/startups.module';
+import { TransformModule } from './transform/transform.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { StartupsModule } from './startups/startups.module';
     SchedulerModule,
     ContactModule,
     StartupsModule,
+    TransformModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailService],
