@@ -32,6 +32,8 @@ import { StartupsModule } from './startups/startups.module';
     FounderModule,
     InvestorsModule,
     SchedulerModule,
+    ContactModule,
+    StartupsModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailService],
