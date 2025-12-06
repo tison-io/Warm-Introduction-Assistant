@@ -2,26 +2,20 @@ export interface Startup {
   _id: string;
   name: string;
   blurb: string;
-  pitchLink: string;       
-  founderId: string;   
-  introsCreated?: number;  
-  investors?: number;    
+  pitchLink: string;
+  founderId: string;
   createdAt: string;
   updatedAt: string;
-  __v?: number; 
 }
 
-export interface CreateStartupInput {
+export interface CreateStartupDto {
   name: string;
   blurb: string;
   pitchLink: string;
 }
 
-export interface UpdateStartupInput {
+export interface UpdateStartupDto {
   name?: string;
   blurb?: string;
   pitchLink?: string;
 }
-
-export type StartupResponse = Startup;
-export type StartupListResponse = Startup[];
