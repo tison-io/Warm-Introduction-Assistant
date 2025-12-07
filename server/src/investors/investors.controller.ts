@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, Req } from '@nestjs/common';
 import { InvestorsService } from './investors.service';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
@@ -22,8 +22,8 @@ export class InvestorsController {
   }
 
   @Get()
-  findAll(@Request() req: AuthenticatedRequest) {
-    return this.investorsService.findAll(req.user.userId);
+  async getInvestors(@Query('search') search: string, @Req() req: AuthenticatedRequest) {
+    return this.investorsService.findAll(req.user.userId, search);
   }
 
   @Get(':id')

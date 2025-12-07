@@ -14,6 +14,10 @@ export class CreateInvestorDto {
   preferred_intro_format!: string;
 
   @IsString()
+  @IsNotEmpty()
+  intro_preferences_text!: string;
+
+  @IsString()
   @IsOptional()
   notes?: string;
 }

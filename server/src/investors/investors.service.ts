@@ -14,8 +14,15 @@ export class InvestorsService {
     return investor.save();
   }
 
-  async findAll(userId: string) {
-    return this.investorModel.find({ userId }).exec();
+  async findAll(userId: string, search?: string) {
+    const query: any = { userId };
+
+    if (search) {
+      // Use regex to search by name (case-insensitive)
+      query.name = { $regex: search, $options: 'i' };
+    }
+
+    return this.investorModel.find(query).exec();
   }
 
   async findOne(id: string, userId: string) {
