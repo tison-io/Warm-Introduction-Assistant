@@ -1,54 +1,124 @@
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+"use client";
+import Link from "next/link";
+import React from "react";
 
-// Asset path
-const LOGO_PATH = '/logo.png'; 
-
-const Footer: React.FC = () => {
-    return (
-        <footer className="bg-white/95 border-t border-indigo-900 text-white py-12 md:py-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-                {/* Main Grid: Logo/Copyright and Navigation Links */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-8 border-b border-gray-700 pb-10 mb-8">
-                    {/* Column 1: Logo and Company Info */}
-                    <div className="col-span-2 md:col-span-1">
-                        <Link href="/" className="flex items-center mb-4">
-                            <Image 
-                                src={LOGO_PATH} 
-                                alt="Warmly Logo" 
-                                width={64} 
-                                height={64} 
-                                className="w-16 h-16 mr-2"
-                            />
-                        </Link>
-                        <p className="text-sm text-gray-600">
-                            The easiest way to manage investor introductions.
-                        </p>
-                    </div>
-
-                    {/* Column 2: Company Links */}
-                    <div>
-                        <h3 className="text-md font-semibold mb-4 text-gray-900">Company</h3>
-                        <ul className="space-y-3">
-                            <li><Link href="/about" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">About Us</Link></li>
-                            <li><Link href="/terms" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Terms of Service</Link></li>
-                            <li><Link href="/contact" className="text-gray-500 hover:text-gray-800 transition duration-150 text-sm">Contact</Link></li>
-                        </ul>
-                    </div>
-
-                </div>
-
-                {/* Bottom Bar: Copyright */}
-                <div className="text-center">
-                    <p className="text-sm text-gray-500">
-                        &copy; {new Date().getFullYear()} Warmly Introduction Assistant. All rights reserved.
-                    </p>
-                </div>
+export default function Footer() {
+  return (
+    <footer className="footer-bg">
+      <div className="footer-row">
+        <div className="footer-left">
+          <img src="/logo.png" alt="Warmly Logo" className="footer-logo" />
+          <div className="footer-desc">
+            The easiest way to manage investor introductions.
+          </div>
+        </div>
+        <div className="footer-center">
+          <div className="footer-links-title">Nav Links</div>
+          <div className="footer-links-cols">
+            <div className="footer-links-col">
+              <Link href="/" className="footer-link">Home</Link>
+              <Link href="/investors" className="footer-link">Investors</Link>
+              <Link href="/startups" className="footer-link">Startups</Link>
             </div>
-        </footer>
-    );
-};
-
-export default Footer;
+            <div className="footer-links-col">
+              <Link href="/terms-of-service" className="footer-link">Terms of Service</Link>
+              <Link href="/contact" className="footer-link">Contact Us</Link>
+              <Link href="/about" className="footer-link">About Us</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr className="footer-divider" />
+      <div className="footer-copyright">
+        © 2025 Warm Introduction Assistant. All rights reserved.
+      </div>
+      <style jsx>{`
+        .footer-bg {
+          background: #fff;
+          width: 100%;
+          padding: 40px 10vw 0 10vw;
+          border-top: 1px solid #ececec;
+          font-family: inherit;
+        }
+        .footer-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: flex-start;
+          justify-content: space-evenly;
+        }
+        .footer-left {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-width: 240px;
+        }
+        .footer-logo {
+          width: 90px;
+          margin-bottom: 6px;
+        }
+        .footer-desc {
+          color: #222;
+          font-size: 15px;
+          margin-top: 2px;
+          font-weight: 600;
+        }
+        .footer-center {
+          min-width: 290px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .footer-links-title {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 6px;
+        }
+        .footer-links-cols {
+          display: flex;
+          gap: 45px;
+        }
+        .footer-links-col {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+        }
+        .footer-link {
+          color: #333;
+          text-decoration: none;
+          font-size: 15px;
+          transition: color 0.13s;
+        }
+        .footer-link:hover, .footer-link:focus {
+          color: #175de6;
+          text-decoration: underline;
+        }
+        .footer-divider {
+          margin: 23px 0 7px 0;
+          border: none;
+          border-top: 1px solid #ececec;
+        }
+        .footer-copyright {
+          text-align: center;
+          font-size: 15px;
+          color: #757575;
+          margin-bottom: 8px;
+        }
+        @media (max-width: 700px) {
+          .footer-bg {
+            padding: 22px 3vw 0 3vw;
+          }
+          .footer-row {
+            flex-direction: column;
+            gap: 24px;
+          }
+          .footer-center {
+            margin-left: 0;
+          }
+          .footer-links-cols {
+            gap: 22px;
+          }
+        }
+      `}</style>
+    </footer>
+  );
+}
