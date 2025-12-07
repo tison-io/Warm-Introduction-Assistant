@@ -3,11 +3,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
+import { ReminderService } from 'src/scheduler/reminder.service';
 
 
 @Injectable()
 export class TransformService {
-  constructor(@InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>) {}
+  constructor(
+    @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>,
+    private readonly reminderService: ReminderService
+  ) {}
 
   //Call GenAI endpoint for transforming intros
   async transformIntro(dto: TransformIntroDto) {
@@ -60,7 +64,11 @@ export class TransformService {
     return introRecord;
   }
 
-  async updateIntroStatus(introId: string, status: 'queued' | 'sent' | 'completed', followUpDueDate?: Date) {
+  async updateIntroStatus(
+    introId: string, 
+    status: 'queued' | 'sent' | 'completed', 
+    followUpDueDate?: Date
+  ) {
     const intro = await this.introQueueModel.findById(introId);
     if (!intro) {
       throw new NotFoundException('Intro not found');
@@ -72,11 +80,23 @@ export class TransformService {
     }
 
     intro.status = status;
-    if (status === 'sent' && followUpDueDate) {
-      intro.followUpDueDate = followUpDueDate;
-      intro.sentDate = new Date();
-    }
 
+    if (status === 'sent') {
+      intro.sentDate = new Date();
+    
+
+      if(followUpDueDate) {
+        intro.followUpDueDate = followUpDueDate;
+
+        //Integrating reminder scheduler
+        await this.reminderService.createReminder(
+          intro.founderId,
+          intro._id.toString(),
+          followUpDueDate
+        )
+      }
+    }
+    
     await intro.save();
     return intro;
   }

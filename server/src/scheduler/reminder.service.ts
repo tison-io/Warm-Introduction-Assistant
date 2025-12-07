@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, now } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Reminder } from '../schemas/reminder.schema';
 
@@ -10,12 +10,24 @@ export class ReminderService {
 
   constructor(@InjectModel(Reminder.name) private reminderModel: Model<Reminder>) {}
 
-  @Cron(CronExpression.EVERY_HOUR)
+  async findAllByUser(founderId: string) {
+    const now = new Date();
+    return this.reminderModel
+      .find({ founderId, date: { $lte: now }, status: 'sent' })
+      .sort({ createdAt: 1 })
+      .populate({
+        path: 'introId', 
+        select: 'startupName investorName startupId investorId generatedIntro followUpDueDate',
+      })
+      .exec();
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkReminders() {
     const now = new Date();
     const reminders = await this.reminderModel.find({
       date: { $lte: now },
-      status: 'pending'
+      status: 'queued'
     }).exec();
 
     for (const reminder of reminders) {
@@ -37,10 +49,10 @@ export class ReminderService {
 
   async createReminder(ownerId: string, introId: string, date: Date) {
     const reminder = new this.reminderModel({
-      ownerId,
+      founderId: ownerId,
       introId,
       date,
-      status: 'pending'
+      status: 'queued'
     });
     return reminder.save();
   }
