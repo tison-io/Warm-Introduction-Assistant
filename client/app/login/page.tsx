@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SocialAuthButtons } from '../../components/SocialAuthButtons';
-import { useSocialAuth } from '../../hooks/useSocialAuth';
+import { authApi } from '../lib/auth-api';
+import { AuthResponse } from '../types/auth';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,22 +20,15 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:4000/founder/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
+      const response = await authApi.login(email, password);
+      const data: AuthResponse = await response.json();
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/');
+        router.push('/startups');
       } else {
-        setError(data.message || 'Login failed');
+        setError((data as any).message || 'Login failed');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -44,6 +38,11 @@ export default function LoginPage() {
   };
 
   const [socialError, setSocialError] = useState('');
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   return (
     <div
@@ -70,10 +69,25 @@ export default function LoginPage() {
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem',
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
+          transition: 'opacity 1s ease-out, transform 1s ease-out',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-          <img src="/logo.png" alt="Logo" style={{ height: 48, marginBottom: 10, display: 'block', margin: '0 auto 10px auto' }} />
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            style={{ 
+              height: 48, 
+              marginBottom: 10, 
+              display: 'block', 
+              margin: '0 auto 10px auto',
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.5) translateY(-30px)',
+              transition: 'opacity 1.2s ease-out 0.3s, transform 1.2s ease-out 0.3s',
+            }} 
+          />
           <h2 style={{ margin: 0, fontWeight: 700 }}>Welcome back</h2>
           <div style={{ color: '#666', fontSize: 15 }}>warm Introduction Assistant</div>
         </div>
@@ -165,7 +179,6 @@ export default function LoginPage() {
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-
 
         <SocialAuthButtons type="login" onError={setSocialError} />
 
