@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ConditionalNavbar } from "./components/ConditionalNavbar";
 import DashboardLayout from "./components/DashboardLayout";
+import ChatbotFloat from "./components/ChatbotFloat";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body style={{ margin: 0, padding: 0, background: 'transparent' }}>
         <ConditionalNavbar />
         <DashboardLayout>{children}</DashboardLayout>
+        <ChatbotFloat />
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { SocialAuthButtons } from '../../components/SocialAuthButtons';
 import { authApi } from '../lib/auth-api';
 import { AuthResponse } from '../types/auth';
@@ -55,8 +56,28 @@ export default function LoginPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        position: 'relative',
       }}
     >
+      <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            background: 'transparent',
+            border: 'none',
+            color: 'rgba(255, 255, 255, 0.8)',
+            fontSize: 14,
+            cursor: 'pointer',
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
+        >
+          <ArrowLeft style={{ width: 16, height: 16, marginRight: 4 }} /> Back
+        </button>
+      </div>
       <div
         style={{
           background: 'white',
@@ -148,7 +169,7 @@ export default function LoginPage() {
               </span>
             </div>
             <div style={{ textAlign: 'left', marginBottom: 10 }}>
-              <a href="#" style={{ color: '#254FBD', fontSize: '14px', textDecoration: 'underline' }}>
+              <a href="/forgot-password" style={{ color: '#254FBD', fontSize: '14px', textDecoration: 'underline' }}>
                 Forget password?
               </a>
             </div>

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { signupFounder } from "../lib/founder-api";
 
 export default function SignupPage() {
@@ -49,6 +50,25 @@ export default function SignupPage() {
 
   return (
     <div className="signup-bg">
+      <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            background: 'transparent',
+            border: 'none',
+            color: 'rgba(255, 255, 255, 0.8)',
+            fontSize: 14,
+            cursor: 'pointer',
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'}
+        >
+          <ArrowLeft style={{ width: 16, height: 16, marginRight: 4 }} /> Back
+        </button>
+      </div>
       <div className="signup-container" style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
@@ -156,6 +176,7 @@ export default function SignupPage() {
           display: flex;
           justify-content: center;
           align-items: center;
+          position: relative;
         }
         .signup-container {
           background: #fff;

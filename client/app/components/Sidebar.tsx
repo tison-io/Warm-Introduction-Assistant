@@ -45,6 +45,12 @@ const icons = {
       <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
+  terms: (
+    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
+      <rect x="4" y="3" width="12" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  ),
   settings: (
     <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
       <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.3"/>
@@ -70,7 +76,8 @@ const menu: MenuItem[] = [
   { href: "/startups", label: "Startups", icon: icons.startups },
   { href: "/generate-intro", label: "Generate Intro", icon: icons.generate },
   { href: "/intro-queue", label: "Intro Queue", icon: icons.queue },
-  { href: "/reminders", label: "Reminders", icon: icons.reminders }
+  { href: "/reminders", label: "Reminders", icon: icons.reminders },
+  { href: "/terms-of-service", label: "Terms of Service", icon: icons.terms }
 ];
 
 const Sidebar: React.FC = () => {

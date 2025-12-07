@@ -24,7 +24,7 @@ export default function Navbar() {
   const isLoginPage = pathname === '/login';
   const isSignupPage = pathname === '/signup';
   const isAuthPage = isLoginPage || isSignupPage;
-  const isDashboardPage = pathname?.startsWith('/dashboard') || pathname?.startsWith('/investors') || pathname?.startsWith('/startups') || pathname?.startsWith('/create-startup') || pathname?.startsWith('/generate-intro') || pathname?.startsWith('/intro-queue') || pathname?.startsWith('/reminders') || pathname?.startsWith('/settings');
+  const isDashboardPage = pathname?.startsWith('/dashboard') || pathname?.startsWith('/investors') || pathname?.startsWith('/startups') || pathname?.startsWith('/create-startup') || pathname?.startsWith('/generate-intro') || pathname?.startsWith('/intro-queue') || pathname?.startsWith('/reminders') || pathname?.startsWith('/terms-of-service') || pathname?.startsWith('/settings');
 
   return (
     <nav className="navbar" style={{ background: 'transparent', backgroundColor: 'transparent' }}>
@@ -75,6 +75,12 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <Link href="/about">
+                  <button className="navBtn">About Us</button>
+                </Link>
+                <Link href="/contact">
+                  <button className="navBtn">Contact Us</button>
+                </Link>
                 <Link href="/signup">
                   <button className="signupBtn">Sign Up</button>
                 </Link>
@@ -116,6 +122,20 @@ export default function Navbar() {
         .buttons {
           display: flex;
           align-items: center;
+        }
+        .navBtn {
+          border: none;
+          background: transparent;
+          color: #333;
+          border-radius: 8px;
+          padding: 6px 16px;
+          margin-right: 8px;
+          font-size: 15px;
+          cursor: pointer;
+          font-weight: 500;
+        }
+        .navBtn:hover {
+          color: #0347D2;
         }
         .loginBtn {
           border: 1px solid #cfd1d3;
