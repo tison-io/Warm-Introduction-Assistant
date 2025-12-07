@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signupFounder } from "../lib/founder-api";
 
 export default function SignupPage() {
+    const router = useRouter();
     const [form, setForm] = useState({
        name: "",
        email: "",
@@ -21,7 +23,7 @@ export default function SignupPage() {
         try{
             const result = await signupFounder(form);
             setMsg(`Account created successfully for ${result.name}.`);
-            setForm({ name: "", email: "", password: "" });
+            setTimeout(() => router.push('/login'), 1500);
         } catch (err:any) {
             setMsg(err.message || "An error occured. Please try again later.");
         } finally {
