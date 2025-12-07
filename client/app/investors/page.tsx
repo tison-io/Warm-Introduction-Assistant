@@ -1,220 +1,153 @@
-"use client";
-import React, { useState } from "react";
+'use client';
 
-type Investor = {
-  name: string;
-  tags: string[];
-  preferredFormat: string;
+import { useState, useEffect, useCallback, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, Pencil, Trash2 } from 'lucide-react';
+import { getInvestors, deleteInvestor } from '../lib/investor-api';
+import { Investor } from '../types/investor';
+import Link from 'next/link';
+
+const revalidatePath = (path: string) => {
+  console.log(`Simulating revalidation for path: ${path}`);
 };
 
-const sampleInvestors: Investor[] = [
-  {
-    name: "John Smith",
-    tags: ["Early Stage", "AI"],
-    preferredFormat: "3-Bullet"
-  },
-  {
-    name: "John Smith",
-    tags: ["B2B", "Fintech"],
-    preferredFormat: "Email"
-  },
-  {
-    name: "John Smith",
-    tags: ["Deep Tech"],
-    preferredFormat: "Paragraph"
-  },
-];
+const InvestorListPage = () => {
+  const [investors, setInvestors] = useState<Investor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-const tagStyles = [
-  { bg: "#e8f1fe", color: "#176ede" },
-  { bg: "#e0eaff", color: "#565ed7" },
-  { bg: "#eafbec", color: "#179648" },
-  { bg: "#f7eafd", color: "#a13fbc" },
-  { bg: "#fff4e1", color: "#d6920b" }
-];
+  const fetchInvestors = useCallback(async (searchQuery: string) => {
+    setLoading(true);
+    try {
+      const data = await getInvestors(searchQuery);
+      setInvestors(data);
+    } catch (error) {
+      console.error('Error fetching investors:', error);
+      alert('Failed to load investors.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-export default function InvestorsPage() {
-  const [search, setSearch] = useState("");
-  const [investors, setInvestors] = useState(sampleInvestors);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchInvestors(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, fetchInvestors]);
 
-  const filtered = investors.filter(inv =>
-    inv.name.toLowerCase().includes(search.toLowerCase())
-    || inv.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
-    || inv.preferredFormat.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleDelete = async (investorId: string) => {
+    if (!confirm('Are you sure you want to delete this investor?')) return;
+
+    try {
+      await deleteInvestor(investorId);
+      alert('Investor deleted successfully!');
+      startTransition(() => {
+        setInvestors(prev => prev.filter(inv => inv._id !== investorId));
+        revalidatePath('/investors'); 
+      });
+    } catch (error) {
+      console.error('Error deleting investor:', error);
+      alert('Failed to delete investor.');
+    }
+  };
 
   return (
-    <div className="investors-bg">
-      <div className="investors-content">
-        <h1 className="inv-title">Investors</h1>
-        <div className="inv-sub">Manage your investor list</div>
-        <div className="inv-searchbar">
-          <input
-            type="text"
-            placeholder="Search investors..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+    <div
+      className="min-h-screen bg-cover bg-center"
+      style={{ backgroundImage: "url('/background-img.jpg')" }}
+    >
+      <div className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-white">
+            <h1 className="text-4xl font-light mb-1">Investors</h1>
+            <p className="text-white/70">Manage your investor list</p>
+          </div>
+          <Link href="/investors/create" passHref>
+            <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 whitespace-nowrap">
+              + Add Investor
+            </button>
+          </Link>
         </div>
-        <div className="inv-table-wrap">
-          <table className="inv-table">
-            <thead>
+
+        {/* Search */}
+        <div className="flex items-center gap-4 mb-6 max-w-lg">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search investors..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-gray-400 text-white placeholder-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-150 border-none"
+            />
+          </div>
+        </div>
+
+        {/* Investor Table */}
+        <div className="overflow-x-auto rounded-lg shadow-lg bg-gray-400">
+          <table className="min-w-full divide-y divide-white/20">
+            <thead className="bg-gray-200">
               <tr>
-                <th style={{ width: 48 }}>No.</th>
-                <th>Name</th>
-                <th style={{ minWidth:130 }}>Tags</th>
-                <th style={{ minWidth: 130 }}>Preferred Format</th>
-                <th style={{ width: 75 }}>Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">No.</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Tags</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Preferred Format</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Intro Prefs</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-black uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {filtered.map((inv, i) => (
-                <tr key={i}>
-                  <td>{i + 1}</td>
-                  <td>{inv.name}</td>
-                  <td>
-                    {inv.tags.map((t, idx) => (
-                      <span
-                        key={t}
-                        style={{
-                          background: tagStyles[idx % tagStyles.length].bg,
-                          color: tagStyles[idx % tagStyles.length].color,
-                          borderRadius: 8,
-                          fontWeight: 500,
-                          fontSize: 13,
-                          padding: "3px 12px",
-                          marginRight: 7,
-                          marginBottom: 2,
-                          display: "inline-block"
-                        }}
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </td>
-                  <td>{inv.preferredFormat}</td>
-                  <td>
-                    <button className="inv-action-btn" title="Edit">
-                      <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
-                        <path d="M15.2 3.9c.4-.4 1-.4 1.4 0l.6.6c.4.4.4 1 0 1.4l-9 9.1-2.1.7.7-2.1L15.2 3.9z" stroke="#53587a" strokeWidth="1.25" strokeLinejoin="round" />
-                      </svg>
-                    </button>
-                    <button className="inv-action-btn" title="Delete">
-                      <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
-                        <path d="M7.5 7.5l5 5m0-5l-5 5M5 6.5h10M8 5.5h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1z" stroke="#e23c3c" strokeWidth="1.15" strokeLinecap="round" />
-                      </svg>
-                    </button>
+            <tbody className="divide-y divide-white/10">
+              {loading || isPending ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-white/70">
+                    Loading investors...
                   </td>
                 </tr>
-              ))}
-              {filtered.length === 0 && (
+              ) : investors.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center", color: "#aaa" }}>
+                  <td colSpan={6} className="px-6 py-4 text-center text-white/70">
                     No investors found.
                   </td>
                 </tr>
+              ) : (
+                investors.map((investor, index) => (
+                  <tr key={investor._id} className="hover:bg-white/5 transition duration-150">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{index + 1}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">{investor.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex flex-wrap gap-2">
+                        {investor.tags.map((tag, i) => (
+                          <span key={i} className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500 text-white">{tag}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{investor.preferred_intro_format}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{investor.intro_preferences_text}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end space-x-3">
+                        <Link href={`/investors/${investor._id}/edit`} passHref>
+                          <button title="Edit" className="text-black hover:text-white transition duration-150">
+                            <Pencil className="h-5 w-5" />
+                          </button>
+                        </Link>
+                        <button onClick={() => handleDelete(investor._id)} title="Delete" className="text-red-400 hover:text-red-500 transition duration-150">
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
       </div>
-      <style jsx>{`
-        .investors-bg {
-          min-height: 100vh;
-          background: url("/backeground.jpg");
-          background-size: cover;
-          background-position: center;
-          display: flex;
-          align-items: flex-start;
-          width: 100%;
-        }
-        .investors-content {
-          padding: 32px 38px 35px 38px;
-          width: 100%;
-          margin-left: 0;
-          margin-top: 0;
-        }
-        .inv-title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #fff;
-          margin-bottom: 0px;
-        }
-        .inv-sub {
-          font-size: 18px;
-          color: #e9eafd;
-          margin-bottom: 28px;
-          margin-top: 3px;
-        }
-        .inv-searchbar {
-          margin-bottom: 20px;
-        }
-        .inv-searchbar input {
-          width: 100%;
-          padding: 13px 18px;
-          font-size: 16px;
-          border-radius: 12px;
-          border: none;
-          background: rgba(255,255,255,0.62);
-          outline: none;
-          box-shadow: 0 2px 14px #00000007;
-        }
-        .inv-table-wrap {
-          width: 100%;
-          overflow-x: auto;
-        }
-        .inv-table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0;
-          background: rgba(255,255,255,0.95);
-          border-radius: 13px;
-          box-shadow: 0 0 18px #0002;
-          overflow: hidden;
-        }
-        .inv-table th, .inv-table td {
-          padding: 13px 14px;
-          text-align: left;
-        }
-        .inv-table th {
-          font-weight: 600;
-          color: #464c61;
-          background: #eef4fb;
-        }
-        .inv-table tr:not(:last-child) td {
-          border-bottom: 1px solid #ececec;
-        }
-        .inv-table td {
-          color: #2b3450;
-          font-size: 15px;
-        }
-        .inv-action-btn {
-          background: none;
-          border: none;
-          font-size: 17px;
-          cursor: pointer;
-          opacity: 0.7;
-          transition: opacity 0.1s;
-          outline: none;
-          padding: 0 3px;
-        }
-        .inv-action-btn:hover, .inv-action-btn:focus {
-          opacity: 1;
-        }
-        @media (max-width: 1050px) {
-          .investors-content {
-            padding: 20px 6vw 22px 6vw;
-          }
-        }
-        @media (max-width: 700px) {
-          .investors-content {
-            padding: 8px 1vw 8px 1vw;
-          }
-          .inv-table {
-            font-size: 13px;
-          }
-        }
-      `}</style>
     </div>
   );
-}
+};
+
+export default InvestorListPage;
