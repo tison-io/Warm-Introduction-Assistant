@@ -24,16 +24,32 @@ export default function Navbar() {
   const isLoginPage = pathname === '/login';
   const isSignupPage = pathname === '/signup';
   const isAuthPage = isLoginPage || isSignupPage;
+  const isDashboardPage = pathname?.startsWith('/dashboard') || pathname?.startsWith('/investors') || pathname?.startsWith('/startups') || pathname?.startsWith('/create-startup') || pathname?.startsWith('/generate-intro') || pathname?.startsWith('/intro-queue') || pathname?.startsWith('/reminders') || pathname?.startsWith('/settings');
 
   return (
-    <nav className="navbar">
+    <nav className="navbar" style={{ background: 'transparent', backgroundColor: 'transparent' }}>
       <div className="logoSection">
         <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <Image src="/logo.png" alt="Logo" width={100} height={100} />
         </Link>
+        {isDashboardPage && (
+          <Link href="/" className="homeIcon" title="Go to Home">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#0347D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 22V12h6v10" stroke="#0347D2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+        )}
       </div>
       <div className="buttons">
-        {isAuthPage ? (
+        {isDashboardPage ? (
+          <div className="userIcon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" stroke="#0347D2" strokeWidth="2"/>
+              <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" stroke="#0347D2" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+        ) : isAuthPage ? (
           <>
             {isSignupPage && (
               <Link href="/login">
@@ -49,9 +65,14 @@ export default function Navbar() {
         ) : (
           <>
             {isLoggedIn ? (
-              <button onClick={handleLogout} className="loginBtn">
-                Logout
-              </button>
+              <>
+                <Link href="/dashboard">
+                  <button className="signupBtn">Dashboard</button>
+                </Link>
+                <button onClick={handleLogout} className="loginBtn">
+                  Logout
+                </button>
+              </>
             ) : (
               <>
                 <Link href="/signup">
@@ -78,6 +99,18 @@ export default function Navbar() {
         .logoSection {
           display: flex;
           align-items: center;
+          gap: 12px;
+        }
+        .homeIcon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+        .homeIcon:hover {
+          opacity: 0.7;
         }
 
         .buttons {
@@ -104,6 +137,12 @@ export default function Navbar() {
           font-size: 15px;
           font-weight: 500;
           cursor: pointer;
+        }
+        .userIcon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
         }
       `}</style>
     </nav>
