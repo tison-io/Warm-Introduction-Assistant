@@ -1,334 +1,274 @@
-"use client";
-import React, { useState } from "react";
+'use client';
 
-type Status = "Drafted" | "Sent";
+import { useEffect, useState, useMemo } from 'react';
+import { IntroQueue, IntroStatus, StatusUpdatePayload } from '../types/intro';
+import { fetchIntrosByFounder, updateIntroStatus } from '../lib/intro-api';
+import { ChevronUp, ChevronDown, Send, Save, Calendar } from 'lucide-react';
 
-type QueueItem = {
-  id: number;
-  startup: string;
-  investor: string;
-  date: string;
-  status: Status;
-  draft?: string;
-  note?: string;
-};
+// --- Helper Component: Badge for Status ---
+interface StatusBadgeProps {
+  status: IntroStatus;
+}
 
-const queueInit: QueueItem[] = [
-  {
-    id: 1,
-    startup: "MyStartup",
-    investor: "Abebe Beso",
-    date: "2025-10-12",
-    status: "Drafted",
-    draft: "",
-    note: ""
-  },
-  {
-    id: 2,
-    startup: "MyStartup",
-    investor: "Abebe Beso",
-    date: "2025-10-12",
-    status: "Sent",
-    draft: "",
-    note: ""
+const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+  let style = 'bg-gray-400';
+  let text = 'Queued';
+
+  switch (status) {
+    case 'queued':
+      style = 'bg-blue-400';
+      text = 'Queued';
+      break;
+    case 'sent':
+      style = 'bg-green-500';
+      text = 'Sent';
+      break;
+    case 'completed':
+      style = 'bg-purple-500';
+      text = 'Completed';
+      break;
   }
-];
 
-const statusBadge = (s: Status) => {
-  const style = {
-    Drafted: { bg: "#dbf2ff", color: "#34a1d6" },
-    Sent: { bg: "#d6fae3", color: "#40c467" }
-  }[s];
   return (
-    <span
-      style={{
-        background: style.bg,
-        color: style.color,
-        fontWeight: 500,
-        fontSize: 14,
-        borderRadius: 8,
-        padding: "2px 18px",
-        marginLeft: 8,
-        display: "inline-block"
-      }}
-    >
-      {s}
+    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full text-white ${style}`}>
+      {text}
     </span>
   );
 };
 
+// --- Main IntroQueuePage Component ---
+
+const getDefaultFollowUpDate = (): string => {
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return nextWeek.toISOString().split('T')[0];
+}
+
+
 export default function IntroQueuePage() {
-  const [expanded, setExpanded] = useState<number | null>(queueInit[0].id);
-  const [queue, setQueue] = useState(queueInit);
+  const [intros, setIntros] = useState<IntroQueue[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  
+  const [draftContent, setDraftContent] = useState('');
+  const [newStatus, setNewStatus] = useState<IntroStatus>('queued');
+  const [noteContent, setNoteContent] = useState('');
+  const [followUpDate, setFollowUpDate] = useState(getDefaultFollowUpDate());
 
-  const handleExpand = (id: number) => {
-    setExpanded(expanded === id ? null : id);
+  useEffect(() => {
+    loadIntros();
+  }, []);
+
+  const loadIntros = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchIntrosByFounder();
+      setIntros(data);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to load intro queue');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDraftChange = (id: number, value: string) => {
-    setQueue(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, draft: value } : item
-      )
+  const handleToggleExpand = (intro: IntroQueue) => {
+    if (expandedId === intro._id) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(intro._id);
+      setDraftContent(intro.generatedIntro);
+      setNewStatus(intro.status);
+      setFollowUpDate(getDefaultFollowUpDate());
+      setNoteContent(''); 
+    }
+  };
+
+  const handleUpdateStatus = async (introId: string) => {
+    let payload: StatusUpdatePayload = { status: newStatus };
+
+    if (newStatus === 'sent') {
+        if (!followUpDate) {
+            alert("Please set a follow-up date before marking as sent.");
+            return;
+        }
+        payload.followUpDueDate = new Date(followUpDate);
+    }
+    
+    try {
+      const updatedIntro = await updateIntroStatus(introId, payload);
+      
+      setIntros(intros.map(i => i._id === introId ? { ...i, ...updatedIntro } : i));
+      
+      setExpandedId(null); 
+      alert(`Status updated to ${newStatus}. ${newStatus === 'sent' ? `Follow-up scheduled for ${new Date(followUpDate).toLocaleDateString()}.` : ''}`);
+
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Failed to update intro status');
+    }
+  };
+
+  const expandedIntro = useMemo(() => intros.find(i => i._id === expandedId), [intros, expandedId]);
+  
+  const introCount = intros.length;
+
+  if (loading) {
+    return (
+      <div 
+        className="min-h-screen bg-cover bg-center text-white p-6 md:p-8" 
+        style={{ backgroundImage: "url('/background-img.jpg')" }}
+      >
+        <div className="max-w-6xl mx-auto">Loading intro queue...</div>
+      </div>
     );
-  };
-
-  const handleStatusChange = (id: number, value: Status) => {
-    setQueue(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, status: value } : item
-      )
-    );
-  };
-
-  const handleNoteChange = (id: number, value: string) => {
-    setQueue(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, note: value } : item
-      )
-    );
-  };
-
-  const handleAddNew = () => {
-    const newId = Math.max(...queue.map(q => q.id), 0) + 1;
-    const newItem: QueueItem = {
-      id: newId,
-      startup: "MyStartup",
-      investor: "New Investor",
-      date: new Date().toISOString().split('T')[0],
-      status: "Drafted",
-      draft: "",
-      note: ""
-    };
-    setQueue([...queue, newItem]);
-    setExpanded(newId);
-  };
+  }
 
   return (
-    <div className="introqueue-bg">
-      <div className="introqueue-content">
-        <div className="introqueue-header-row">
-          <div>
-            <h1 className="introqueue-title">Intro Queue</h1>
-            <div className="introqueue-sub">You have {queue.length} introductions queued</div>
-          </div>
-          <button className="introqueue-new-btn" onClick={handleAddNew}>
-            + New Intro
-          </button>
+    <div 
+      className="min-h-screen bg-cover bg-center p-6 md:p-8" 
+      style={{ backgroundImage: "url('/background-img.jpg')" }}
+    >
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="flex justify-between items-end mb-6">
+            <div>
+                <h1 className="text-3xl md:text-4xl font-semibold text-white">Intro Queue</h1>
+                <p className="text-base md:text-xl text-gray-300">You have **{introCount}** introductions queued</p>
+            </div>
         </div>
-        <div className="introqueue-list-card">
-          {queue.map((item, idx) => (
-            <React.Fragment key={item.id}>
-              <div className="introqueue-list-row">
-                <button
-                  className="introqueue-row-toggle"
-                  aria-label={expanded === item.id ? "Collapse details" : "Expand details"}
-                  onClick={() => handleExpand(item.id)}
-                >
-                  <svg width="21" height="21" viewBox="0 0 20 20" fill="none">
-                    <path
-                      d={expanded === item.id ?
-                        "M7 13l5-5 5 5" :
-                        "M7 8l5 5 5-5"}
-                      stroke="#333a"
-                      strokeWidth="1.5"
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
-                <span>{item.startup}</span>
-                <span>{item.investor}</span>
-                <span>{item.date}</span>
-                {statusBadge(item.status)}
-              </div>
-              {expanded === item.id && (
-                <div className="introqueue-details-row">
-                  <div className="introqueue-field-group">
-                    <label className="introqueue-label">Draft</label>
-                    <input
-                      className="introqueue-input"
-                      type="text"
-                      placeholder="Introduction draft text here..."
-                      value={item.draft ?? ""}
-                      onChange={e => handleDraftChange(item.id, e.target.value)}
-                    />
-                  </div>
-                  <div className="introqueue-field-row">
-                    <div className="introqueue-field-group">
-                      <label className="introqueue-label">Change Status</label>
-                      <select
-                        className="introqueue-select"
-                        value={item.status}
-                        onChange={e => handleStatusChange(item.id, e.target.value as Status)}
-                      >
-                        <option value="Drafted">Drafted</option>
-                        <option value="Sent">Sent</option>
-                      </select>
+
+        {/* Intro List Container */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg shadow-2xl overflow-hidden">
+          <ul className="text-white">
+            {intros.map((intro) => {
+              const isExpanded = intro._id === expandedId;
+              const createdAtDate = new Date(intro.createdAt).toLocaleDateString();
+              
+              return (
+                <li key={intro._id} className="border-b border-white/10 last:border-b-0">
+                  {/* List Item Header Row */}
+                  <div
+                    className="flex items-center px-4 py-2 cursor-pointer transition duration-150 hover:bg-white/5" 
+                    onClick={() => handleToggleExpand(intro)}
+                  >
+                    {/* Expand/Collapse Icon */}
+                    <div className="w-8">
+                      {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
                     </div>
-                    <div className="introqueue-field-group" style={{flex:2}}>
-                      <label className="introqueue-label">Add Note</label>
-                      <input
-                        className="introqueue-input"
-                        type="text"
-                        placeholder="Optional follow-up notes..."
-                        value={item.note ?? ""}
-                        onChange={e => handleNoteChange(item.id, e.target.value)}
-                      />
+                    {/* Data Columns */}
+                    <div className="flex-1 grid grid-cols-4 gap-2 text-sm font-medium"> 
+                      <p className="truncate font-semibold">{intro.startupName}</p>
+                      <p className="truncate text-gray-300">{intro.investorName}</p>
+                      <p className="truncate text-gray-400">{createdAtDate}</p>
+                      <StatusBadge status={intro.status} />
                     </div>
                   </div>
-                </div>
-              )}
-              {idx !== queue.length-1 && <div className="introqueue-row-divider" />}
-            </React.Fragment>
-          ))}
+
+                  {/* Expanded Detail Panel */}
+                  {isExpanded && expandedIntro && (
+                    <div className="p-4 bg-white/5 border-t border-white/10">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Draft Text Area (Left Column) */}
+                        <div className="col-span-1">
+                          <label className="text-sm font-semibold block mb-1 text-white/70">Draft</label>
+                          <textarea
+                            className="w-full p-2 bg-white/10 border border-blue-500 rounded-lg text-white placeholder-gray-400 h-full min-h-36 resize-none text-sm focus:ring-blue-500 focus:border-blue-500" 
+                            placeholder="Introduction draft text here..."
+                            value={draftContent}
+                            onChange={(e) => setDraftContent(e.target.value)}
+                          />
+                        </div>
+                        
+                        {/* Controls (Right Column) */}
+                        <div className="col-span-1 flex flex-col justify-start space-y-3">
+                            {/* Status and Follow-up Group */}
+                            <div className="space-y-3">
+                            {/* Change Status Dropdown */}
+                                <div>
+                                    <label className="text-sm font-semibold block mb-1 text-white/70">Change Status</label>
+                                    <select 
+                                        className="w-full p-2 bg-white/10 border border-blue-500 rounded-lg text-white text-sm focus:ring-blue-500 focus:border-blue-500 appearance-none" 
+                                        value={newStatus}
+                                        onChange={(e) => {
+                                            setNewStatus(e.target.value as IntroStatus);
+                                            if (e.target.value !== 'sent') {
+                                                setFollowUpDate('');
+                                            } else {
+                                                setFollowUpDate(getDefaultFollowUpDate());
+                                            }
+                                        }}
+                                    >
+                                        <option value="queued" className="bg-gray-800 text-white">Drafted</option>
+                                        <option value="sent" className="bg-gray-800 text-white">Sent</option>
+                                        <option value="completed" className="bg-gray-800 text-white">Completed</option>
+                                    </select>
+                                </div>
+                            
+                            {/* Follow-up Date Picker (Conditional) */}
+                            {newStatus === 'sent' && (
+                                <div>
+                                    <label className="text-sm font-semibold mb-1 text-white/70 flex items-center">
+                                        <Calendar className="h-4 w-4 mr-1 text-yellow-400" />
+                                        **Set Follow-up Date**
+                                    </label>
+                                    <input
+                                        type="date"
+                                        className="w-full p-2 bg-white/10 border border-yellow-500 rounded-lg text-white text-sm focus:ring-yellow-500 focus:border-yellow-500" 
+                                        value={followUpDate}
+                                        min={new Date().toISOString().split('T')[0]} 
+                                        onChange={(e) => setFollowUpDate(e.target.value)}
+                                    />
+                                </div>
+                            )}
+                            </div>
+                            
+                            {/* Add Note Text Area */}
+                            <div className="mt-auto">
+                                <label className="text-sm font-semibold block mb-1 text-white/70">Add Note</label>
+                                <textarea
+                                    className="w-full p-2 bg-white/10 border rounded-lg text-white placeholder-gray-400 h-12 resize-none text-sm" 
+                                    placeholder="Optional follow-up notes..."
+                                    value={noteContent}
+                                    onChange={(e) => setNoteContent(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div className="flex justify-end space-x-3 mt-3"> 
+                        <button
+                          className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg font-medium shadow-md hover:bg-green-700 transition duration-150 disabled:opacity-50"
+                          onClick={() => handleUpdateStatus(expandedIntro._id)}
+                          disabled={
+                                newStatus === expandedIntro.status ||
+                                (newStatus === 'sent' && !followUpDate)
+                            }
+                        >
+                            {newStatus === 'sent' ? (
+                                <>
+                                    <Send className="mr-2 h-4 w-4" /> 
+                                    **Mark as Sent & Schedule**
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="mr-2 h-4 w-4" /> 
+                                    **Update Status**
+                                </>
+                            )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
-      <style jsx>{`
-        .introqueue-bg {
-          min-height: 100vh;
-          background: url("/backeground.jpg");
-          background-size: cover;
-          background-position: center;
-          display: flex;
-          align-items: flex-start;
-          width: 100%;
-        }
-        .introqueue-content {
-          padding: 32px 38px 10px 38px;
-          width: 100%;
-        }
-        .introqueue-header-row {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          margin-bottom: 16px;
-        }
-        .introqueue-title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #fff;
-          margin-bottom: 0px;
-        }
-        .introqueue-sub {
-          font-size: 17px;
-          color: #e9eafd;
-          margin-bottom: 2px;
-          margin-top: 2px;
-        }
-        .introqueue-new-btn {
-          background: #6357fa;
-          color: #fff;
-          font-size: 15.6px;
-          font-weight: 500;
-          border: none;
-          border-radius: 8px;
-          padding: 8px 19px;
-          cursor: pointer;
-          transition: background 0.15s;
-          margin-bottom: 4px;
-          box-shadow: 0 1px 8px #23265922;
-        }
-        .introqueue-new-btn:hover, .introqueue-new-btn:focus {
-          background: #4739ca;
-        }
-        .introqueue-list-card {
-          margin-top: 11px;
-          background: #fff;
-          border-radius: 13px;
-          box-shadow: 0 3px 18px #595fcc22;
-          min-width: 220px;
-          padding-top: 4px;
-        }
-        .introqueue-list-row {
-          display: flex;
-          align-items: center;
-          gap: 24px;
-          font-size: 16px;
-          color: #232b46;
-          font-weight: 500;
-          padding: 10px 27px 10px 12px;
-        }
-        .introqueue-row-toggle {
-          appearance: none;
-          background: none;
-          border: none;
-          cursor: pointer;
-          display: inline-flex;
-          margin-right: 10px;
-          margin-left: 3px;
-          padding: 0;
-        }
-        .introqueue-details-row {
-          background: #f7f9fb;
-          border-radius: 9px;
-          margin-left: 41px;
-          margin-right: 18px;
-          margin-bottom: 7px;
-          margin-top: -5px;
-          padding: 15px 16px 12px 13px;
-          display: flex;
-          flex-direction: column;
-          gap: 9px;
-        }
-        .introqueue-field-group {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          gap: 3px;
-          min-width: 170px;
-        }
-        .introqueue-label {
-          font-size: 15px;
-          color: #333c;
-          font-weight: 500;
-          margin-bottom: 2px;
-        }
-        .introqueue-input {
-          width: 100%;
-          border-radius: 6px;
-          border: 1px solid #dbe1f2;
-          background: #fff;
-          font-size: 15px;
-          padding: 7px 9px;
-        }
-        .introqueue-select {
-          padding: 7px 10px;
-          background: #fff;
-          border-radius: 6px;
-          border: 1px solid #dbe1f2;
-          font-size: 15px;
-        }
-        .introqueue-field-row {
-          display: flex;
-          gap: 25px;
-        }
-        .introqueue-row-divider {
-          border-bottom: 1px solid #ebebeb;
-          width: 90%;
-          margin: 0 auto;
-        }
-        @media (max-width: 900px) {
-          .introqueue-content {
-            padding: 18px 7vw 10px 7vw;
-          }
-        }
-        @media (max-width: 600px) {
-          .introqueue-content {
-            padding: 8px 2vw 8px 2vw;
-          }
-          .introqueue-list-row {
-            gap: 7px;
-            font-size: 13px;
-            padding: 8px 5px 8px 8px;
-          }
-          .introqueue-details-row {
-            margin-left: 7px;
-            margin-right: 7px;
-            padding: 10px 7px 10px 7px;
-          }
-        }
-      `}</style>
     </div>
   );
 }

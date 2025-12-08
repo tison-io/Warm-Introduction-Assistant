@@ -1,14 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, now } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Reminder } from '../schemas/reminder.schema';
+import { IntroQueue } from 'src/transform/entities/intro-queue.schema';
 
 @Injectable()
 export class ReminderService {
   private readonly logger = new Logger(ReminderService.name);
 
-  constructor(@InjectModel(Reminder.name) private reminderModel: Model<Reminder>) {}
+  constructor(
+    @InjectModel(Reminder.name) private reminderModel: Model<Reminder>,
+    @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueue>,
+  ) {}
 
   async findAllByUser(founderId: string) {
     const now = new Date();
@@ -55,5 +59,13 @@ export class ReminderService {
       status: 'queued'
     });
     return reminder.save();
+  }
+
+  async markAsCompleted(introId: string, founderId: string) {
+    const intro = await this.introQueueModel.findOne({ _id: introId, founderId });
+    if (!intro) throw new NotFoundException('Intro not found');
+    intro.status = 'completed';
+    await intro.save();
+    return { success: true };
   }
 }

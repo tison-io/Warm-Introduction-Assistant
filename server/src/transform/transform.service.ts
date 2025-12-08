@@ -15,25 +15,23 @@ export class TransformService {
 
   //Call GenAI endpoint for transforming intros
   async transformIntro(dto: TransformIntroDto) {
-    const url = process.env.GENAI_URL;
+      console.log(" Received Transform Intro Payload:", dto);
 
-    if (!url) {
-      throw new Error("GENAI_URL variable not set properly.")
-    }
+      return {
+        success: true,
+        message: "Transform intro endpoint reached successfully.",
+        received: dto,
+        dummyTransformedIntro: "This is a dummy transformed intro for testing."
+      };
+  }
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dto),
-    });
+  async getIntrosByFounder(founderId: string) {
+    const intros = await this.introQueueModel
+      .find({ founderId })
+      .sort({ createdAt: -1 }) 
+      .exec();
 
-    if(!response.ok) {
-      throw new Error("GenAI service failed.")
-    }
-
-    const generatedIntro = await response.json();
-
-    return generatedIntro;
+    return intros;
   }
 
   async queueIntro(data: {

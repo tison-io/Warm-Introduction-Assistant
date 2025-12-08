@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Patch, UseGuards, } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, UseGuards, Get, Req, } from '@nestjs/common';
 import { TransformService } from './transform.service';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -11,6 +11,12 @@ export class TransformController {
   @Post('transform')
   async transformIntro(@Body() dto: TransformIntroDto) {
     return this.transformService.transformIntro(dto);
+  }
+
+  @Get('my-queue') 
+  async getMyIntros(@Req() req: any) {
+    const founderId = req.user.userId; 
+    return this.transformService.getIntrosByFounder(founderId);
   }
 
   @Post('queue')
