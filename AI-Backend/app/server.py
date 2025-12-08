@@ -9,6 +9,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address 
 from slowapi.errors import RateLimitExceeded 
 
+load_dotenv()
 
 logging.basicConfig(
   level=logging.INFO
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address) 
 
 app = FastAPI(
-  title="WamlyAI API",
+  title="WamlyAI API",                 
   description="Provides direct-action endpoints", 
   version="1.0.0"
 )  
@@ -69,4 +70,12 @@ async def root(request: Request):
 async def health_check(request: Request): 
   return {
     "status": "healthy 🩺"
-  }
+  } 
+
+@app.post("/ai/transform") 
+def transform():
+  pass 
+
+
+
+
