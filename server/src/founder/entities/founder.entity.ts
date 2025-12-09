@@ -14,6 +14,9 @@ export class Founder {
   @Prop({ required: true })
   password: string;
 
+  @Prop({ required: true })
+  phone: string;
+
   @Prop()
   createdAt: Date;
 

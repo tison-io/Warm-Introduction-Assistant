@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { SocialAuthButtons } from '../../components/SocialAuthButtons';
 import { authApi } from '../lib/auth-api';
 import { AuthResponse } from '../types/auth';
 
@@ -38,7 +37,6 @@ export default function LoginPage() {
     }
   };
 
-  const [socialError, setSocialError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -175,9 +173,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {(error || socialError) && (
+          {error && (
             <div style={{ color: 'red', fontSize: '14px', marginBottom: '10px', textAlign: 'center' }}>
-              {error || socialError}
+              {error}
             </div>
           )}
 
@@ -200,8 +198,6 @@ export default function LoginPage() {
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-
-        <SocialAuthButtons type="login" onError={setSocialError} />
 
         <div style={{ textAlign: 'center', fontSize: 14, color: '#666', marginTop: 8 }}>
           Don't have an account?{' '}

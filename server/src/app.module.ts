@@ -1,11 +1,11 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
+import { JwtModule } from '@nestjs/jwt';
 import { Module, BadRequestException } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FounderModule } from './founder/founder.module';
-
 import { InvestorsModule } from './investors/investors.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { MailService } from './mail/mail.service';
@@ -17,6 +17,11 @@ import { TransformModule } from './transform/transform.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: '7d' },
     }),
     ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({

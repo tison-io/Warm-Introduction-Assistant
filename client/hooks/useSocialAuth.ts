@@ -7,24 +7,17 @@ export const useSocialAuth = () => {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleSocialAuth = async (provider: string, type: 'login' | 'signup') => {
-    try {
-      const response = type === 'login' 
-        ? await authApi.socialLogin(provider)
-        : await authApi.socialSignup(provider);
-      
-      const data: AuthResponse = await response.json();
-      
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/startups');
-      } else {
-        setError((data as any).message || `${provider} ${type} failed`);
-      }
-    } catch (err) {
-      setError(`${provider} ${type} failed`);
+  const handleSocialAuth = (provider: string, type: 'login' | 'signup') => {
+    const BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
+    const providerLower = provider.toLowerCase();
+    
+    if (providerLower === 'apple') {
+      setError('Apple Sign-In coming soon!');
+      return;
     }
+    
+    // Redirect to backend OAuth endpoint
+    window.location.href = `${BASE_URL}/auth/${providerLower}`;
   };
 
   return { handleSocialAuth, error, setError };
