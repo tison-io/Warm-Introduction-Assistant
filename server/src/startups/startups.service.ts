@@ -23,11 +23,6 @@ export class StartupsService {
 
   async findAllByFounder(founderId: string) {
     const startups = await this.startupModel.find({ founderId }).sort({ createdAt: -1 });
-
-    if(!startups || startups.length === 0) {
-      throw new NotFoundException('You dont have startups yet');
-    }
-
     return startups;
   }
 
