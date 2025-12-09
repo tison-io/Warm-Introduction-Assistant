@@ -8,4 +8,7 @@ export class CreateFounderDto {
     
     @MinLength(6)
     password: string;
+
+    @IsNotEmpty()
+    phone: string;
 }

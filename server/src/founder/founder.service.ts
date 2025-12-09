@@ -20,7 +20,7 @@ export class FounderService {
   ) {}
   
   async signup(createFounderDto: CreateFounderDto): Promise<FounderResponse> {
-    const { name, email, password } = createFounderDto;
+    const { name, email, password, phone } = createFounderDto;
 
     //Check for existing user
     const existingEmail = await this.founderModel.findOne({ email});
@@ -41,7 +41,8 @@ export class FounderService {
     const founder = await this.founderModel.create({
       name, 
       email, 
-      password: hashedPassword
+      password: hashedPassword,
+      phone
     });
 
     //return saved founder
