@@ -11,6 +11,7 @@ export default function SignupPage() {
   const router = useRouter();
   const [showPass, setShowPass] = useState(false);
   const [showConf, setShowConf] = useState(false);
+  const [countryCode, setCountryCode] = useState("+1");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -20,16 +21,45 @@ export default function SignupPage() {
   });
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
+
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMsg("");
+    setIsSuccess(false);
+
+    // Validation
+    if (!form.name.trim()) {
+      setMsg("Please enter your name");
+      setLoading(false);
+      return;
+    }
+
+    if (!form.email.trim()) {
+      setMsg("Please enter your email");
+      setLoading(false);
+      return;
+    }
+
+    if (!form.phone.trim()) {
+      setMsg("Please enter your phone number");
+      setLoading(false);
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setMsg("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       setMsg("Passwords do not match");
@@ -38,11 +68,23 @@ export default function SignupPage() {
     }
 
     try {
-      const result = await signupFounder({ name: form.name, email: form.email, password: form.password });
-      setMsg(`Account created successfully for ${result.name}.`);
-      setTimeout(() => router.push("/login"), 1500);
+      console.log("Attempting signup with:", { name: form.name, email: form.email });
+      const fullPhone = countryCode + form.phone;
+      const result = await signupFounder({ 
+        name: form.name, 
+        email: form.email, 
+        password: form.password,
+        phone: fullPhone 
+      });
+      console.log("Signup successful:", result);
+      setMsg(`Account created successfully for ${result.name}!`);
+      setIsSuccess(true);
+      setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
-      setMsg(err.message || "An error occurred. Please try again later.");
+      console.error("Signup error:", err);
+      const errorMsg = err.message || err.error || "Network error. Please check your connection and try again.";
+      setMsg(errorMsg);
+      setIsSuccess(false);
     } finally {
       setLoading(false);
     }
@@ -98,13 +140,51 @@ export default function SignupPage() {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             required
           />
-          <input
-            type="tel"
-            placeholder="Phone number"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            required
-          />
+          <div className="phone-field">
+            <select
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+              className="country-code"
+            >
+              <option value="+213">Algeria 🇩🇿 +213</option>
+              <option value="+61">Australia 🇦🇺 +61</option>
+              <option value="+55">Brazil 🇧🇷 +55</option>
+              <option value="+86">China 🇨🇳 +86</option>
+              <option value="+20">Egypt 🇪🇬 +20</option>
+              <option value="+251">Ethiopia 🇪🇹 +251</option>
+              <option value="+33">France 🇫🇷 +33</option>
+              <option value="+49">Germany 🇩🇪 +49</option>
+              <option value="+233">Ghana 🇬🇭 +233</option>
+              <option value="+91">India 🇮🇳 +91</option>
+              <option value="+225">Ivory Coast 🇨🇮 +225</option>
+              <option value="+39">Italy 🇮🇹 +39</option>
+              <option value="+81">Japan 🇯🇵 +81</option>
+              <option value="+254">Kenya 🇰🇪 +254</option>
+              <option value="+52">Mexico 🇲🇽 +52</option>
+              <option value="+212">Morocco 🇲🇦 +212</option>
+              <option value="+234">Nigeria 🇳🇬 +234</option>
+              <option value="+7">Russia 🇷🇺 +7</option>
+              <option value="+250">Rwanda 🇷🇼 +250</option>
+              <option value="+221">Senegal 🇸🇳 +221</option>
+              <option value="+27">South Africa 🇿🇦 +27</option>
+              <option value="+82">South Korea 🇰🇷 +82</option>
+              <option value="+34">Spain 🇪🇸 +34</option>
+              <option value="+255">Tanzania 🇹🇿 +255</option>
+              <option value="+216">Tunisia 🇹🇳 +216</option>
+              <option value="+256">Uganda 🇺🇬 +256</option>
+              <option value="+44">United Kingdom 🇬🇧 +44</option>
+              <option value="+1">United States 🇺🇸 +1</option>
+              <option value="+260">Zambia 🇿🇲 +260</option>
+              <option value="+263">Zimbabwe 🇿🇼 +263</option>
+            </select>
+            <input
+              type="tel"
+              placeholder="Phone number"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              required
+            />
+          </div>
           <div className="password-field">
             <input
               type={showPass ? "text" : "password"}
@@ -141,7 +221,7 @@ export default function SignupPage() {
               {showConf ? "🙈" : "👁️"}
             </button>
           </div>
-          {msg && <div className="error-msg">{msg}</div>}
+          {msg && <div className={isSuccess ? "success-msg" : "error-msg"}>{msg}</div>}
           <button className="register-btn" type="submit" disabled={loading}>
             {loading ? "Registering..." : "Register"}
           </button>
@@ -149,18 +229,7 @@ export default function SignupPage() {
             <input type="checkbox" id="terms" required />
             <label htmlFor="terms">I have read and agree to the Terms of Service</label>
           </div>
-          <span className="or">or sign up with email</span>
-          <div className="social-icons">
-            <button type="button" className="social-btn">
-              <Image src="/google.svg" alt="Google" width={22} height={22} />
-            </button>
-            <button type="button" className="social-btn">
-              <Image src="/apple.svg" alt="Apple" width={22} height={22} />
-            </button>
-            <button type="button" className="social-btn">
-              <Image src="/facebook.svg" alt="Facebook" width={22} height={22} />
-            </button>
-          </div>
+
           <div className="login-link">
             Already have an account? <Link href="/login">Log in</Link>
           </div>
@@ -221,6 +290,24 @@ export default function SignupPage() {
           border-radius: 6px;
           font-size: 16px;
         }
+        .phone-field {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 13px;
+        }
+        .country-code {
+          padding: 10px 8px;
+          border: 1px solid #ced4da;
+          border-radius: 6px;
+          font-size: 16px;
+          background: #fff;
+          cursor: pointer;
+          width: 90px;
+        }
+        .phone-field input {
+          flex: 1;
+          margin-bottom: 0;
+        }
         .password-field {
           position: relative;
           margin-bottom: 13px;
@@ -238,6 +325,12 @@ export default function SignupPage() {
         }
         .error-msg {
           color: red;
+          font-size: 13px;
+          margin-bottom: 10px;
+          text-align: center;
+        }
+        .success-msg {
+          color: green;
           font-size: 13px;
           margin-bottom: 10px;
           text-align: center;
@@ -277,25 +370,7 @@ export default function SignupPage() {
           margin: 9px 0 7px;
           font-size: 13px;
         }
-        .social-icons {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 15px;
-          gap: 15px;
-        }
-        .social-btn {
-          background: #f8f9fa;
-          border: none;
-          border-radius: 50%;
-          width: 38px;
-          height: 38px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 0;
-          cursor: pointer;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        }
+
         .login-link {
           margin-top: 8px;
           font-size: 13px;
