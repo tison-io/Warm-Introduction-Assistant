@@ -1,0 +1,22 @@
+{
+  "name": "warm-introduction-assistant",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DirectEd-Development/Warm-Introduction-Assistant.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DirectEd-Development/Warm-Introduction-Assistant/issues"
+  },
+  "homepage": "https://github.com/DirectEd-Development/Warm-Introduction-Assistant#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^24.10.2"
+  }
+}
