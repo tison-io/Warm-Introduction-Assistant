@@ -18,6 +18,36 @@ export class FounderController {
   async login(@Body() loginDto: LoginDto) {
     return this.founderService.login(loginDto);
   }
+
+  @Post('login/google')
+  async googleLogin() {
+    return this.founderService.socialLogin('google');
+  }
+
+  @Post('login/apple')
+  async appleLogin() {
+    return this.founderService.socialLogin('apple');
+  }
+
+  @Post('login/facebook')
+  async facebookLogin() {
+    return this.founderService.socialLogin('facebook');
+  }
+
+  @Post('signup/google')
+  async googleSignup() {
+    return this.founderService.socialSignup('google');
+  }
+
+  @Post('signup/apple')
+  async appleSignup() {
+    return this.founderService.socialSignup('apple');
+  }
+
+  @Post('signup/facebook')
+  async facebookSignup() {
+    return this.founderService.socialSignup('facebook');
+  }
   
   @UseGuards(JwtAuthGuard)
   @Get('me')
