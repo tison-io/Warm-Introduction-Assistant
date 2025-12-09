@@ -27,6 +27,19 @@ export async function fetchReminders(): Promise<Reminder[]> {
   return response.json();
 }
 
+export async function deleteReminder(reminderId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/reminders/${reminderId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.message || 'Failed to delete reminder');
+  }
+  return;
+}
+
 export async function markReminderCompleted(introId: string) {
   const response = await fetch(`${API_BASE_URL}/reminders/${introId}/complete`, {
     method: 'PATCH',

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Reminder } from '../types/reminder';
-import { fetchReminders, markReminderCompleted } from '../lib/reminder-api';
-import { X, CheckCircle } from 'lucide-react'; // Icons for Mark Done and Delete
+import { deleteReminder, fetchReminders } from '../lib/reminder-api';
+import { Trash } from 'lucide-react';
 
 const isToday = (someDate: Date): boolean => {
   const today = new Date();
@@ -90,20 +90,17 @@ export default function ReminderList() {
     }
   };
 
-  const handleMarkCompleted = async (introId: string) => {
+  const handleDeleteReminder = async (reminderId: string) => {
     try {
-      await markReminderCompleted(introId);
-      setReminders(reminders.filter(r => r.introId._id !== introId));
+      setReminders(prevReminders => 
+        prevReminders.filter(r => r._id !== reminderId)
+      );
+
+      await deleteReminder(reminderId);
+
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Failed to mark reminder as completed');
-    }
-  };
-  
-  const handleDeleteReminder = (reminderId: string) => {
-    if (confirm('Are you sure you want to delete this reminder?')) {
-      setReminders(reminders.filter(r => r._id !== reminderId));
-      console.log(`Reminder ${reminderId} deleted (frontend only)`);
+      alert(err.message || 'Failed to delete reminder');
     }
   };
 
@@ -165,21 +162,13 @@ export default function ReminderList() {
 
                   {/* Right side: Action Buttons */}
                   <div className="flex space-x-2 items-center">
-                    <button
-                      className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium shadow-md hover:bg-indigo-700 transition duration-150"
-                      onClick={() => handleMarkCompleted(reminder.introId._id)}
-                      title="Mark Done"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" /> 
-                      Mark Done
-                    </button>
-                    {/* Delete Icon (matches design's trashcan icon position) */}
+
                     <button
                       className="p-2 text-red-400 hover:text-red-500 transition duration-150"
                       onClick={() => handleDeleteReminder(reminder._id)}
                       title="Delete Reminder"
                     >
-                      <X size={18} /> 
+                      <Trash size={18} /> 
                     </button>
                   </div>
                 </li>

@@ -61,6 +61,20 @@ export class ReminderService {
     return reminder.save();
   }
 
+  async deleteReminder(reminderId: string, founderId: string) {
+    const result = await this.reminderModel.findOneAndDelete({
+      _id: reminderId,
+     founderId: founderId,
+  }).exec();
+
+  if (!result) {
+   throw new NotFoundException('Reminder not found or unauthorized.');
+  }
+
+  this.logger.log(`Deleted reminder ${reminderId} for founder ${founderId}`);
+    return { success: true };
+  }
+
   async markAsCompleted(introId: string, founderId: string) {
     const intro = await this.introQueueModel.findOne({ _id: introId, founderId });
     if (!intro) throw new NotFoundException('Intro not found');

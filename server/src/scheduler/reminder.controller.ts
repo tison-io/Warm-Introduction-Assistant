@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { ReminderService } from './reminder.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
@@ -17,5 +17,11 @@ export class ReminderController {
     async markAsDone(@Param('id') id: string, @Req() req) {
         const founderId = req.user.userId;
         return this.reminderService.markAsCompleted(id, founderId);
+    }
+
+    @Delete(':id')
+    async deleteReminder(@Param('id') reminderId: string, @Req() req) {
+        const founderId = req.user.userId;
+        await this.reminderService.deleteReminder(reminderId, founderId);
     }
 }
