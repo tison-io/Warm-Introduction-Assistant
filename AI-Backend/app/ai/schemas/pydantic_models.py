@@ -8,4 +8,9 @@ class TransformRequest(BaseModel):
     investor_preference: str
 
 class AIResponse(BaseModel):
-    response: str
+    response: str 
+
+class ChatRequest(BaseModel): 
+    session_id: str | None = None 
+    message: str 
+    
