@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { authApi } from '../lib/auth-api';
-import { AuthResponse } from '../types/auth';
+import { loginFounder } from '../lib/founder-api';
+import { FounderLoginResponse } from '../types/founder';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,18 +20,14 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await authApi.login(email, password);
-      const data: AuthResponse = await response.json();
+      const data: FounderLoginResponse = await loginFounder(email, password);
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
-      } else {
-        setError((data as any).message || 'Login failed');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

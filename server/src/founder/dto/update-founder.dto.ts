@@ -1,4 +1,20 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateFounderDto } from './create-founder.dto';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
-export class UpdateFounderDto extends PartialType(CreateFounderDto) {}
+export class UpdateFounderDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+}

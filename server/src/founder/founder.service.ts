@@ -9,6 +9,7 @@ import * as jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UpdateFounderDto } from './dto/update-founder.dto';
 
 
 @Injectable()
@@ -99,6 +100,50 @@ export class FounderService {
     }
 
     return user;       
+  }
+
+  async updateProfile(userId: string, updateFounderDto: UpdateFounderDto): Promise<FounderResponse> {
+    const { name, email, phone, password } = updateFounderDto;
+
+    const user = await this.founderModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Check for duplicate email
+    if (email && email !== user.email) {
+      const existingEmail = await this.founderModel.findOne({ email });
+      if (existingEmail) {
+        throw new ConflictException('Email is already in use');
+      }
+      user.email = email;
+    }
+
+    // Check for duplicate name
+    if (name && name !== user.name) {
+      const existingName = await this.founderModel.findOne({ name });
+      if (existingName) {
+        throw new ConflictException('Name is already in use');
+      }
+      user.name = name;
+    }
+
+    if (phone) {
+      user.phone = phone;
+    }
+
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await user.save();
+
+    return {
+      id: updatedUser._id.toString(),
+      name: updatedUser.name,
+      email: updatedUser.email,
+      createdAt: updatedUser.createdAt,
+    };
   }
 
   async socialLogin(provider: string) {

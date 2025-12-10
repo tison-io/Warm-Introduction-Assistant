@@ -1,190 +1,167 @@
-"use client";
-import React, { useState } from "react";
+'use client';
+import React, { useState, useEffect } from "react";
+import { getFounderProfile, updateFounderProfile } from "../lib/founder-api";
+import { FounderUpdateInput } from "../types/founder";
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<"personal" | "startup">("personal");
-  const [profile, setProfile] = useState({
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const [profile, setProfile] = useState<FounderUpdateInput>({
     name: "",
     email: "",
     phone: "",
     password: "",
   });
+
   const [startup, setStartup] = useState({
     name: "MyStartup",
     blurb: "We help SaaS companies reduce churn...",
-    link: "https://abc.com"
+    link: "https://abc.com",
   });
 
-  return (
-    <div className="settings-bg">
-      <div className="settings-content">
-        <h1 className="settings-title">Settings</h1>
-        <div className="settings-sub">Manage your profile and preferences</div>
+  // Fetch profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getFounderProfile();
+        setProfile({ 
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          password: "",
+        });
+      } catch (err: any) {
+        setError(err.message || "Failed to load profile");
+      }
+    };
+    fetchProfile();
+  }, []);
 
-        <div className="settings-tabs">
+  const handleSaveProfile = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await updateFounderProfile(profile);
+      setSuccess("Profile updated successfully!");
+    } catch (err: any) {
+      setError(err.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/backeground.jpg')" }}>
+      <div className="max-w-4xl mx-auto p-8">
+        <h1 className="text-3xl font-bold text-white mb-1">Settings</h1>
+        <p className="text-gray-200 mb-6">Manage your profile and preferences</p>
+
+        {/* Tabs */}
+        <div className="flex gap-4 mb-6">
           <button
-            className={`settings-tab${tab === "personal" ? " selected" : ""}`}
+            className={`px-6 py-2 rounded-lg font-medium transition ${
+              tab === "personal" ? "bg-white text-gray-900" : "bg-gray-300 text-gray-700"
+            }`}
             onClick={() => setTab("personal")}
-          >Personal Profile</button>
+          >
+            Personal Profile
+          </button>
           <button
-            className={`settings-tab${tab === "startup" ? " selected" : ""}`}
+            className={`px-6 py-2 rounded-lg font-medium transition ${
+              tab === "startup" ? "bg-white text-gray-900" : "bg-gray-300 text-gray-700"
+            }`}
             onClick={() => setTab("startup")}
-          >Startup Details</button>
+          >
+            Startup Details
+          </button>
         </div>
 
-        <div className="settings-form-card">
+        {/* Form Card */}
+        <div className="bg-white rounded-xl p-8 shadow-md">
           {tab === "personal" ? (
-            <form className="settings-form">
-              <div className="settings-form-title">Personal Information</div>
-              <label className="settings-label">Full Name</label>
+            <div className="flex flex-col gap-4">
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              {success && <p className="text-green-500 text-sm">{success}</p>}
+
+              <label className="font-medium">Full Name</label>
               <input
-                className="settings-input"
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 type="text"
                 value={profile.name}
                 onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
               />
-              <label className="settings-label">Email</label>
+
+              <label className="font-medium">Email</label>
               <input
-                className="settings-input"
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 type="email"
                 value={profile.email}
                 onChange={e => setProfile(p => ({ ...p, email: e.target.value }))}
               />
-              <label className="settings-label">Phone</label>
+
+              <label className="font-medium">Phone</label>
               <input
-                className="settings-input"
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 type="tel"
                 value={profile.phone}
                 onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))}
               />
-              <label className="settings-label">Password</label>
+
+              <label className="font-medium">Password</label>
               <input
-                className="settings-input"
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 type="password"
                 value={profile.password}
                 onChange={e => setProfile(p => ({ ...p, password: e.target.value }))}
+                placeholder="Leave blank to keep current password"
               />
-              <button className="settings-save-btn" type="button">Save Changes</button>
-            </form>
+
+              <button
+                className={`mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50`}
+                disabled={loading}
+                onClick={handleSaveProfile}
+              >
+                {loading ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           ) : (
-            <form className="settings-form">
-              <div className="settings-form-title">Startup Details</div>
-              <label className="settings-label">Startup Name</label>
+            <div className="flex flex-col gap-4">
+              <label className="font-medium">Startup Name</label>
               <input
-                className="settings-input"
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 type="text"
                 value={startup.name}
                 onChange={e => setStartup(s => ({ ...s, name: e.target.value }))}
               />
-              <label className="settings-label">Blurb</label>
+
+              <label className="font-medium">Blurb</label>
               <input
-                className="settings-input"
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 type="text"
                 value={startup.blurb}
                 onChange={e => setStartup(s => ({ ...s, blurb: e.target.value }))}
               />
-              <label className="settings-label">Pitch Link</label>
+
+              <label className="font-medium">Pitch Link</label>
               <input
-                className="settings-input"
+                className="border border-gray-300 rounded-lg px-4 py-2 w-full"
                 type="text"
                 value={startup.link}
                 onChange={e => setStartup(s => ({ ...s, link: e.target.value }))}
               />
-              <button className="settings-save-btn" type="button">Save Changes</button>
-            </form>
+
+              <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                Save Changes
+              </button>
+            </div>
           )}
         </div>
       </div>
-      <style jsx>{`
-        .settings-bg {
-          min-height: 100vh;
-          background: url("/backeground.jpg");
-          background-size: cover;
-          background-position: center;
-          width: 100%;
-        }
-        .settings-content {
-          padding: 32px 38px;
-          width: 100%;
-        }
-        .settings-title {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #fff;
-          margin-bottom: 0;
-        }
-        .settings-sub {
-          font-size: 17px;
-          color: #e9eafd;
-          margin-bottom: 20px;
-          margin-top: 5px;
-        }
-        .settings-tabs {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 16px;
-        }
-        .settings-tab {
-          padding: 10px 24px;
-          background: #d4d6e8;
-          color: #555;
-          border: none;
-          border-radius: 8px;
-          font-size: 15px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .settings-tab.selected {
-          background: #fff;
-          color: #222;
-          font-weight: 600;
-        }
-        .settings-form-card {
-          background: #fff;
-          border-radius: 12px;
-          padding: 28px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-        .settings-form {
-          display: flex;
-          flex-direction: column;
-        }
-        .settings-form-title {
-          font-size: 20px;
-          font-weight: 700;
-          color: #222;
-          margin-bottom: 20px;
-        }
-        .settings-label {
-          font-size: 15px;
-          font-weight: 500;
-          color: #444;
-          margin-bottom: 6px;
-          margin-top: 12px;
-        }
-        .settings-input {
-          padding: 10px 12px;
-          border: 1px solid #d1d5db;
-          border-radius: 8px;
-          font-size: 15px;
-          background: #f9fafb;
-        }
-        .settings-save-btn {
-          margin-top: 24px;
-          padding: 12px;
-          background: #0152d6;
-          color: #fff;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-        }
-        .settings-save-btn:hover {
-          background: #003fa1;
-        }
-      `}</style>
     </div>
   );
 }
