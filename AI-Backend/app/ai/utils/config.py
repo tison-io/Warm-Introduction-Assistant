@@ -5,7 +5,11 @@ import os
 
 load_dotenv()
 
-GROQ_API_KEY=os.getenv("GROQ_API_KEY")
+GROQ_API_KEY=os.getenv("GROQ_API_KEY") 
+if not GROQ_API_KEY:
+    raise EnvironmentError("Missing or invalid Groq API key in environment variables.") 
+else:
+    print("✅ GROQ_API_KEY loaded!") 
 
 
 llm = ChatGroq(
@@ -14,7 +18,9 @@ llm = ChatGroq(
     max_tokens=None,
     # reasoning_format="parsed",
     timeout=None,
-    max_retries=2
+    max_retries=2, 
+    streaming=True, 
+    api_key=GROQ_API_KEY
 )
 
 # messages = [
