@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { RefreshCw, ArrowLeft, Copy } from 'lucide-react';
+import { Save, ArrowLeft, Copy } from 'lucide-react';
 import { QueueIntroDto } from '../types/transform'; 
 import { queueIntroApi } from '../lib/transform-api'; 
 
-// Interface to type the raw data coming from the query string (mostly strings)
 interface TransformResultData {
     startupId: string;
     startupName: string;
@@ -15,14 +14,13 @@ interface TransformResultData {
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText: string;
-    generatedIntro: string; // The AI's draft
+    generatedIntro: string;
 }
 
 // Function to safely parse query parameters
 function parseQueryData(params: URLSearchParams): TransformResultData | null {
     const requiredKeys = ['startupId', 'startupName', 'investorId', 'investorName', 'founderId', 'preferredIntroFormat', 'generatedIntro'];
     
-    // Check if all required keys are present
     const data: Partial<TransformResultData> = {};
     for (const key of requiredKeys) {
         const value = params.get(key);
@@ -133,7 +131,7 @@ export default function GeneratedIntroPage() {
                     {/* Intro Draft Card (Based on the image design) */}
                     <div className="border border-gray-200 rounded-xl p-6 shadow-md">
                         <h2 className="text-xl font-semibold text-gray-900">{investorDisplayName}</h2>
-                        <p className="text-sm text-gray-500 mb-4">{introType}</p>
+                        <p className="text-sm text-gray-500 mb-4">Preffered Intro Format: {introType}</p>
                         
                         <textarea
                             value={editedIntro}
@@ -163,16 +161,16 @@ export default function GeneratedIntroPage() {
                     <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
                         <button
                             onClick={() => router.back()}
-                            className="px-6 py-3 border border-gray-300 rounded-md font-semibold text-gray-700 hover:bg-gray-50 transition duration-150"
+                            className="px-6 py-3 cursor-pointer border border-gray-300 rounded-md font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 transition duration-150"
                         >
                             Back
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={isSaving || !editedIntro.trim()}
-                            className="flex items-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-purple-700 transition duration-150 disabled:opacity-50"
+                            className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50"
                         >
-                            <RefreshCw className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
+                            <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
                             <span>{isSaving ? 'Saving to Queue...' : 'Save'}</span>
                         </button>
                     </div>

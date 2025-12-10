@@ -76,13 +76,13 @@ const InvestorListPage = () => {
         {/* Search */}
         <div className="flex items-center gap-4 mb-6 max-w-lg">
           <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-black" />
             <input
               type="text"
               placeholder="Search investors..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-400 text-white placeholder-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-150 border-none"
+              className="w-full pl-10 pr-4 py-3 bg-white text-black placeholder-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-150 border-none"
             />
           </div>
         </div>
@@ -90,7 +90,7 @@ const InvestorListPage = () => {
         {/* Investor Table */}
         <div className="overflow-x-auto rounded-lg shadow-lg bg-gray-400">
           <table className="min-w-full divide-y divide-white/20">
-            <thead className="bg-gray-200">
+            <thead className="bg-white">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">No.</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Name</th>
@@ -115,7 +115,7 @@ const InvestorListPage = () => {
                 </tr>
               ) : (
                 investors.map((investor, index) => (
-                  <tr key={investor._id} className="hover:bg-white/5 transition duration-150">
+                  <tr key={investor._id} className="transition duration-150 bg-white">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">{investor.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -130,7 +130,7 @@ const InvestorListPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-3">
                         <Link href={`/investors/${investor._id}/edit`} passHref>
-                          <button title="Edit" className="text-black hover:text-white transition duration-150">
+                          <button title="Edit" className="text-black hover:text-gray-600 transition duration-150">
                             <Pencil className="h-5 w-5" />
                           </button>
                         </Link>

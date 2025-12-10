@@ -5,7 +5,6 @@ import { IntroQueue, IntroStatus, StatusUpdatePayload } from '../types/intro';
 import { fetchIntrosByFounder, updateIntroStatus } from '../lib/intro-api';
 import { ChevronUp, ChevronDown, Send, Save, Calendar } from 'lucide-react';
 
-// --- Helper Component: Badge for Status ---
 interface StatusBadgeProps {
   status: IntroStatus;
 }
@@ -80,7 +79,13 @@ export default function IntroQueuePage() {
       setDraftContent(intro.generatedIntro);
       setNewStatus(intro.status);
       setFollowUpDate(getDefaultFollowUpDate());
-      setNoteContent(''); 
+      setNoteContent('');
+      
+      if (intro.status === 'sent' && intro.followUpDueDate) {
+        setFollowUpDate(new Date(intro.followUpDueDate).toISOString().split('T')[0]);
+      } else {
+        setFollowUpDate(getDefaultFollowUpDate());
+  }
     }
   };
 
@@ -135,12 +140,12 @@ export default function IntroQueuePage() {
         <div className="flex justify-between items-end mb-6">
             <div>
                 <h1 className="text-3xl md:text-4xl font-semibold text-white">Intro Queue</h1>
-                <p className="text-base md:text-xl text-gray-300">You have **{introCount}** introductions queued</p>
+                <p className="text-base md:text-xl text-gray-300">You have <span className='font-bold'>{introCount}</span> introductions queued</p>
             </div>
         </div>
 
         {/* Intro List Container */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg shadow-2xl overflow-hidden">
+        <div className="bg-white text-black rounded-lg shadow-2xl overflow-hidden">
           <ul className="text-white">
             {intros.map((intro) => {
               const isExpanded = intro._id === expandedId;
@@ -155,13 +160,13 @@ export default function IntroQueuePage() {
                   >
                     {/* Expand/Collapse Icon */}
                     <div className="w-8">
-                      {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+                      {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-900" /> : <ChevronDown className="h-4 w-4 text-gray-800" />}
                     </div>
                     {/* Data Columns */}
                     <div className="flex-1 grid grid-cols-4 gap-2 text-sm font-medium"> 
-                      <p className="truncate font-semibold">{intro.startupName}</p>
-                      <p className="truncate text-gray-300">{intro.investorName}</p>
-                      <p className="truncate text-gray-400">{createdAtDate}</p>
+                      <p className="truncate font-semibold text-black">{intro.startupName}</p>
+                      <p className="truncate text-black">{intro.investorName}</p>
+                      <p className="truncate text-black">{createdAtDate}</p>
                       <StatusBadge status={intro.status} />
                     </div>
                   </div>
@@ -172,9 +177,9 @@ export default function IntroQueuePage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Draft Text Area (Left Column) */}
                         <div className="col-span-1">
-                          <label className="text-sm font-semibold block mb-1 text-white/70">Draft</label>
+                          <label className="text-sm font-semibold block mb-1 text-black">Intro</label>
                           <textarea
-                            className="w-full p-2 bg-white/10 border border-blue-500 rounded-lg text-white placeholder-gray-400 h-full min-h-36 resize-none text-sm focus:ring-blue-500 focus:border-blue-500" 
+                            className="w-full p-2 bg-white border border-blue-500 rounded-lg text-black placeholder-gray-400 h-full min-h-36 resize-none text-sm focus:ring-blue-500 focus:border-blue-500" 
                             placeholder="Introduction draft text here..."
                             value={draftContent}
                             onChange={(e) => setDraftContent(e.target.value)}
@@ -187,9 +192,9 @@ export default function IntroQueuePage() {
                             <div className="space-y-3">
                             {/* Change Status Dropdown */}
                                 <div>
-                                    <label className="text-sm font-semibold block mb-1 text-white/70">Change Status</label>
+                                    <label className="text-sm font-semibold block mb-1 text-black">Change Status</label>
                                     <select 
-                                        className="w-full p-2 bg-white/10 border border-blue-500 rounded-lg text-white text-sm focus:ring-blue-500 focus:border-blue-500 appearance-none" 
+                                        className="w-full p-2 bg-white border border-blue-500 rounded-lg text-black text-sm focus:ring-blue-500 focus:border-blue-500 appearance-none" 
                                         value={newStatus}
                                         onChange={(e) => {
                                             setNewStatus(e.target.value as IntroStatus);
@@ -200,22 +205,22 @@ export default function IntroQueuePage() {
                                             }
                                         }}
                                     >
-                                        <option value="queued" className="bg-gray-800 text-white">Drafted</option>
-                                        <option value="sent" className="bg-gray-800 text-white">Sent</option>
-                                        <option value="completed" className="bg-gray-800 text-white">Completed</option>
+                                        <option value="queued" className="bg-white text-black">Drafted</option>
+                                        <option value="sent" className="bg-white text-black">Sent</option>
+                                        <option value="completed" className="bg-white text-black">Completed</option>
                                     </select>
                                 </div>
                             
                             {/* Follow-up Date Picker (Conditional) */}
                             {newStatus === 'sent' && (
                                 <div>
-                                    <label className="text-sm font-semibold mb-1 text-white/70 flex items-center">
-                                        <Calendar className="h-4 w-4 mr-1 text-yellow-400" />
-                                        **Set Follow-up Date**
+                                    <label className="text-sm font-semibold mb-1 text-black flex items-center">
+                                        <Calendar className="h-4 w-4 mr-1 text-black" />
+                                        Set Follow-up Date
                                     </label>
                                     <input
                                         type="date"
-                                        className="w-full p-2 bg-white/10 border border-yellow-500 rounded-lg text-white text-sm focus:ring-yellow-500 focus:border-yellow-500" 
+                                        className="w-full p-2 border border-yellow-500 rounded-lg text-black text-sm focus:ring-blue-300 focus:border-blue-400" 
                                         value={followUpDate}
                                         min={new Date().toISOString().split('T')[0]} 
                                         onChange={(e) => setFollowUpDate(e.target.value)}
@@ -228,7 +233,7 @@ export default function IntroQueuePage() {
                             <div className="mt-auto">
                                 <label className="text-sm font-semibold block mb-1 text-white/70">Add Note</label>
                                 <textarea
-                                    className="w-full p-2 bg-white/10 border rounded-lg text-white placeholder-gray-400 h-12 resize-none text-sm" 
+                                    className="w-full p-2 bg-white/10 border rounded-lg text-white placeholder-gray-600 h-12 resize-none text-sm" 
                                     placeholder="Optional follow-up notes..."
                                     value={noteContent}
                                     onChange={(e) => setNoteContent(e.target.value)}
@@ -241,7 +246,7 @@ export default function IntroQueuePage() {
                       {/* Action Buttons */}
                       <div className="flex justify-end space-x-3 mt-3"> 
                         <button
-                          className="flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg font-medium shadow-md hover:bg-green-700 transition duration-150 disabled:opacity-50"
+                          className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg font-medium shadow-md hover:bg-blue-700 transition duration-150 disabled:opacity-50"
                           onClick={() => handleUpdateStatus(expandedIntro._id)}
                           disabled={
                                 newStatus === expandedIntro.status ||
@@ -251,12 +256,12 @@ export default function IntroQueuePage() {
                             {newStatus === 'sent' ? (
                                 <>
                                     <Send className="mr-2 h-4 w-4" /> 
-                                    **Mark as Sent & Schedule**
+                                    Mark Sent & Schedule Followup
                                 </>
                             ) : (
                                 <>
                                     <Save className="mr-2 h-4 w-4" /> 
-                                    **Update Status**
+                                    Update Status
                                 </>
                             )}
                         </button>
