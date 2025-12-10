@@ -26,12 +26,6 @@ const icons = {
       <path d="M3 17l7-13 7 13h-3.5L10 10l-3.5 7H3z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
     </svg>
   ),
-  generate: (
-    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <rect x="3" y="9" width="14" height="2" rx="1" fill="currentColor"/>
-      <rect x="9" y="3" width="2" height="14" rx="1" fill="currentColor"/>
-    </svg>
-  ),
   queue: (
     <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
       <rect x="3" y="5" width="14" height="2" rx="1" fill="currentColor"/>
@@ -80,7 +74,6 @@ const menu: MenuItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
   { href: "/investors", label: "Investors", icon: icons.investors },
   { href: "/startups", label: "Startups", icon: icons.startups },
-  { href: "/generate-intro", label: "Generate Intro", icon: icons.generate },
   { href: "/intro-queue", label: "Intro Queue", icon: icons.queue },
   { href: "/reminders", label: "Reminders", icon: icons.reminders },
   { href: "/profile", label: "Profile", icon: icons.profile },
