@@ -18,6 +18,9 @@ export class Founder {
   phone: string;
 
   @Prop()
+  profileImage: string;
+
+  @Prop()
   createdAt: Date;
 
   @Prop()
