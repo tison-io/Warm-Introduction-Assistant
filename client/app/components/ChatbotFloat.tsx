@@ -12,6 +12,7 @@ const SUGGESTIONS = [
 type Message = {
   from: "bot" | "user";
   text: string;
+  isStreaming?: boolean;
 };
 
 function ChatBotBox({ onClose }: { onClose?: () => void }) {
@@ -23,9 +24,9 @@ function ChatBotBox({ onClose }: { onClose?: () => void }) {
     inputRef.current?.focus();
   }, [messages.length]);
 
-  const handleSuggestion = (s: string) => {
+  const handleSuggestion = async (s: string) => {
     addUserMessage(s);
-    botReply(s);
+    await botReply(s);
   };
 
   function addUserMessage(text: string) {
@@ -34,23 +35,140 @@ function ChatBotBox({ onClose }: { onClose?: () => void }) {
   function addBotMessage(text: string) {
     setMessages(list => [...list, { from: "bot", text }]);
   }
-  function botReply(userText: string) {
-    if (userText.toLowerCase().includes("introduction")) {
-      addBotMessage("Sure! Who would you like to introduce, and to which investor?");
-    } else if (userText.toLowerCase().includes("queue")) {
-      addBotMessage("Here is your investor queue. Would you like to see details?");
-    } else if (userText.toLowerCase().includes("reminder")) {
-      addBotMessage("Let's set a follow-up reminder. For which investor?");
-    } else {
-      addBotMessage("I'm here to help! Please let me know what you need.");
+  async function botReply(userText: string) {
+    try {
+      // Add empty bot message that will be filled with streaming content
+      addBotMessage("");
+      
+      console.log('Sending message:', userText);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch('https://warm-introduction-assistant.onrender.com/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': 'dev-ops'
+        },
+        body: JSON.stringify({ 
+          message: userText,
+          session_id: 'user-session-' + Date.now()
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let fullResponse = '';
+        let isStreaming = true;
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            isStreaming = false;
+            break;
+          }
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.type === 'chunk' && data.content) {
+                  fullResponse += data.content;
+                  
+                  // Update with streaming cursor
+                  setMessages(prev => {
+                    const newMessages = [...prev];
+                    const botMessageIdx = newMessages.length - 1;
+                    if (newMessages[botMessageIdx]?.from === 'bot') {
+                      newMessages[botMessageIdx].text = fullResponse + '▋';
+                      newMessages[botMessageIdx].isStreaming = true;
+                    }
+                    return newMessages;
+                  });
+                  
+                  // Add small delay for typing effect
+                  await new Promise(resolve => setTimeout(resolve, 20));
+                }
+              } catch (e) {
+                // Skip invalid JSON
+              }
+            }
+          }
+        }
+        
+        // Remove cursor when streaming is complete
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const botMessageIdx = newMessages.length - 1;
+          if (newMessages[botMessageIdx]?.from === 'bot') {
+            newMessages[botMessageIdx].text = fullResponse;
+            newMessages[botMessageIdx].isStreaming = false;
+          }
+          return newMessages;
+        });
+      }
+    } catch (error) {
+      console.error('Chatbot error:', error);
+      let errorMessage = "Sorry, I'm having trouble connecting. Please try again.";
+      
+      if (error.name === 'AbortError') {
+        errorMessage = "Request timed out. The server might be slow.";
+      }
+      
+      // Replace the empty message with error message
+      setMessages(prev => {
+        const newMessages = [...prev];
+        if (newMessages[newMessages.length - 1]?.from === 'bot') {
+          newMessages[newMessages.length - 1].text = errorMessage;
+        }
+        return newMessages;
+      });
     }
   }
 
-  function handleSend() {
+  function handleStreamEvent(data: any) {
+    switch(data.type) {
+      case 'start':
+        // Message container already initialized
+        break;
+      case 'chunk':
+        // Append content to the bot message
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const botMessageIdx = newMessages.length - 1;
+          if (newMessages[botMessageIdx]?.from === 'bot') {
+            newMessages[botMessageIdx].text += data.content || '';
+          }
+          return newMessages;
+        });
+        break;
+      case 'end':
+        // Streaming complete
+        break;
+    }
+  }
+
+  async function handleSend() {
     if (input.trim() !== "") {
-      addUserMessage(input.trim());
-      botReply(input.trim());
+      const message = input.trim();
+      addUserMessage(message);
       setInput("");
+      await botReply(message);
     }
   }
 
@@ -294,6 +412,13 @@ function ChatBotBox({ onClose }: { onClose?: () => void }) {
           align-items: center;
           display: flex;
           margin-left: 2px;
+        }
+        .streaming-cursor {
+          animation: blink 1s infinite;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
         }
       `}</style>
     </div>
