@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, now } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Reminder } from '../schemas/reminder.schema';
-import { IntroQueue } from 'src/transform/entities/intro-queue.schema';
+import { IntroQueue } from '../transform/entities/intro-queue.schema';
 
 @Injectable()
 export class ReminderService {

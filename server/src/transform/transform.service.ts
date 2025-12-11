@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
-import { ReminderService } from 'src/scheduler/reminder.service';
+import { ReminderService } from '../scheduler/reminder.service';
 
 
 @Injectable()
