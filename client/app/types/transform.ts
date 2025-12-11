@@ -1,13 +1,25 @@
+export type IntroFormat = "3-bullet-lines" | "email";
+
 export interface TransformIntroDto {
     startup_id: string;
     startup_name: string;
     startup_pitch_link: string;
-    startup_blurb: string;
+    blurb: string; 
     investor_id: string;
     investor_name: string;
-    preferred_intro_format: string;
+    investor_preference: IntroFormat; 
     intro_preferences_text: string;
     founder_id: string;
+}
+
+export interface TransformIntroResponse {
+    success: true;
+    message: string;
+    original: {
+        blurb: string;
+        investor_preference: IntroFormat;
+    };
+    transformed_intro: string;
 }
 
 export interface QueueIntroDto {

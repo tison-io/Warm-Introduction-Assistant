@@ -14,21 +14,29 @@ interface TransformResultData {
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText: string;
-    generatedIntro: string;
+    generatedIntro: string; // The generated content
 }
 
-// Function to safely parse query parameters
+// Function to safely parse query parameters and ensure all required fields are present
 function parseQueryData(params: URLSearchParams): TransformResultData | null {
-    const requiredKeys = ['startupId', 'startupName', 'investorId', 'investorName', 'founderId', 'preferredIntroFormat', 'generatedIntro'];
+    const requiredKeys = [
+        'startupId', 
+        'startupName', 
+        'investorId', 
+        'investorName', 
+        'founderId', 
+        'preferredIntroFormat', 
+        'generatedIntro'
+    ];
     
     const data: Partial<TransformResultData> = {};
     for (const key of requiredKeys) {
         const value = params.get(key);
-        if (!value) return null; 
+        if (!value) return null; // Abort if any required data is missing
         data[key as keyof TransformResultData] = value;
     }
     
-    // Handle optional field
+    // Handle optional field gracefully
     data.introPreferencesText = params.get('introPreferencesText') || '';
 
     return data as TransformResultData;
@@ -51,7 +59,22 @@ export default function GeneratedIntroPage() {
             return;
         }
         setData(parsedData);
-        setEditedIntro(parsedData.generatedIntro);
+
+        // REGEX FOR LINE BREAKS AND QUOTE TRIMMING ---
+        // 1. Handle escaped characters: Replace '\n' and '\t' with real newlines/tabs
+        let formattedIntro = parsedData.generatedIntro.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
+        // 2. Trim the outer quotes and any surrounding whitespace
+        formattedIntro = formattedIntro.trim();
+        
+        // Check if the string is wrapped in double quotes and remove them
+        if (formattedIntro.startsWith('"') && formattedIntro.endsWith('"')) {
+            formattedIntro = formattedIntro.slice(1, -1);
+        }
+
+        formattedIntro = formattedIntro.trim();
+
+        setEditedIntro(formattedIntro); // Initialize the textarea with the formatted generated intro
     }, [searchParams, router]);
 
     const handleCopy = async () => {
@@ -65,7 +88,6 @@ export default function GeneratedIntroPage() {
             setCopyStatus('Failed');
         }
         
-        // Reset copy button status after a short delay
         setTimeout(() => {
             setCopyStatus('Copy');
         }, 2000);
@@ -87,7 +109,7 @@ export default function GeneratedIntroPage() {
             founderId: data.founderId,
             preferredIntroFormat: data.preferredIntroFormat,
             introPreferencesText: data.introPreferencesText,
-            generatedIntro: editedIntro, // The user-edited content
+            generatedIntro: editedIntro, // Send the user-edited content
         };
 
         try {
@@ -103,11 +125,19 @@ export default function GeneratedIntroPage() {
     };
     
     if (!data) {
-        // This state is hit while data is loading or if it was invalid and we're redirecting.
         return <p className="p-6 text-gray-300">Loading intro details...</p>;
     }
 
-    const introType = data.preferredIntroFormat === '3-bullet' ? '3-Bullet' : 'Email';
+    let introType: string;
+    if (data.preferredIntroFormat === '3-bullet-lines') {
+        introType = '3-Bullet Point Summary'; 
+    } else if (data.preferredIntroFormat === 'email') {
+        introType = 'Full Email Draft';
+    } else {
+        // This fallback catches unexpected/unspecified formats
+        introType = `Unspecified Format (${data.preferredIntroFormat})`; 
+    }
+
     const investorDisplayName = data.investorName || 'Investor';
 
     return (
@@ -126,9 +156,8 @@ export default function GeneratedIntroPage() {
 
                 <div className="bg-white rounded-xl shadow-2xl p-8 space-y-6">
                     <h1 className="text-3xl font-bold text-gray-900">Generated Intro Drafts</h1>
-                    <p className="text-gray-700">Review and customize your investor introductions before saving to your queue.  </p>
+                    <p className="text-gray-700">Review and customize your investor introductions before saving to your queue.  </p>
                     
-                    {/* Intro Draft Card (Based on the image design) */}
                     <div className="border border-gray-200 rounded-xl p-6 shadow-md">
                         <h2 className="text-xl font-semibold text-gray-900">{investorDisplayName}</h2>
                         <p className="text-sm text-gray-500 mb-4">Preffered Intro Format: {introType}</p>
@@ -157,7 +186,6 @@ export default function GeneratedIntroPage() {
                         </div>
                     </div>
                     
-                    {/* Action Buttons */}
                     <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
                         <button
                             onClick={() => router.back()}
