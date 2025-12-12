@@ -1,6 +1,7 @@
 export interface FounderSignupInput {
     name:string;
     email:string;
+    phone:string;
     password:string;
 }
 

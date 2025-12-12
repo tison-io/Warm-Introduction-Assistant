@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Param, Patch, UseGuards, Get, Req, } from '@nestjs/common';
 import { TransformService } from './transform.service';
 import { TransformIntroDto } from './dto/transform-intro.dto';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Controller('intros')
 @UseGuards(JwtAuthGuard)

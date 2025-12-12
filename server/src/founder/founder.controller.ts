@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, UseGuards, Patch } from '@nestjs/common';
 import { FounderService } from './founder.service';
 import { CreateFounderDto } from './dto/create-founder.dto';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Req } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { UpdateFounderDto } from './dto/update-founder.dto';

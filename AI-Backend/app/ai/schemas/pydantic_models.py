@@ -1,16 +1,17 @@
 # pydantic models to be used
-from pydantic import BaseModel
+from pydantic import BaseModel 
+from typing import Literal, Optional 
 
 class TransformRequest(BaseModel):
-    startup_id: int | None
-    user_id: int | None
     blurb: str
-    investor_preference: str
+    investor_preference: Literal["3-bullet-lines", "email"]
 
 class AIResponse(BaseModel):
     response: str 
 
 class ChatRequest(BaseModel): 
     session_id: str | None = None 
-    message: str 
+    message: str  
+
+
     

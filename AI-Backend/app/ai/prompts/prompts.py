@@ -10,7 +10,10 @@ GUIDELINES:
 
 INPUT DATA:
 - Startup Blurb
-- Investor Preferences
+- Investor Preferences (There are only two investor preferences:
+    1. 3-bullet-line format - Use clean, precise business language. Focus only on what matters to an investor: problem, solution, traction, and the ask. Avoid hype, filler language, or long paragraphs. Deliver the final intro only—no commentary or explanation.
+    2. Email format - Professional, concise, and clear. No hype language, exaggeration, or unnecessary adjectives. Prioritize clarity and investor-oriented information. Maintain a business-communication tone.
+)
 
 OUTPUT:
 Generate only the rewritten pitch. Do not include conversational filler like "Here is the rewritten pitch."

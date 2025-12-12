@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
-import { ReminderService } from 'src/scheduler/reminder.service';
+import { ReminderService } from '../scheduler/reminder.service';
 
 
 @Injectable()
@@ -15,14 +15,53 @@ export class TransformService {
 
   //Call GenAI endpoint for transforming intros
   async transformIntro(dto: TransformIntroDto) {
-      console.log(" Received Transform Intro Payload:", dto);
+    console.log("Received Transform Intro Payload:", dto);
 
+    if (!dto.blurb) {
+      throw new BadRequestException("Missing required field: blurb");
+    }
+    if (!dto.investor_preference) {
+      throw new BadRequestException("Missing required field: investor_preference");
+    }
+
+    try {
+      const response = await fetch("https://warm-introduction-assistant.onrender.com/transform", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          blurb: dto.blurb,
+          investor_preference: dto.investor_preference
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`GenAI service returned status ${response.status}`);
+      }
+
+      const transformed = await response.text();
+
+      // FRONTEND-SAFE RESPONSE
       return {
         success: true,
-        message: "Transform intro endpoint reached successfully.",
-        received: dto,
-        dummyTransformedIntro: "This is a dummy transformed intro for testing."
+        message: "Intro transformed successfully.",
+        original: {
+          blurb: dto.blurb,
+          investor_preference: dto.investor_preference
+        },
+        transformed_intro: transformed
       };
+
+    } catch (error) {
+      console.error("Error transforming intro:", error);
+
+      throw new BadRequestException({
+        success: false,
+        message: "Failed to transform intro.",
+        details: error.message
+      });
+    }
   }
 
   async getIntrosByFounder(founderId: string) {

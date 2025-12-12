@@ -1,9 +1,11 @@
+import { IntroFormat } from './transform';
+
 export type Investor = {
     _id: string;
     userId: string;
     name: string;
     tags: string[];
-    preferred_intro_format: string;
+    preferred_intro_format: IntroFormat;
     intro_preferences_text: string;
     notes?: string;
     createdAt: string;
@@ -13,7 +15,7 @@ export type Investor = {
 export type CreateInvestorDto = {
   name: string;
   tags: string[];
-  preferred_intro_format: string;
+  preferred_intro_format: IntroFormat;
   intro_preferences_text: string;
   notes?: string;
 };

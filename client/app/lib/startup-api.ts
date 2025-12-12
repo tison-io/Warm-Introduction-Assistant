@@ -1,6 +1,7 @@
 import { Startup, CreateStartupDto, UpdateStartupDto } from "../types/startup";
 
-const BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000/startups';
+const API_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
+const BASE_URL = `${API_URL}/startups`;
 
 function getToken() {
   if (typeof window !== "undefined") {

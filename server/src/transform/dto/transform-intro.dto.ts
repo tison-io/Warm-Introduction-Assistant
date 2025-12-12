@@ -1,30 +1,10 @@
-import { IsString } from "class-validator";
+import { IsString, IsIn } from "class-validator";
 
 export class TransformIntroDto {
     @IsString()
-    startup_id: string;
+    blurb: string;
 
     @IsString()
-    startup_name: string;
-
-    @IsString()
-    startup_pitch_link: string;
-
-    @IsString()
-    startup_blurb: string;
-
-    @IsString()
-    investor_id: string;
-
-    @IsString()
-    investor_name: string;
-
-    @IsString()
-    preferred_intro_format: string;
-
-    @IsString()
-    intro_preferences_text: string;
-
-    @IsString()
-    founder_id: string; 
+    @IsIn(["3-bullet-lines", "email"]) //Strict typing
+    investor_preference: '3-bullet-lines' | 'email'; 
 }

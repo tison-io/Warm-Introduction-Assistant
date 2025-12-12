@@ -1,4 +1,4 @@
-import { QueueIntroDto, TransformIntroDto } from '../types/transform';
+import { QueueIntroDto, TransformIntroDto, TransformIntroResponse } from '../types/transform';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 
@@ -14,23 +14,26 @@ const getAuthHeaders = () => {
   };
 };
 
-export async function transformIntroApi(dto: TransformIntroDto): Promise<any> {
+export async function transformIntroApi(dto: TransformIntroDto): Promise<TransformIntroResponse> {
     
     const headers = getAuthHeaders();
+
+    const { blurb, investor_preference } = dto;
+    const requestBody = { blurb, investor_preference };
 
     const response = await fetch(`${API_BASE_URL}/intros/transform`, {
         method: 'POST',
         headers: headers,
-        body: JSON.stringify(dto),
+        body: JSON.stringify(requestBody), 
     });
 
     if (!response.ok) {
-        const errorBody = await response.json().catch(() => ({}));
+        const errorBody = await response.json().catch(() => ({}));    
         console.error('Transform API Error:', errorBody);
-        throw new Error(errorBody.message || 'Failed to transform intro. Please try again.');
+        throw new Error(errorBody.message || errorBody.details || 'Failed to transform intro. Please try again.');
     }
 
-    return response.json();
+    return response.json() as Promise<TransformIntroResponse>;
 }
 
 export async function queueIntroApi(data: QueueIntroDto): Promise<any> {

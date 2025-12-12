@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { CreateInvestorDto, Investor } from '../../types/investor';
+import { IntroFormat } from '@/app/types/transform';
 import { createInvestor, updateInvestor } from '../../lib/investor-api';
 
 type Props = {
@@ -10,7 +11,6 @@ type Props = {
   isEdit: boolean;
 };
 
-// --- Reusable Form Field Component ---
 const FormField: React.FC<{
   label: string;
   name: keyof CreateInvestorDto | 'tagInput';
@@ -62,7 +62,7 @@ const FormField: React.FC<{
           </option>
           {selectOptions?.map(option => (
             <option key={option} value={option} className="bg-white text-black">
-              {option}
+              {option === '3-bullet-lines' ? '3-Bullet Lines' : 'Email'}
             </option>
           ))}
         </select>
@@ -93,11 +93,15 @@ const FormField: React.FC<{
   );
 };
 
-// --- Main InvestorForm Component ---
 const InvestorForm: React.FC<Props> = ({ initialData, isEdit }) => {
   const router = useRouter();
 
-  const [formData, setFormData] = useState<CreateInvestorDto>({
+  interface InvestorFormData
+    extends Omit<CreateInvestorDto, 'preferred_intro_format'> {
+    preferred_intro_format: string;
+  }
+
+  const [formData, setFormData] = useState<InvestorFormData>({
     name: initialData?.name || '',
     tags: initialData?.tags || [],
     preferred_intro_format: initialData?.preferred_intro_format || '',
@@ -138,12 +142,17 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit }) => {
     e.preventDefault();
     setLoading(true);
 
+    const payload: CreateInvestorDto = {
+      ...formData,
+      preferred_intro_format: formData.preferred_intro_format as IntroFormat,
+    };
+
     try {
       if (isEdit && initialData) {
-        await updateInvestor(initialData._id, formData);
+        await updateInvestor(initialData._id, payload);
         alert('Investor updated successfully!');
       } else {
-        await createInvestor(formData);
+        await createInvestor(payload);
         alert('Investor created successfully!');
       }
 
@@ -159,11 +168,11 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit }) => {
     }
   };
 
-  const formatOptions = ['3-Bullet', 'Email'];
+  const formatOptions: IntroFormat[] = ['3-bullet-lines', 'email'];
 
   const introPreferenceOptions = [
     'Prefers bullet points',
-    'Prefers long-form',
+    'Prefers email',
     'No specific preference',
   ];
 
@@ -188,7 +197,7 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit }) => {
           onChange={handleChange}
           required
           isSelect
-          selectOptions={formatOptions}
+          selectOptions={formatOptions as string[]}
         />
 
         <div className="md:col-span-2">
