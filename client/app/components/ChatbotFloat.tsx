@@ -159,8 +159,8 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
   return (
     <div className="
         // .chatbot-box conversion
-        w-[350px] md:w-[450px] min-h-[520px] md:min-h-[600px] max-h-[94vh] bg-white shadow-[0_4px_32px_#23265922]
-        rounded-[18px] flex flex-col fixed bottom-[34px] right-[34px] z-50
+        w-[calc(100vw-32px)] max-w-[300px] sm:w-[350px] md:w-[450px] min-h-[400px] sm:min-h-[520px] md:min-h-[600px] max-h-[80vh] sm:max-h-[94vh] bg-white shadow-[0_4px_32px_#23265922]
+        rounded-[18px] flex flex-col fixed bottom-[8px] sm:bottom-[34px] right-[8px] sm:right-[34px] z-50
         font-['system-ui',sans-serif] overflow-hidden border-2 border-[#f2f7fe]
     ">
       <button 
@@ -327,7 +327,7 @@ export default function ChatbotFloat() {
         onClick={() => setIsOpen(!isOpen)}
         className="
             // Inline style conversion to Tailwind
-            fixed bottom-6 right-6 w-[60px] h-[60px] rounded-full border-none 
+            fixed bottom-2 sm:bottom-6 right-2 sm:right-6 w-[52px] h-[52px] sm:w-[60px] sm:h-[60px] rounded-full border-none 
             bg-[#1746e0] shadow-lg shadow-black/15 cursor-pointer z-50 flex 
             items-center justify-center transition duration-200 ease-in-out
         "

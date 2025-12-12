@@ -45,6 +45,22 @@ export default function Navbar() {
           <Link href="/" className="flex items-center no-underline">
             <Image src="/logo.png" alt="Logo" width={55} height={55} className="sm:w-[65px] sm:h-[65px]" />
           </Link>
+          
+          {/* Dashboard Mobile Menu Button */}
+          {isDashboardPage && (
+            <button
+              className="ml-4 md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1 hover:bg-gray-100 rounded p-1 transition-colors"
+              onClick={() => {
+                // We need to access the sidebar's toggle function
+                const event = new CustomEvent('toggleSidebar');
+                window.dispatchEvent(event);
+              }}
+            >
+              <span className="block w-5 h-0.5 bg-gray-700"></span>
+              <span className="block w-5 h-0.5 bg-gray-700"></span>
+              <span className="block w-5 h-0.5 bg-gray-700"></span>
+            </button>
+          )}
         </div>
 
         {/* Desktop Menu */}

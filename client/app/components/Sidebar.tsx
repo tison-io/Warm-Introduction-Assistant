@@ -100,9 +100,18 @@ const Sidebar: React.FC = () => {
       }
     };
     
+    const handleToggleSidebar = () => {
+      setIsMobileOpen(prev => !prev);
+    };
+    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('toggleSidebar', handleToggleSidebar);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('toggleSidebar', handleToggleSidebar);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -113,17 +122,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      {isMobile && (
-        <button
-          className="fixed top-24 left-14 z-[1001] md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1 bg-white rounded p-1 shadow-sm"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-        >
-          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform ${isMobileOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-gray-800 transition-opacity ${isMobileOpen ? 'opacity-0' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-gray-800 transition-transform ${isMobileOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-        </button>
-      )}
+
       
       {/* Mobile Overlay */}
       {isMobile && isMobileOpen && (
