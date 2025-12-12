@@ -1,2 +1,3 @@
 Deployment trigger - force fresh build
 Timestamp: 2024-12-19
+Profile page hamburger menu fix deployed
