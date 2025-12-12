@@ -251,22 +251,35 @@ export default function SignupPage() {
           background: #fff;
           border-radius: 16px;
           box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
-          padding: 2.5rem 2rem;
+          padding: 1.5rem 1rem;
           max-width: 420px;
-          width: 100%;
+          width: 90%;
+          margin: 0 1rem;
           border: 1px solid #e5e7eb;
           display: flex;
           flex-direction: column;
           align-items: center;
+        }
+        @media (min-width: 640px) {
+          .signup-container {
+            padding: 2.5rem 2rem;
+            width: 100%;
+            margin: 0;
+          }
         }
         .logo-area {
           width: 60px;
           margin-bottom: 10px;
         }
         .title {
-          font-size: 26px;
+          font-size: 20px;
           font-weight: 600;
           margin: 8px 0 2px;
+        }
+        @media (min-width: 640px) {
+          .title {
+            font-size: 26px;
+          }
         }
         .subtitle {
           font-size: 13px;
@@ -284,25 +297,41 @@ export default function SignupPage() {
         input[type="email"],
         input[type="tel"],
         input[type="password"] {
-          padding: 10px;
+          padding: 12px;
           margin-bottom: 13px;
           border: 1px solid #ced4da;
           border-radius: 6px;
           font-size: 16px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .phone-field {
           display: flex;
-          gap: 8px;
+          gap: 6px;
           margin-bottom: 13px;
+          width: 100%;
+        }
+        @media (min-width: 640px) {
+          .phone-field {
+            gap: 8px;
+          }
         }
         .country-code {
-          padding: 10px 8px;
+          padding: 12px 6px;
           border: 1px solid #ced4da;
           border-radius: 6px;
-          font-size: 16px;
+          font-size: 14px;
           background: #fff;
           cursor: pointer;
-          width: 90px;
+          width: 80px;
+          box-sizing: border-box;
+        }
+        @media (min-width: 640px) {
+          .country-code {
+            padding: 12px 8px;
+            font-size: 16px;
+            width: 90px;
+          }
         }
         .phone-field input {
           flex: 1;
@@ -341,11 +370,17 @@ export default function SignupPage() {
           font-weight: 600;
           border: none;
           border-radius: 6px;
-          padding: 12px 0;
+          padding: 14px 0;
           margin-bottom: 8px;
           cursor: pointer;
-          font-size: 18px;
+          font-size: 16px;
+          width: 100%;
           transition: background 0.2s;
+        }
+        @media (min-width: 640px) {
+          .register-btn {
+            font-size: 18px;
+          }
         }
         .register-btn:hover {
           background: #003fa1;
@@ -355,11 +390,18 @@ export default function SignupPage() {
           cursor: not-allowed;
         }
         .terms {
-          font-size: 13px;
+          font-size: 12px;
           color: #666;
           margin-bottom: 10px;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
+          text-align: left;
+        }
+        @media (min-width: 640px) {
+          .terms {
+            font-size: 13px;
+            align-items: center;
+          }
         }
         .terms label {
           margin-left: 7px;
