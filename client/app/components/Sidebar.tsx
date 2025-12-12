@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./Sidebar.module.css";
 
 const icons = {
@@ -71,6 +71,12 @@ type MenuItem = {
 };
 
 const menu: MenuItem[] = [
+  { href: "/", label: "Home", icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ) },
   { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
   { href: "/investors", label: "Investors", icon: icons.investors },
   { href: "/startups", label: "Startups", icon: icons.startups },
@@ -83,6 +89,30 @@ const menu: MenuItem[] = [
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        setIsMobileOpen(false);
+      }
+    };
+    
+    const handleToggleSidebar = () => {
+      setIsMobileOpen(prev => !prev);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    window.addEventListener('toggleSidebar', handleToggleSidebar);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('toggleSidebar', handleToggleSidebar);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -91,13 +121,28 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className={styles['sidebar-root']}>
+    <>
+
+      
+      {/* Mobile Overlay */}
+      {isMobile && isMobileOpen && (
+        <div 
+          className={`${styles['mobile-overlay']} ${isMobileOpen ? styles.show : ''}`}
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+      
+      <aside className={`${styles['sidebar-root']} ${isMobile && isMobileOpen ? styles['mobile-open'] : ''} ${isMobile && !isMobileOpen ? styles['mobile-closed'] : ''}`}>
       <div>
         <nav>
           <ul className={styles['sidebar-list']}>
             {menu.map(({ href, label, icon }) => (
               <li key={href}>
-                <Link href={href} className={`${styles['sidebar-link']}${pathname === href ? ` ${styles.active}` : ""}`}>
+                <Link 
+                  href={href} 
+                  className={`${styles['sidebar-link']}${pathname === href ? ` ${styles.active}` : ""}`}
+                  onClick={() => isMobile && setIsMobileOpen(false)}
+                >
                   <span className={styles['sidebar-ico']}>{icon}</span>
                   {label}
                 </Link>
@@ -107,16 +152,28 @@ const Sidebar: React.FC = () => {
         </nav>
       </div>
       <div>
-        <Link href="/settings" className={styles['sidebar-btn']}>
+        <Link 
+          href="/settings" 
+          className={styles['sidebar-btn']}
+          onClick={() => isMobile && setIsMobileOpen(false)}
+        >
           <span className={styles['sidebar-ico']}>{icons.settings}</span>
           Settings
         </Link>
-        <button className={`${styles['sidebar-btn']} ${styles['sidebar-logout']}`} type="button" onClick={handleLogout}>
+        <button 
+          className={`${styles['sidebar-btn']} ${styles['sidebar-logout']}`} 
+          type="button" 
+          onClick={() => {
+            handleLogout();
+            isMobile && setIsMobileOpen(false);
+          }}
+        >
           <span className={styles['sidebar-ico']}>{icons.logout}</span>
           <span>Log Out</span>
         </button>
       </div>
     </aside>
+    </>
   );
 };
 

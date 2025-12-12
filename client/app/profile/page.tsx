@@ -33,71 +33,38 @@ export default function Profile() {
   };
 
   return (
-    <div style={{
-      width: "100%",
-      minHeight: "100vh",
+    <div className="w-full min-h-screen bg-cover bg-center p-4 sm:p-6 lg:p-10" style={{
       backgroundImage: "url('/backeground.jpg')",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      padding: "40px 20px",
     }}>
-      <div style={{
-        maxWidth: "600px",
-        margin: "0 auto",
-        backgroundColor: "white",
-        padding: "40px",
-        borderRadius: "8px",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-      }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "bold", marginBottom: "30px", color: "#333" }}>
+      <div className="max-w-sm sm:max-w-md lg:max-w-2xl mx-auto bg-white p-6 sm:p-8 lg:p-10 rounded-lg shadow-lg">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-800 text-center">
           Profile
         </h1>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "30px", textAlign: "center" }}>
-            <div style={{
-              width: "120px",
-              height: "120px",
-              borderRadius: "50%",
-              backgroundColor: "#f0f0f0",
-              margin: "0 auto 15px",
-              overflow: "hidden",
-              border: "3px solid #ddd",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
+          <div className="mb-6 sm:mb-8 text-center">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gray-100 mx-auto mb-4 overflow-hidden border-3 border-gray-300 flex items-center justify-center">
               {profileImage ? (
-                <img src={profileImage} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <svg width="60" height="60" fill="#ccc" viewBox="0 0 20 20">
+                <svg width="40" height="40" className="sm:w-16 sm:h-16" fill="#ccc" viewBox="0 0 20 20">
                   <circle cx="10" cy="7" r="3.5" />
                   <path d="M4 17a6 6 0 0 1 12 0" strokeWidth="1.5" stroke="#ccc" fill="none" />
                 </svg>
               )}
             </div>
-            <label style={{
-              display: "inline-block",
-              padding: "8px 16px",
-              backgroundColor: "#f8f9fa",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "500",
-              color: "#333",
-            }}>
+            <label className="inline-block px-4 py-2 bg-gray-50 border border-gray-300 rounded cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
               Upload Photo
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                style={{ display: "none" }}
+className="hidden"
               />
             </label>
           </div>
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#333" }}>
+          <div className="mb-4 sm:mb-6">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
               Full Name
             </label>
             <input
@@ -105,18 +72,12 @@ export default function Profile() {
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              style={{
-                width: "100%",
-                padding: "12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "14px",
-              }}
+              className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
 
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#333" }}>
+          <div className="mb-4 sm:mb-6">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
               Email
             </label>
             <input
@@ -124,33 +85,19 @@ export default function Profile() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              style={{
-                width: "100%",
-                padding: "12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "14px",
-              }}
+              className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
 
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#333" }}>
+          <div className="mb-4 sm:mb-6">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
               Phone Number
             </label>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div className="flex gap-2 sm:gap-3">
               <select
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                style={{
-                  padding: "12px 8px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                  background: "#fff",
-                  cursor: "pointer",
-                  width: "90px",
-                }}
+                className="p-3 border border-gray-300 rounded-lg text-sm bg-white cursor-pointer w-20 sm:w-24 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               >
                 <option value="+213">Algeria 🇩🇿 +213</option>
                 <option value="+61">Australia 🇦🇺 +61</option>
@@ -188,19 +135,13 @@ export default function Profile() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                style={{
-                  flex: 1,
-                  padding: "12px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                }}
+                className="flex-1 p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
           </div>
 
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#333" }}>
+          <div className="mb-4 sm:mb-6">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
               Skills
             </label>
             <textarea
@@ -208,19 +149,12 @@ export default function Profile() {
               value={formData.skills}
               onChange={handleChange}
               rows={3}
-              style={{
-                width: "100%",
-                padding: "12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "14px",
-                resize: "vertical",
-              }}
+              className="w-full p-3 border border-gray-300 rounded-lg text-sm resize-vertical focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
 
-          <div style={{ marginBottom: "30px" }}>
-            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#333" }}>
+          <div className="mb-6 sm:mb-8">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
               Role
             </label>
             <input
@@ -228,29 +162,13 @@ export default function Profile() {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              style={{
-                width: "100%",
-                padding: "12px",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                fontSize: "14px",
-              }}
+              className="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
           </div>
 
           <button
             type="submit"
-            style={{
-              width: "100%",
-              padding: "14px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "16px",
-              fontWeight: "600",
-              cursor: "pointer",
-            }}
+            className="w-full py-3 sm:py-4 bg-blue-600 text-white border-none rounded-lg text-sm sm:text-base font-semibold cursor-pointer hover:bg-blue-700 transition-colors"
           >
             Update Profile
           </button>
