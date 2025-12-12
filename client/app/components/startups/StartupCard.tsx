@@ -37,9 +37,10 @@ export default function StartupCard({ startup, refreshList, onDelete }: Props) {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-lg p-6 relative hover:cursor-pointer">
+        <div data-testid="startup-card" className="bg-white rounded-xl shadow-lg p-6 relative hover:cursor-pointer">
             <div className="absolute top-4 right-4 flex space-x-2 z-10">
                 <button
+                    data-testid="edit-startup-btn"
                     aria-label="Edit"
                     onClick={handleEdit}
                     className="text-gray-400 hover:text-gray-600"
@@ -48,6 +49,7 @@ export default function StartupCard({ startup, refreshList, onDelete }: Props) {
                 </button>
 
                 <button
+                    data-testid="delete-startup-btn"
                     aria-label="Delete"
                     onClick={handleDelete}
                     className="text-red-400 hover:text-red-600"

@@ -52,6 +52,7 @@ export default function MyStartupsPage() {
 
     return (
         <div
+            data-testid="page-startup-list"
             className="min-h-screen bg-cover bg-center"
             style={{ backgroundImage: "url('/background-img.jpg')" }}
         >
@@ -60,11 +61,12 @@ export default function MyStartupsPage() {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-10">
                     <div className="text-white">
-                        <h1 className="text-3xl font-bold">My Startups</h1>
+                        <h1 data-testid="startups-title" className="text-3xl font-bold">My Startups</h1>
                         <p className="text-gray-300">Manage your startup profiles</p>
                     </div>
 
                     <Link
+                        data-testid="btn-new-startup"
                         href="/startups/new"
                         className="flex items-center space-x-1 bg-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-md hover:bg-[#6e7099] transition duration-150"
                     >
@@ -74,22 +76,22 @@ export default function MyStartupsPage() {
                 </div>
 
                 {/* Startup List */}
-                <div className="space-y-4">
+                <div data-testid="startups-container" className="space-y-4">
 
                     {(isLoading || isPending) && (
-                        <div className="bg-white rounded-xl shadow-lg p-6 flex justify-center items-center">
+                        <div data-testid="loading-spinner" className="bg-white rounded-xl shadow-lg p-6 flex justify-center items-center">
                             <Loader2 className="animate-spin h-10 w-10 text-blue-600" />
                         </div>
                     )}
 
                     {!isLoading && error && (
-                        <div className="bg-white rounded-xl shadow-lg p-6 text-center text-gray-700">
+                        <div data-testid="empty-error" className="bg-white rounded-xl shadow-lg p-6 text-center text-gray-700">
                             {error}
                         </div>
                     )}
 
                     {!isLoading && !error && startups.length === 0 && (
-                        <div className="bg-white rounded-xl shadow-lg p-6 text-center text-gray-700">
+                        <div data-testid="empty-startups" className="bg-white rounded-xl shadow-lg p-6 text-center text-gray-700">
                             You don't have startups at the moment.
                         </div>
                     )}
@@ -97,6 +99,7 @@ export default function MyStartupsPage() {
                     {!isLoading && !error && startups.length > 0 && (
                         startups.map((s) => (
                             <StartupCard
+                                data-testid="startup-card"
                                 key={s._id}
                                 startup={s}
                                 refreshList={fetchStartups}

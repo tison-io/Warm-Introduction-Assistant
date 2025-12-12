@@ -14,7 +14,8 @@ export default function NewStartupPage() {
     }
 
     return (
-        <div 
+        <div
+            data-testid="page-startup-create"
             className="min-h-screen bg-cover bg-center pt-20 pb-12"
             style={{ backgroundImage: "url('/background-img.jpg')" }}
         >
@@ -25,7 +26,7 @@ export default function NewStartupPage() {
                     <p className="text-gray-300 mt-1">Set up your startup information to get started with generating investor introductions.</p>
                 </div>
 
-                <StartupForm submitLabel="Register" onSubmit={handleSubmit} />
+                <StartupForm data-testid="form-startup-create" submitLabel="Register" onSubmit={handleSubmit} />
             </div>
         </div>
     );

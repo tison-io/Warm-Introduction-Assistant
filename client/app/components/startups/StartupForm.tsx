@@ -25,11 +25,12 @@ const FormField: React.FC<{
 
     return (
         <div className="space-y-1">
-            <label htmlFor={name} className="block text-black font-medium">
+            <label data-testid={`label-${name}`} htmlFor={name} className="block text-black font-medium">
                 {label}{required && <span className="text-red-400">*</span>}
             </label>
 
             <InputComponent
+                data-testid={`input-${name}`}
                 id={name}
                 name={name}
                 value={value}
@@ -39,7 +40,7 @@ const FormField: React.FC<{
                 className="w-full p-2 text-base bg-white text-gray-900 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
             />
             {helpText && (
-                <p className="text-xs text-gray-300 mt-1">{helpText}</p>
+                <p data-testid={`help-${name}`} className="text-xs text-gray-300 mt-1">{helpText}</p>
             )}
         </div>
     );
@@ -74,7 +75,7 @@ export default function StartupForm({ initialData, onSubmit, submitLabel }: Prop
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4"> 
+        <form data-testid="startup-form" onSubmit={handleSubmit} className="space-y-4"> 
             <FormField
                 label="Startup Name"
                 name="name"
@@ -102,11 +103,12 @@ export default function StartupForm({ initialData, onSubmit, submitLabel }: Prop
             />
 
             <button 
+                data-testid="submit-startup"
                 type="submit" 
                 className={`w-full bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg mt-6 shadow-xl hover:bg-blue-800 transition duration-150 flex justify-center items-center space-x-2`}
                 disabled={isSubmitting}
             >
-                {isSubmitting && <Loader2 className="animate-spin h-5 w-5 text-white" />}
+                {isSubmitting && <Loader2 data-testid="loading-spinner" className="animate-spin h-5 w-5 text-white" />}
                 <span>{submitLabel}</span>
             </button>
         </form>

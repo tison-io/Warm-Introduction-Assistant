@@ -89,8 +89,9 @@ export default function SignupPage() {
         <h2 className="text-xl sm:text-2xl font-bold mb-1">Create Account</h2>
         <div className="text-gray-600 text-sm sm:text-base mb-4">warm Introduction Assistant</div>
 
-        <form className="w-full flex flex-col gap-3" onSubmit={handleSubmit}>
+        <form className="w-full flex flex-col gap-3" onSubmit={handleSubmit} data-testid="signup-form">
           <input
+            data-testid="signup-name"
             type="text"
             placeholder="Full Name"
             value={form.name}
@@ -99,6 +100,7 @@ export default function SignupPage() {
             required
           />
           <input
+            data-testid="signup-email"
             type="email"
             placeholder="Email"
             value={form.email}
@@ -110,6 +112,7 @@ export default function SignupPage() {
           {/* Phone Field */}
           <div className="flex gap-2 w-full">
             <select
+              data-testid="signup-country-code"
               value={countryCode}
               onChange={(e) => setCountryCode(e.target.value)}
               className="w-20 p-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base cursor-pointer"
@@ -119,6 +122,7 @@ export default function SignupPage() {
               <option value="+233">Ghana +233</option>
             </select>
             <input
+              data-testid="signup-phone"
               type="tel"
               placeholder="Phone number"
               value={form.phone}
@@ -131,6 +135,7 @@ export default function SignupPage() {
           {/* Password */}
           <div className="relative">
             <input
+              data-testid="signup-password"
               type={showPass ? "text" : "password"}
               placeholder="Create Password"
               value={form.password}
@@ -139,6 +144,7 @@ export default function SignupPage() {
               required
             />
             <button
+              data-testid="toggle-password"
               type="button"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               onClick={() => setShowPass(!showPass)}
@@ -151,6 +157,7 @@ export default function SignupPage() {
           {/* Confirm Password */}
           <div className="relative">
             <input
+              data-testid="signup-confirm-password"
               type={showConf ? "text" : "password"}
               placeholder="Confirm Password"
               value={form.confirmPassword}
@@ -168,13 +175,14 @@ export default function SignupPage() {
             </button>
 
             <div className="flex items-center mt-2 text-xs text-gray-600">
-              <input type="checkbox" id="terms" required className="mr-2" />
+              <input data-testid="signup-terms" type="checkbox" id="terms" required className="mr-2" />
               <label htmlFor="terms">I have read and agree to the Terms of Service</label>
             </div>
           </div>
 
           {/* Register Button */}
           <button
+            data-testid="signup-submit"
             type="submit"
             disabled={loading}
             className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg text-white font-semibold text-base transition-colors ${
