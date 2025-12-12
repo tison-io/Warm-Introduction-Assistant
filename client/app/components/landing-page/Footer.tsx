@@ -103,19 +103,51 @@ export default function Footer() {
           color: #757575;
           margin-bottom: 8px;
         }
-        @media (max-width: 700px) {
+        @media (max-width: 768px) {
           .footer-bg {
-            padding: 22px 3vw 0 3vw;
+            padding: 24px 4vw 0 4vw;
+            text-align: center;
           }
           .footer-row {
             flex-direction: column;
-            gap: 24px;
+            gap: 28px;
+            align-items: center;
+            justify-content: center;
+          }
+          .footer-left {
+            align-items: center;
+            text-align: center;
           }
           .footer-center {
             margin-left: 0;
+            align-items: center;
+            text-align: center;
           }
           .footer-links-cols {
-            gap: 22px;
+            gap: 20px;
+            flex-direction: column;
+            align-items: center;
+          }
+          .footer-links-col {
+            align-items: center;
+            text-align: center;
+          }
+          .footer-logo {
+            width: 80px;
+          }
+          .footer-desc {
+            font-size: 14px;
+            text-align: center;
+          }
+          .footer-links-title {
+            font-size: 16px;
+            text-align: center;
+          }
+          .footer-link {
+            font-size: 14px;
+          }
+          .footer-copyright {
+            font-size: 13px;
           }
         }
       `}</style>
