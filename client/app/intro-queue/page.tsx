@@ -140,19 +140,17 @@ export default function IntroQueuePage() {
 
         {/* Intro List */}
         <div className="bg-white text-black rounded-lg shadow-2xl overflow-hidden">
-          <ul>
-            {loading ? (
-              <li className="border-b border-gray-200 last:border-b-0">
-                <div className="flex items-center justify-center px-4 py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-                </div>
-              </li>
-            ) : intros.length === 0 ? (
-              <li className="border-b border-gray-200 last:border-b-0 p-6 text-center text-gray-500">
-                You have no intro queues at the moment.
-              </li>
-            ) : (
-              intros.map((intro) => {
+          {loading ? (
+            <div className="flex items-center justify-center px-4 py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+            </div>
+          ) : intros.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              You have no intro queues at the moment.
+            </div>
+          ) : (
+            <ul>
+              {intros.map((intro) => {
                 const isExpanded = intro._id === expandedId;
                 const createdAtDate = new Date(intro.createdAt).toLocaleDateString();
                 return (
@@ -162,7 +160,11 @@ export default function IntroQueuePage() {
                       onClick={() => handleToggleExpand(intro)}
                     >
                       <div className="w-8">
-                        {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-900" /> : <ChevronDown className="h-4 w-4 text-gray-800" />}
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 text-gray-900" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-gray-800" />
+                        )}
                       </div>
                       <div className="flex-1 grid grid-cols-4 gap-2 text-sm font-medium">
                         <p className="truncate font-semibold">{intro.startupName}</p>
@@ -172,20 +174,74 @@ export default function IntroQueuePage() {
                       </div>
                     </div>
 
-                    {/* Expanded Panel */}
                     {isExpanded && expandedIntro && (
-                      <div className="p-4 border-t border-gray-200 bg-gray-50">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="h-24 bg-gray-200 rounded"></div>
-                          <div className="h-24 bg-gray-200 rounded"></div>
+                      <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-4">
+                        {/* Draft intro content */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Generated Intro</label>
+                          <textarea
+                            className="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm"
+                            rows={4}
+                            value={draftContent}
+                            onChange={(e) => setDraftContent(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Status selector */}
+                        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">Status</label>
+                            <select
+                              value={newStatus}
+                              onChange={(e) => setNewStatus(e.target.value as IntroStatus)}
+                              className="mt-1 border border-gray-300 rounded-md p-2 text-sm"
+                            >
+                              <option value="queued">Queued</option>
+                              <option value="sent">Sent</option>
+                              <option value="completed">Completed</option>
+                            </select>
+                          </div>
+
+                          {newStatus === 'sent' && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">Follow-up Date</label>
+                              <input
+                                type="date"
+                                value={followUpDate}
+                                onChange={(e) => setFollowUpDate(e.target.value)}
+                                className="mt-1 border border-gray-300 rounded-md p-2 text-sm"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Notes</label>
+                          <textarea
+                            className="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm"
+                            rows={2}
+                            value={noteContent}
+                            onChange={(e) => setNoteContent(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Update button */}
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => handleUpdateStatus(intro._id)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                          >
+                            Update Status
+                          </button>
                         </div>
                       </div>
                     )}
                   </li>
                 );
-              })
-            )}
-          </ul>
+              })}
+            </ul>
+          )}
         </div>
       </div>
     </div>
