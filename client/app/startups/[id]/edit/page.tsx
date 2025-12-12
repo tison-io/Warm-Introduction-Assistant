@@ -24,7 +24,8 @@ export default function EditStartupPage() {
     if (!startup) return <p className="text-white">Loading...</p>;
 
     return (
-        <div 
+        <div
+            data-testid="page-startup-edit"
             className="min-h-screen bg-cover bg-center pt-20 pb-12"
             style={{ backgroundImage: "url('/background-img.jpg')" }}
         >
@@ -35,6 +36,7 @@ export default function EditStartupPage() {
                 </div>
 
                 <StartupForm
+                    data-testid="form-startup-edit"
                     initialData={startup}
                     submitLabel="Save Changes"
                     onSubmit={handleSubmit}

@@ -233,6 +233,7 @@ export default function SingleStartupPage() {
 
     return (
         <div
+            data-testid="page-startup-single"
             className="min-h-screen bg-cover bg-center pt-12 pb-12"
             style={{ backgroundImage: "url('/background-img.jpg')" }}
         >
@@ -244,10 +245,11 @@ export default function SingleStartupPage() {
 
                 <div className="bg-white rounded-xl shadow-2xl p-8 space-y-6 relative">
                     <div className="flex justify-between items-start">
-                        <h1 className="text-4xl font-extrabold text-gray-900 pr-4">{startup.name}</h1>
+                        <h1 data-testid="startup-title" className="text-4xl font-extrabold text-gray-900 pr-4">{startup.name}</h1>
 
                         <div className="relative">  
                             <button
+                                data-testid="btn-transform-dropdown"
                                 onClick={() => setIsDropdownOpen(prev => !prev)}
                                 disabled={isTransforming || investorLoading}
                                 className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50 whitespace-nowrap"
@@ -292,6 +294,7 @@ export default function SingleStartupPage() {
 
                     <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-100">
                         <Link
+                            data-testid="btn-startup-edit"
                             href={`/startups/${startup._id}/edit`}
                             className="flex items-center space-x-1 bg-gray-800 px-4 py-2 rounded-md font-semibold hover:bg-gray-600 text-white transition duration-150"
                         >
@@ -300,6 +303,7 @@ export default function SingleStartupPage() {
                         </Link>
 
                         <button
+                            data-testid="btn-startup-delete"
                             onClick={handleDelete}
                             className="flex items-center space-x-1 bg-red-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-red-700 transition duration-150"
                         >

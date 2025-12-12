@@ -95,10 +95,11 @@ export default function LoginPage() {
           <div className="text-gray-600 text-sm sm:text-base">warm Introduction Assistant</div>
         </div>
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} data-testid="login-form">
           <div>
             <label className="font-medium text-sm sm:text-base">Email</label>
             <input
+              data-testid="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -109,6 +110,7 @@ export default function LoginPage() {
             <label className="font-medium text-sm sm:text-base">Password</label>
             <div className="relative mb-3">
               <input
+                data-testid="login-password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -117,6 +119,7 @@ export default function LoginPage() {
                 required
               />
               <span
+                data-testid="toggle-password-visibility"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-lg text-gray-500 hover:text-gray-700"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -133,12 +136,13 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm mb-3 text-center">
+            <div data-testid="login-error" className="text-red-500 text-sm mb-3 text-center">
               {error}
             </div>
           )}
 
           <button
+            data-testid="login-submit"
             type="submit"
             disabled={loading}
             className={`w-full py-3 rounded-lg text-white text-sm sm:text-base font-semibold mb-3 transition-colors flex items-center justify-center gap-2 ${
