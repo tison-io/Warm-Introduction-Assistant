@@ -9,6 +9,9 @@ import { createInvestor, updateInvestor } from '../../lib/investor-api';
 type Props = {
   initialData?: Investor;
   isEdit: boolean;
+  submitLabel?: string;
+  disabled?: boolean;
+  onSubmit?: (data: CreateInvestorDto) => Promise<void>;
 };
 
 const FormField: React.FC<{
@@ -93,7 +96,7 @@ const FormField: React.FC<{
   );
 };
 
-const InvestorForm: React.FC<Props> = ({ initialData, isEdit }) => {
+const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOnSubmit, submitLabel, disabled = false }) => {
   const router = useRouter();
 
   interface InvestorFormData
@@ -146,6 +149,18 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit }) => {
       ...formData,
       preferred_intro_format: formData.preferred_intro_format as IntroFormat,
     };
+
+    if (!isEdit && wizardOnSubmit) {
+        try {
+            await wizardOnSubmit(payload);
+        } catch (error) {
+            console.error('Wizard submission failed:', error);
+            alert('Failed to submit investor details to the wizard. Check console.');
+        } finally {
+            setLoading(false);
+        }
+        return; // Exit here, let the parent handle navigation
+    }
 
     try {
       if (isEdit && initialData) {
@@ -278,11 +293,13 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit }) => {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full ml-4 bg-blue-700 text-black text-lg font-semibold py-3 rounded-lg shadow-xl hover:bg-blue-800 disabled:opacity-50"
+          disabled={loading || disabled} 
+          className="w-full ml-4 bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg shadow-xl hover:bg-blue-800 disabled:opacity-50"
         >
-          {loading
-            ? 'Saving...'
+          {loading || disabled
+            ? 'Processing...'
+            : submitLabel
+            ? submitLabel
             : isEdit
             ? 'Update Investor'
             : 'Create Investor'}

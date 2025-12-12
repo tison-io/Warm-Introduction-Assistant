@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { IntroQueue, IntroStatus, StatusUpdatePayload } from '../types/intro';
 import { fetchIntrosByFounder, updateIntroStatus } from '../lib/intro-api';
-import { ChevronUp, ChevronDown, Send, Save, Calendar } from 'lucide-react';
+import { ChevronUp, ChevronDown, Send, Save, Calendar, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface StatusBadgeProps {
   status: IntroStatus;
@@ -45,6 +46,8 @@ const getDefaultFollowUpDate = (): string => {
 
 
 export default function IntroQueuePage() {
+  const router = useRouter();
+
   const [intros, setIntros] = useState<IntroQueue[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -142,6 +145,13 @@ export default function IntroQueuePage() {
                 <h1 className="text-3xl md:text-4xl font-semibold text-white">Intro Queue</h1>
                 <p className="text-base md:text-xl text-gray-300">You have <span className='font-bold'>{introCount}</span> introductions queued</p>
             </div>
+            <button
+              onClick={() => router.push('/intro-wizard')}
+              className="flex items-center space-x-1 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-xl hover:bg-blue-700 transition duration-150"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Intro</span>
+            </button>
         </div>
 
         {/* Intro List Container */}
