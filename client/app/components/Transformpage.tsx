@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Save, ArrowLeft, Copy } from 'lucide-react';
+import { Save, ArrowLeft, Copy, Loader2 } from 'lucide-react';
 import { QueueIntroDto } from '../types/transform'; 
 import { queueIntroApi } from '../lib/transform-api'; 
+import { useToast } from '../components/Toast';
 
 interface TransformResultData {
     startupId: string;
@@ -14,10 +15,10 @@ interface TransformResultData {
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText: string;
-    generatedIntro: string; // The generated content
+    generatedIntro: string;
 }
 
-// Function to safely parse query parameters and ensure all required fields are present
+// Safely parse query params
 function parseQueryData(params: URLSearchParams): TransformResultData | null {
     const requiredKeys = [
         'startupId', 
@@ -32,20 +33,19 @@ function parseQueryData(params: URLSearchParams): TransformResultData | null {
     const data: Partial<TransformResultData> = {};
     for (const key of requiredKeys) {
         const value = params.get(key);
-        if (!value) return null; // Abort if any required data is missing
+        if (!value) return null;
         data[key as keyof TransformResultData] = value;
     }
     
-    // Handle optional field gracefully
     data.introPreferencesText = params.get('introPreferencesText') || '';
-
     return data as TransformResultData;
 }
-
 
 export default function GeneratedIntroPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { showToast } = useToast();
+
     const [data, setData] = useState<TransformResultData | null>(null);
     const [editedIntro, setEditedIntro] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -54,53 +54,40 @@ export default function GeneratedIntroPage() {
     useEffect(() => {
         const parsedData = parseQueryData(searchParams);
         if (!parsedData) {
-            alert('Missing data. Please start the transformation process again.');
-            router.push('/startups'); // Redirect if data is incomplete
+            showToast('Missing data. Please start the transformation process again.', 'error');
+            router.push('/startups');
             return;
         }
         setData(parsedData);
 
-        // REGEX FOR LINE BREAKS AND QUOTE TRIMMING ---
-        // 1. Handle escaped characters: Replace '\n' and '\t' with real newlines/tabs
-        let formattedIntro = parsedData.generatedIntro.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-
-        // 2. Trim the outer quotes and any surrounding whitespace
-        formattedIntro = formattedIntro.trim();
-        
-        // Check if the string is wrapped in double quotes and remove them
+        let formattedIntro = parsedData.generatedIntro.replace(/\\n/g, '\n').replace(/\\t/g, '\t').trim();
         if (formattedIntro.startsWith('"') && formattedIntro.endsWith('"')) {
-            formattedIntro = formattedIntro.slice(1, -1);
+            formattedIntro = formattedIntro.slice(1, -1).trim();
         }
-
-        formattedIntro = formattedIntro.trim();
-
-        setEditedIntro(formattedIntro); // Initialize the textarea with the formatted generated intro
-    }, [searchParams, router]);
+        setEditedIntro(formattedIntro);
+    }, [searchParams, router, showToast]);
 
     const handleCopy = async () => {
         if (!editedIntro) return;
-
         try {
             await navigator.clipboard.writeText(editedIntro);
             setCopyStatus('Copied!');
+            showToast('Intro copied to clipboard!', 'success');
         } catch (err) {
-            console.error('Failed to copy text:', err);
+            console.error(err);
             setCopyStatus('Failed');
+            showToast('Failed to copy intro.', 'error');
         }
-        
-        setTimeout(() => {
-            setCopyStatus('Copy');
-        }, 2000);
+        setTimeout(() => setCopyStatus('Copy'), 2000);
     };
 
     const handleSave = async () => {
         if (!data || !editedIntro.trim()) {
-            alert('Cannot save an empty introduction.');
+            showToast('Cannot save an empty introduction.', 'error');
             return;
         }
 
         setIsSaving(true);
-        
         const queueDto: QueueIntroDto = {
             startupId: data.startupId,
             startupName: data.startupName,
@@ -109,34 +96,28 @@ export default function GeneratedIntroPage() {
             founderId: data.founderId,
             preferredIntroFormat: data.preferredIntroFormat,
             introPreferencesText: data.introPreferencesText,
-            generatedIntro: editedIntro, // Send the user-edited content
+            generatedIntro: editedIntro,
         };
 
         try {
             await queueIntroApi(queueDto);
-            alert(`Intro for ${data.investorName} successfully saved to the queue!`);
-            router.push('/intro-queue'); // Redirect to the queue page
+            showToast(`Intro for ${data.investorName} successfully saved to the queue!`, 'success');
+            router.push('/intro-queue');
         } catch (error: any) {
             console.error('Error saving intro:', error);
-            alert(`Error saving intro: ${error.message || 'An unknown error occurred.'}`);
+            showToast(`Error saving intro: ${error.message || 'Unknown error.'}`, 'error');
         } finally {
             setIsSaving(false);
         }
     };
-    
-    if (!data) {
-        return <p className="p-6 text-gray-300">Loading intro details...</p>;
-    }
 
-    let introType: string;
-    if (data.preferredIntroFormat === '3-bullet-lines') {
-        introType = '3-Bullet Point Summary'; 
-    } else if (data.preferredIntroFormat === 'email') {
-        introType = 'Full Email Draft';
-    } else {
-        // This fallback catches unexpected/unspecified formats
-        introType = `Unspecified Format (${data.preferredIntroFormat})`; 
-    }
+    if (!data) return <p className="p-6 text-gray-300">Loading intro details...</p>;
+
+    const introType = data.preferredIntroFormat === '3-bullet-lines'
+        ? '3-Bullet Point Summary'
+        : data.preferredIntroFormat === 'email'
+        ? 'Full Email Draft'
+        : `Unspecified Format (${data.preferredIntroFormat})`;
 
     const investorDisplayName = data.investorName || 'Investor';
 
@@ -156,11 +137,13 @@ export default function GeneratedIntroPage() {
 
                 <div className="bg-white rounded-xl shadow-2xl p-8 space-y-6">
                     <h1 className="text-3xl font-bold text-gray-900">Generated Intro Drafts</h1>
-                    <p className="text-gray-700">Review and customize your investor introductions before saving to your queue.  </p>
+                    <p className="text-gray-700">
+                        Review and customize your investor introductions before saving to your queue.
+                    </p>
                     
                     <div className="border border-gray-200 rounded-xl p-6 shadow-md">
                         <h2 className="text-xl font-semibold text-gray-900">{investorDisplayName}</h2>
-                        <p className="text-sm text-gray-500 mb-4">Preffered Intro Format: {introType}</p>
+                        <p className="text-sm text-gray-500 mb-4">Preferred Intro Format: {introType}</p>
                         
                         <textarea
                             value={editedIntro}
@@ -198,7 +181,7 @@ export default function GeneratedIntroPage() {
                             disabled={isSaving || !editedIntro.trim()}
                             className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50"
                         >
-                            <Save className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
+                            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                             <span>{isSaving ? 'Saving to Queue...' : 'Save'}</span>
                         </button>
                     </div>

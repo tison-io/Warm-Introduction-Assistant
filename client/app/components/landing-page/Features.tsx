@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { Zap, Users, Clock, BarChart3 } from 'lucide-react';
+import { Zap, Users, Clock, BarChart3, FileText } from 'lucide-react';
 
 // Asset Path
 const BACKGROUND_IMAGE = '/background-img.jpg';
@@ -52,8 +52,8 @@ const FEATURES = [
         description: "Generate investor-preferred introduction formats instantly",
     },
     {
-        icon: <Users size={32} strokeWidth={2.5} />,
-        title: "Investor Queue",
+        icon: <FileText size={32} strokeWidth={2.5} />,
+        title: "Intro Queue",
         description: "Organize and track all your investor introductions in one place",
     },
     {

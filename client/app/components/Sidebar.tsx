@@ -45,12 +45,6 @@ const icons = {
       <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   ),
-  profile: (
-    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M4 17a6 6 0 0 1 12 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  ),
   settings: (
     <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
       <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.3"/>
@@ -82,7 +76,6 @@ const menu: MenuItem[] = [
   { href: "/startups", label: "Startups", icon: icons.startups },
   { href: "/intro-queue", label: "Intro Queue", icon: icons.queue },
   { href: "/reminders", label: "Reminders", icon: icons.reminders },
-  { href: "/profile", label: "Profile", icon: icons.profile },
   { href: "/terms-of-service", label: "Terms of Service", icon: icons.terms }
 ];
 

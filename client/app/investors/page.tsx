@@ -6,6 +6,7 @@ import { Search, Pencil, Trash2 } from 'lucide-react';
 import { getInvestors, deleteInvestor } from '../lib/investor-api';
 import { Investor } from '../types/investor';
 import Link from 'next/link';
+import { useToast } from '../components/Toast';
 
 const revalidatePath = (path: string) => {
   console.log(`Simulating revalidation for path: ${path}`);
@@ -17,6 +18,7 @@ const InvestorListPage = () => {
   const [search, setSearch] = useState('');
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const fetchInvestors = useCallback(async (searchQuery: string) => {
     setLoading(true);
@@ -25,7 +27,7 @@ const InvestorListPage = () => {
       setInvestors(data);
     } catch (error) {
       console.error('Error fetching investors:', error);
-      alert('Failed to load investors.');
+      showToast('Failed to load investors.', 'error');
     } finally {
       setLoading(false);
     }
@@ -43,16 +45,22 @@ const InvestorListPage = () => {
 
     try {
       await deleteInvestor(investorId);
-      alert('Investor deleted successfully!');
+      showToast('Investor deleted successfully!', 'success');
       startTransition(() => {
         setInvestors(prev => prev.filter(inv => inv._id !== investorId));
         revalidatePath('/investors'); 
       });
     } catch (error) {
       console.error('Error deleting investor:', error);
-      alert('Failed to delete investor.');
+      showToast('Failed to delete investor.', 'error');
     }
   };
+
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-6">
+      <div className="animate-spin rounded-full h-10 w-10 border-4 border-white border-t-transparent" />
+    </div>
+  );
 
   return (
     <div
@@ -103,8 +111,8 @@ const InvestorListPage = () => {
             <tbody className="divide-y divide-white/10">
               {loading || isPending ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-white/70">
-                    Loading investors...
+                  <td colSpan={6}>
+                    <LoadingSpinner />
                   </td>
                 </tr>
               ) : investors.length === 0 ? (

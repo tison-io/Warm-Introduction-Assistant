@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, EyeClosed, Eye, Loader2 } from 'lucide-react';
 import { loginFounder } from '../lib/founder-api';
 import { FounderLoginResponse } from '../types/founder';
 
@@ -122,7 +122,7 @@ export default function LoginPage() {
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeClosed /> : <Eye />}
               </span>
             </div>
             <div className="text-left mb-3">
@@ -141,12 +141,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg text-white text-sm sm:text-base font-semibold mb-3 transition-colors ${
-              loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
+            className={`w-full py-3 rounded-lg text-white text-sm sm:text-base font-semibold mb-3 transition-colors flex items-center justify-center gap-2 ${
+              loading
+                ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
             }`}
           >
+            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>

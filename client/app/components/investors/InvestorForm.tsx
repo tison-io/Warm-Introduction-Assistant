@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import { CreateInvestorDto, Investor } from '../../types/investor';
 import { IntroFormat } from '@/app/types/transform';
 import { createInvestor, updateInvestor } from '../../lib/investor-api';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '../Toast';
 
 type Props = {
   initialData?: Investor;
@@ -98,6 +100,7 @@ const FormField: React.FC<{
 
 const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOnSubmit, submitLabel, disabled = false }) => {
   const router = useRouter();
+  const { showToast } = useToast();
 
   interface InvestorFormData
     extends Omit<CreateInvestorDto, 'preferred_intro_format'> {
@@ -153,9 +156,10 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
     if (!isEdit && wizardOnSubmit) {
         try {
             await wizardOnSubmit(payload);
+            showToast('Investor submitted successfully!', 'success');
         } catch (error) {
             console.error('Wizard submission failed:', error);
-            alert('Failed to submit investor details to the wizard. Check console.');
+            showToast('Failed to submit investor details to the wizard.', 'error');
         } finally {
             setLoading(false);
         }
@@ -165,18 +169,18 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
     try {
       if (isEdit && initialData) {
         await updateInvestor(initialData._id, payload);
-        alert('Investor updated successfully!');
+        showToast('Investor updated successfully!', 'success');
       } else {
         await createInvestor(payload);
-        alert('Investor created successfully!');
+        showToast('Investor created successfully!', 'success');
       }
 
       router.push('/investors');
       router.refresh();
     } catch (error: any) {
-      alert(
-        error.message ||
-          `Failed to ${isEdit ? 'update' : 'create'} investor.`
+      showToast(
+        error.message || `Failed to ${isEdit ? 'update' : 'create'} investor.`,
+        'error'
       );
     } finally {
       setLoading(false);
@@ -186,8 +190,9 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
   const formatOptions: IntroFormat[] = ['3-bullet-lines', 'email'];
 
   const introPreferenceOptions = [
-    'Prefers bullet points',
-    'Prefers email',
+    'Prefers short emails',
+    'Prefers detailed emails',
+    'Prefers warm intros only',
     'No specific preference',
   ];
 
@@ -293,16 +298,21 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
 
         <button
           type="submit"
-          disabled={loading || disabled} 
-          className="w-full ml-4 bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg shadow-xl hover:bg-blue-800 disabled:opacity-50"
+          disabled={loading || disabled}
+          className="w-full ml-4 bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg shadow-xl hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading || disabled
-            ? 'Processing...'
-            : submitLabel
-            ? submitLabel
-            : isEdit
-            ? 'Update Investor'
-            : 'Create Investor'}
+          {loading ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Processing...
+            </>
+          ) : submitLabel ? (
+            submitLabel
+          ) : isEdit ? (
+            'Update Investor'
+          ) : (
+            'Create Investor'
+          )}
         </button>
       </div>
     </form>

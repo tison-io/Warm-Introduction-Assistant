@@ -16,11 +16,6 @@ export default function Footer() {
           <div className="footer-links-title">Nav Links</div>
           <div className="footer-links-cols">
             <div className="footer-links-col">
-              <Link href="/" className="footer-link">Home</Link>
-              <Link href="/investors" className="footer-link">Investors</Link>
-              <Link href="/startups" className="footer-link">Startups</Link>
-            </div>
-            <div className="footer-links-col">
               <Link href="/terms-of-service" className="footer-link">Terms of Service</Link>
               <Link href="/contact" className="footer-link">Contact Us</Link>
               <Link href="/about" className="footer-link">About Us</Link>

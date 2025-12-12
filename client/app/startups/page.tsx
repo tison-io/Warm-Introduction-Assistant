@@ -1,36 +1,54 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { getMyStartups } from "../lib/startup-api";
+import { useEffect, useState, useTransition } from "react";
+import { getMyStartups, deleteStartup } from "../lib/startup-api";
 import { Startup } from "../types/startup";
 import StartupCard from "../components/startups/StartupCard";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { useToast } from "../components/Toast";
+import { Loader2 } from "lucide-react";
 
 export default function MyStartupsPage() {
     const [startups, setStartups] = useState<Startup[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
+    const { showToast } = useToast();
 
     const fetchStartups = () => {
         setIsLoading(true);
         getMyStartups()
-        .then((data) => {
-            setStartups(data);
-            setError(null);
-        })
-        .catch((err) => {
-            console.error("Failed to fetch startups:", err);
-            setError("You don't have startups at the moment.");
-        })
-        .finally(() =>
-            setIsLoading(false)
-        );
+            .then((data) => {
+                setStartups(data);
+                setError(null);
+            })
+            .catch((err) => {
+                console.error("Failed to fetch startups:", err);
+                setError("You don't have startups at the moment.");
+                showToast("Failed to load your startups.", "error");
+            })
+            .finally(() => setIsLoading(false));
     };
 
     useEffect(() => {
         fetchStartups();
     }, []);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this startup?")) return;
+
+        try {
+            await deleteStartup(id);
+            showToast("Startup deleted successfully!", "success");
+            startTransition(() => {
+                setStartups(prev => prev.filter(s => s._id !== id));
+            });
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to delete startup.", "error");
+        }
+    };
 
     return (
         <div
@@ -58,23 +76,32 @@ export default function MyStartupsPage() {
                 {/* Startup List */}
                 <div className="space-y-4">
 
-                    {isLoading && (
-                        <p className="text-gray-300 text-center">Loading your startups...</p>
+                    {(isLoading || isPending) && (
+                        <div className="bg-white rounded-xl shadow-lg p-6 flex justify-center items-center">
+                            <Loader2 className="animate-spin h-10 w-10 text-blue-600" />
+                        </div>
                     )}
 
                     {!isLoading && error && (
-                        <p className="text-gray-200 text-center">{error}</p>
+                        <div className="bg-white rounded-xl shadow-lg p-6 text-center text-gray-700">
+                            {error}
+                        </div>
                     )}
 
                     {!isLoading && !error && startups.length === 0 && (
-                        <p className="text-gray-200 text-center">
+                        <div className="bg-white rounded-xl shadow-lg p-6 text-center text-gray-700">
                             You don't have startups at the moment.
-                        </p>
+                        </div>
                     )}
 
                     {!isLoading && !error && startups.length > 0 && (
                         startups.map((s) => (
-                            <StartupCard key={s._id} startup={s} refreshList={fetchStartups} />
+                            <StartupCard
+                                key={s._id}
+                                startup={s}
+                                refreshList={fetchStartups}
+                                onDelete={() => handleDelete(s._id)}
+                            />
                         ))
                     )}
 

@@ -6,7 +6,7 @@ import { Startup } from '@/app/types/startup';
 import { Investor } from '@/app/types/investor';
 import { TransformIntroDto, TransformIntroResponse, IntroFormat } from '@/app/types/transform';
 import { getFounderId } from '@/app/lib/auth-utils';
-import { Loader2, Zap } from 'lucide-react';
+import { Wand2, Zap } from 'lucide-react';
 
 interface TransformStepProps {
     startup: Startup;
@@ -68,7 +68,9 @@ export default function TransformStep({ startup, investor, onSuccess }: Transfor
     return (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-4">
             <h2 className="text-xl font-bold text-black">Final Step: Transform Introduction</h2>
-            <p className="text-black">You are ready to generate a customized investor introduction based on the data you provided:</p>
+            <p className="text-black">
+                You are ready to generate a customized investor introduction based on the data you provided:
+            </p>
 
             <div className="grid grid-cols-2 gap-4 text-sm bg-white p-4 rounded-md border border-gray-100">
                 <div>
@@ -92,17 +94,17 @@ export default function TransformStep({ startup, investor, onSuccess }: Transfor
             <button
                 onClick={handleTransform}
                 disabled={isTransforming}
-                className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-blue px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50"
+                className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50"
             >
                 {isTransforming ? (
                     <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Generating Intro... Please Wait</span>
+                        <Wand2 className="w-6 h-6 animate-bounce text-white" />
+                        <span>Generating Intro...</span>
                     </>
                 ) : (
                     <>
-                        <Zap className="w-5 h-5" />
-                        <span className='text-white'>Generate Customized Introduction</span>
+                        <Wand2 className="w-5 h-5 text-white" />
+                        <span>Generate Customized Introduction</span>
                     </>
                 )}
             </button>

@@ -1,7 +1,9 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import { CreateStartupDto, Startup } from "../../types/startup";
+import { useToast } from "../Toast";
+import { Loader2 } from "lucide-react";
 
 interface Props {
     initialData?: Startup;
@@ -43,13 +45,14 @@ const FormField: React.FC<{
     );
 };
 
-
 export default function StartupForm({ initialData, onSubmit, submitLabel }: Props) {
     const [form, setForm] = useState<CreateStartupDto>({
         name: initialData?.name || "",
         blurb: initialData?.blurb || "",
         pitchLink: initialData?.pitchLink || "",
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showToast } = useToast();
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -57,13 +60,21 @@ export default function StartupForm({ initialData, onSubmit, submitLabel }: Prop
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        await onSubmit(form);
+        setIsSubmitting(true);
+
+        try {
+            await onSubmit(form);
+            showToast("Startup saved successfully!", "success");
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to save startup.", "error");
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
-        // MODIFIED: Reduced vertical space-y-6 to space-y-4 for tighter packing
         <form onSubmit={handleSubmit} className="space-y-4"> 
-
             <FormField
                 label="Startup Name"
                 name="name"
@@ -92,9 +103,11 @@ export default function StartupForm({ initialData, onSubmit, submitLabel }: Prop
 
             <button 
                 type="submit" 
-                className="w-full bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg mt-6 shadow-xl hover:bg-blue-800 transition duration-150"
+                className={`w-full bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg mt-6 shadow-xl hover:bg-blue-800 transition duration-150 flex justify-center items-center space-x-2`}
+                disabled={isSubmitting}
             >
-                {submitLabel}
+                {isSubmitting && <Loader2 className="animate-spin h-5 w-5 text-white" />}
+                <span>{submitLabel}</span>
             </button>
         </form>
     );

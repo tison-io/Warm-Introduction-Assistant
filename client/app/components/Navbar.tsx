@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { User } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -12,13 +13,23 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, [pathname]);
+    const checkLogin = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+
+    checkLogin(); // initial check
+    window.addEventListener('logout', checkLogin);
+
+    return () => {
+      window.removeEventListener('logout', checkLogin);
+    };
+  }, []); 
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    window.dispatchEvent(new Event('logout')); // notify Navbar
     router.push('/');
   };
 
@@ -40,19 +51,24 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-1.5 bg-transparent relative">
+      <nav className="flex items-center justify-between px-4 sm:px-6 h-16 bg-transparent relative">
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center no-underline">
-            <Image src="/logo.png" alt="Logo" width={55} height={55} className="sm:w-[65px] sm:h-[65px]" />
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={50}
+              height={50}
+              className="sm:w-[55px] sm:h-[55px]"
+            />
           </Link>
-          
+
           {/* Dashboard Mobile Menu Button */}
           {isDashboardPage && (
             <button
               className="ml-4 md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1 hover:bg-gray-100 rounded p-1 transition-colors"
               onClick={() => {
-                // We need to access the sidebar's toggle function
                 const event = new CustomEvent('toggleSidebar');
                 window.dispatchEvent(event);
               }}
@@ -65,80 +81,74 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Menu */}
-        <div className="flex items-center">
+        <div className="flex items-center space-x-3">
           {isDashboardPage ? (
-            <div className="flex items-center justify-center p-2">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="8" r="4" stroke="#0347D2" strokeWidth="2" />
-                <path
-                  d="M4 20c0-4 3.5-7 8-7s8 3 8 7"
-                  stroke="#0347D2"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
+            isLoggedIn && (
+              <Link href="/settings">
+                <User className="w-6 h-6 text-gray-700 hover:text-blue-600" />
+              </Link>
+            )
           ) : (
-            <div className="hidden md:flex items-center">
+            <div className="hidden md:flex items-center space-x-2">
               {isAuthPage ? (
-            <>
-              {isSignupPage && (
-                <Link href="/login">
-                  <button className="border border-gray-300 text-gray-800 rounded-lg px-6 py-1.5 text-[15px] mr-2">
-                    Log in
-                  </button>
-                </Link>
-              )}
-              {isLoginPage && (
-                <Link href="/signup">
-                  <button className="bg-[#0347D2] text-white rounded-lg px-6 py-1.5 text-[15px] font-medium mr-2">
-                    Sign Up
-                  </button>
-                </Link>
-              )}
-            </>
-          ) : (
-            <>
-              {isLoggedIn ? (
                 <>
-                  <Link href="/dashboard">
-                    <button className="bg-[#0347D2] text-white rounded-lg px-6 py-1.5 text-[15px] font-medium mr-2">
-                      Dashboard
-                    </button>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="border border-gray-300 text-gray-800 rounded-lg px-6 py-1.5 text-[15px] mr-2"
-                  >
-                    Logout
-                  </button>
+                  {isSignupPage && (
+                    <Link href="/login">
+                      <button className="border border-gray-300 text-gray-800 rounded-lg px-4 py-1.5 text-sm">
+                        Log in
+                      </button>
+                    </Link>
+                  )}
+                  {isLoginPage && (
+                    <Link href="/signup">
+                      <button className="bg-[#0347D2] text-white rounded-lg px-4 py-1.5 text-sm font-medium">
+                        Sign Up
+                      </button>
+                    </Link>
+                  )}
                 </>
               ) : (
                 <>
-                  <Link href="/about">
-                    <button className="bg-transparent text-gray-800 rounded-lg px-4 py-1.5 text-[15px] font-medium mr-2 hover:text-[#0347D2]">
-                      About Us
-                    </button>
-                  </Link>
-                  <Link href="/contact">
-                    <button className="bg-transparent text-gray-800 rounded-lg px-4 py-1.5 text-[15px] font-medium mr-2 hover:text-[#0347D2]">
-                      Contact Us
-                    </button>
-                  </Link>
-                  <Link href="/signup">
-                    <button className="bg-[#0347D2] text-white rounded-lg px-6 py-1.5 text-[15px] font-medium mr-2">
-                      Sign Up
-                    </button>
-                  </Link>
-                  <Link href="/login">
-                    <button className="border border-gray-300 text-gray-800 rounded-lg px-6 py-1.5 text-[15px] mr-2">
-                      Log in
-                    </button>
-                  </Link>
+                  {isLoggedIn ? (
+                    <>
+                      <Link href="/dashboard">
+                        <button className="bg-[#0347D2] text-white rounded-lg px-4 py-1.5 text-sm font-medium">
+                          Dashboard
+                        </button>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="border border-gray-300 text-gray-800 rounded-lg px-4 py-1.5 text-sm"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/about">
+                        <button className="bg-transparent text-gray-800 rounded-lg px-3 py-1.5 text-sm hover:text-[#0347D2]">
+                          About Us
+                        </button>
+                      </Link>
+                      <Link href="/contact">
+                        <button className="bg-transparent text-gray-800 rounded-lg px-3 py-1.5 text-sm hover:text-[#0347D2]">
+                          Contact Us
+                        </button>
+                      </Link>
+                      <Link href="/signup">
+                        <button className="bg-[#0347D2] text-white rounded-lg px-4 py-1.5 text-sm font-medium">
+                          Sign Up
+                        </button>
+                      </Link>
+                      <Link href="/login">
+                        <button className="border border-gray-300 text-gray-800 rounded-lg px-4 py-1.5 text-sm">
+                          Log in
+                        </button>
+                      </Link>
+                    </>
+                  )}
                 </>
-                )}
-              </>
-            )}
+              )}
             </div>
           )}
         </div>
@@ -149,9 +159,21 @@ export default function Navbar() {
             className="md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <span className={`block w-6 h-0.5 bg-gray-800 transition-transform ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-gray-800 transition-opacity ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-gray-800 transition-transform ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            <span
+              className={`block w-6 h-0.5 bg-gray-800 transition-transform ${
+                isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
+              }`}
+            ></span>
+            <span
+              className={`block w-6 h-0.5 bg-gray-800 transition-opacity ${
+                isMobileMenuOpen ? 'opacity-0' : ''
+              }`}
+            ></span>
+            <span
+              className={`block w-6 h-0.5 bg-gray-800 transition-transform ${
+                isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
+              }`}
+            ></span>
           </button>
         )}
       </nav>

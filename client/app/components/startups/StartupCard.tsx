@@ -1,26 +1,33 @@
-"use client";
+'use client';
 
 import { Startup } from "../../types/startup";
 import { Pencil, Trash2 } from "lucide-react";
-import { deleteStartup } from "../../lib/startup-api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "../Toast";
 
 interface Props {
     startup: Startup;
     refreshList: () => void;
+    onDelete?: () => void;
 }
 
-export default function StartupCard({ startup, refreshList }: Props) {
+export default function StartupCard({ startup, refreshList, onDelete }: Props) {
     const router = useRouter();
+    const { showToast } = useToast();
 
     const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
         try {
-            await deleteStartup(startup._id);
-            refreshList(); 
+            if (onDelete) {
+                onDelete();
+            } else {
+                // fallback if no onDelete passed
+                throw new Error("Delete handler not provided");
+            }
         } catch (err) {
             console.error(err);
-            alert("Failed to delete startup.");
+            showToast("Failed to delete startup.", "error");
         }
     };
 
@@ -32,7 +39,6 @@ export default function StartupCard({ startup, refreshList }: Props) {
     return (
         <div className="bg-white rounded-xl shadow-lg p-6 relative hover:cursor-pointer">
             <div className="absolute top-4 right-4 flex space-x-2 z-10">
-
                 <button
                     aria-label="Edit"
                     onClick={handleEdit}
@@ -50,7 +56,6 @@ export default function StartupCard({ startup, refreshList }: Props) {
                 </button>
             </div>
 
-            {/* Clickable area of the card */}
             <Link href={`/startups/${startup._id}`}>
                 <div className="pr-16">
                     <h2 className="text-xl font-bold text-gray-900 mb-1">{startup.name}</h2>

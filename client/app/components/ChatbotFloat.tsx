@@ -160,7 +160,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
     <div className="
         // .chatbot-box conversion
         w-[calc(100vw-32px)] max-w-[300px] sm:w-[350px] md:w-[450px] min-h-[400px] sm:min-h-[520px] md:min-h-[600px] max-h-[80vh] sm:max-h-[94vh] bg-white shadow-[0_4px_32px_#23265922]
-        rounded-[18px] flex flex-col fixed bottom-[8px] sm:bottom-[34px] right-[8px] sm:right-[34px] z-50
+        rounded-[18px] flex flex-col fixed bottom-2 sm:bottom-[34px] right-2 sm:right-[34px] z-50
         font-['system-ui',sans-serif] overflow-hidden border-2 border-[#f2f7fe]
     ">
       <button 

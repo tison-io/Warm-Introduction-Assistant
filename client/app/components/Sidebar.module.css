@@ -16,10 +16,10 @@
 @media (max-width: 768px) {
   .sidebar-root {
     position: fixed;
-    top: 0;
+    top: 64px;
     left: -220px;
     width: 220px;
-    height: 100vh;
+    height: calc(100vh - 64px);
     z-index: 1000;
     transition: left 0.3s ease;
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
