@@ -35,7 +35,8 @@ export default function Navbar() {
     pathname?.startsWith('/intro-queue') ||
     pathname?.startsWith('/reminders') ||
     pathname?.startsWith('/terms-of-service') ||
-    pathname?.startsWith('/settings');
+    pathname?.startsWith('/settings') ||
+    pathname?.startsWith('/profile');
 
   return (
     <>
