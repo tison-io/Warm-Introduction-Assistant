@@ -101,22 +101,22 @@ export default function ReminderList() {
       style={{ backgroundImage: "url('/background-img.jpg')" }}
     >
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-semibold mb-2">Reminders</h1>
+        <h1 data-testid="reminders-page-title" className="text-4xl font-semibold mb-2">Reminders</h1>
         <p className="text-xl mb-8">
-          <span className='font-bold'>{reminders.length}</span> follow-ups due
+          <span data-testid="reminders-count" className='font-bold'>{reminders.length}</span> follow-ups due
         </p>
 
         {loading ? (
-          <div className="bg-white text-black p-6 rounded-xl shadow-2xl flex items-center space-x-4">
+          <div data-testid="reminders-loading-spinner" className="bg-white text-black p-6 rounded-xl shadow-2xl flex items-center space-x-4">
             <Loader2 className="w-6 h-6 animate-spin text-gray-700" />
             <span className="font-medium text-gray-800">Loading reminders...</span>
           </div>
         ) : reminders.length === 0 ? (
-          <div className="p-4 bg-gray-300 text-black backdrop-blur-sm rounded-lg shadow-xl">
+          <div data-testid="reminders-empty-state" className="p-4 bg-gray-300 text-black backdrop-blur-sm rounded-lg shadow-xl">
             No reminders pending.
           </div>
         ) : (
-          <ul className="space-y-4">
+          <ul data-testid="reminders-list" className="space-y-4">
             {reminders.map((reminder) => {
               const dueDate = new Date(reminder.date);
               const personName = reminder.introId?.investorName || 'Unknown Investor';
@@ -130,22 +130,24 @@ export default function ReminderList() {
 
               return (
                 <li
+                  data-testid={`reminder-item-${reminder._id}`}
                   key={reminder._id}
                   className="bg-white text-black p-4 rounded-xl shadow-2xl flex justify-between items-center transition duration-300"
                 >
                   <div className="flex flex-col space-y-1">
                     <div className="flex items-center space-x-3">
-                      <p className="text-lg font-bold text-black">
+                      <p data-testid={`reminder-investor-name-${reminder._id}`} className="text-lg font-bold text-black">
                         To Investor: {personName}
                       </p>
                       <DueBadge date={dueDate} />
                     </div>
                     <p className="text-black">{followUpText} startup.</p>
-                    <p className="text-sm text-black">Due: {formattedDate}</p>
+                    <p data-testid={`reminder-due-date-${reminder._id}`} className="text-sm text-black">Due: {formattedDate}</p>
                   </div>
 
                   <div className="flex space-x-2 items-center">
                     <button
+                      data-testid={`reminder-delete-btn-${reminder._id}`}
                       className="p-2 cursor-pointer bg-red-600 text-white hover:bg-red-400 rounded-lg transition duration-150"
                       onClick={() => handleDeleteReminder(reminder._id)}
                       title="Delete Reminder"

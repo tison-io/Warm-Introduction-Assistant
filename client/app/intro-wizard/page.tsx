@@ -71,9 +71,10 @@ export default function NewIntroWizardPage() {
     }
 
     const renderTabs = () => (
-        <div className="flex border-b border-gray-200">
+        <div data-testid="wizard-tabs-container" className="flex border-b border-gray-200">
             {steps.map((step, index) => (
                 <button
+                    data-testid={`tab-${step.key}`}
                     key={step.key}
                     onClick={() => {
                         if (index < currentStep) setCurrentStep(index);
@@ -97,6 +98,7 @@ export default function NewIntroWizardPage() {
 
     return (
         <div
+            data-testid="page-new-intro-wizard"
             className="min-h-screen bg-cover bg-center pt-12 pb-12"
             style={{ backgroundImage: "url('/background-img.jpg')" }}
         >
@@ -144,11 +146,13 @@ export default function NewIntroWizardPage() {
                         )}
 
                         {currentStep === 2 && wizardData.startup && wizardData.investor && !isLoading && (
-                            <TransformStep
-                                startup={wizardData.startup}
-                                investor={wizardData.investor}
-                                onSuccess={handleTransformSuccess}
-                            />
+                            <div data-testid="step-transform-container">
+                                <TransformStep
+                                    startup={wizardData.startup}
+                                    investor={wizardData.investor}
+                                    onSuccess={handleTransformSuccess}
+                                />
+                            </div>
                         )}
 
                         {currentStep === 2 && (!wizardData.startup || !wizardData.investor) && !isLoading && (

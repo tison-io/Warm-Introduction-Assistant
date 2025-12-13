@@ -123,6 +123,7 @@ export default function GeneratedIntroPage() {
 
     return (
         <div
+            data-testid="page-generated-intro"
             className="min-h-screen bg-cover bg-center pt-12 pb-12"
             style={{ backgroundImage: "url('/background-img.jpg')" }}
         >
@@ -142,10 +143,11 @@ export default function GeneratedIntroPage() {
                     </p>
                     
                     <div className="border border-gray-200 rounded-xl p-6 shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900">{investorDisplayName}</h2>
-                        <p className="text-sm text-gray-500 mb-4">Preferred Intro Format: {introType}</p>
+                        <h2 data-testid="review-investor-name" className="text-xl font-semibold text-gray-900">{investorDisplayName}</h2>
+                        <p data-testid="review-intro-format" className="text-sm text-gray-500 mb-4">Preferred Intro Format: {introType}</p>
                         
                         <textarea
+                            data-testid="review-intro-textarea"
                             value={editedIntro}
                             onChange={(e) => setEditedIntro(e.target.value)}
                             rows={10}
@@ -154,7 +156,8 @@ export default function GeneratedIntroPage() {
                         />
 
                         <div className="flex space-x-3 mt-4">
-                            <button 
+                            <button
+                                data-testid="review-copy-btn"
                                 onClick={handleCopy}
                                 className={`flex items-center space-x-1 transition duration-200 ${
                                     copyStatus === 'Copied!' 
@@ -171,12 +174,14 @@ export default function GeneratedIntroPage() {
                     
                     <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
                         <button
+                            data-testid="review-back-btn"
                             onClick={() => router.back()}
                             className="px-6 py-3 cursor-pointer border border-gray-300 rounded-md font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 transition duration-150"
                         >
                             Back
                         </button>
                         <button
+                            data-testid="review-save-btn"
                             onClick={handleSave}
                             disabled={isSaving || !editedIntro.trim()}
                             className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50"

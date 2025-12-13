@@ -118,7 +118,7 @@ export default function IntroQueuePage() {
   const introCount = intros.length;
 
   return (
-    <div className="min-h-screen bg-cover bg-center p-6 md:p-8" style={{ backgroundImage: "url('/background-img.jpg')" }}>
+    <div data-testid="page-intro-queue" className="min-h-screen bg-cover bg-center p-6 md:p-8" style={{ backgroundImage: "url('/background-img.jpg')" }}>
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
@@ -130,6 +130,7 @@ export default function IntroQueuePage() {
             </p>
           </div>
           <button
+            data-testid="new-intro-btn"
             onClick={() => router.push('/intro-wizard')}
             className="flex items-center space-x-1 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-xl hover:bg-blue-700 transition duration-150"
           >
@@ -139,23 +140,24 @@ export default function IntroQueuePage() {
         </div>
 
         {/* Intro List */}
-        <div className="bg-white text-black rounded-lg shadow-2xl overflow-hidden">
+        <div data-testid="intro-list-container" className="bg-white text-black rounded-lg shadow-2xl overflow-hidden">
           {loading ? (
-            <div className="flex items-center justify-center px-4 py-8">
+            <div data-testid="queue-loading-spinner" className="flex items-center justify-center px-4 py-8">
               <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
             </div>
           ) : intros.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div data-testid="queue-empty-message" className="p-6 text-center text-gray-500">
               You have no intro queues at the moment.
             </div>
           ) : (
-            <ul>
+            <ul data-testid="intro-queue-list">
               {intros.map((intro) => {
                 const isExpanded = intro._id === expandedId;
                 const createdAtDate = new Date(intro.createdAt).toLocaleDateString();
                 return (
-                  <li key={intro._id} className="border-b border-gray-200 last:border-b-0">
+                  <li data-testid={`intro-row-${intro._id}`} key={intro._id} className="border-b border-gray-200 last:border-b-0">
                     <div
+                      data-testid={`intro-toggle-btn-${intro._id}`}
                       className="flex items-center px-4 py-2 cursor-pointer transition duration-150 hover:bg-gray-50"
                       onClick={() => handleToggleExpand(intro)}
                     >
@@ -167,19 +169,20 @@ export default function IntroQueuePage() {
                         )}
                       </div>
                       <div className="flex-1 grid grid-cols-4 gap-2 text-sm font-medium">
-                        <p className="truncate font-semibold">{intro.startupName}</p>
-                        <p className="truncate">{intro.investorName}</p>
-                        <p className="truncate">{createdAtDate}</p>
+                        <p data-testid={`intro-startup-name-${intro._id}`} className="truncate font-semibold">{intro.startupName}</p>
+                        <p data-testid={`intro-investor-name-${intro._id}`} className="truncate">{intro.investorName}</p>
+                        <p data-testid={`intro-created-at-${intro._id}`} className="truncate">{createdAtDate}</p>
                         <StatusBadge status={intro.status} />
                       </div>
                     </div>
 
                     {isExpanded && expandedIntro && (
-                      <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-4">
+                      <div data-testid={`intro-details-panel-${intro._id}`} className="p-4 border-t border-gray-200 bg-gray-50 space-y-4">
                         {/* Draft intro content */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Generated Intro</label>
                           <textarea
+                            data-testid="details-draft-textarea"
                             className="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm"
                             rows={4}
                             value={draftContent}
@@ -192,6 +195,7 @@ export default function IntroQueuePage() {
                           <div>
                             <label className="block text-sm font-medium text-gray-700">Status</label>
                             <select
+                              data-testid="details-status-select"
                               value={newStatus}
                               onChange={(e) => setNewStatus(e.target.value as IntroStatus)}
                               className="mt-1 border border-gray-300 rounded-md p-2 text-sm"
@@ -203,9 +207,10 @@ export default function IntroQueuePage() {
                           </div>
 
                           {newStatus === 'sent' && (
-                            <div>
+                            <div data-testid="details-followup-container">
                               <label className="block text-sm font-medium text-gray-700">Follow-up Date</label>
                               <input
+                                data-testid="details-followup-date-input"
                                 type="date"
                                 value={followUpDate}
                                 onChange={(e) => setFollowUpDate(e.target.value)}
@@ -219,6 +224,7 @@ export default function IntroQueuePage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Notes</label>
                           <textarea
+                            data-testid="details-notes-textarea"
                             className="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm"
                             rows={2}
                             value={noteContent}
@@ -229,6 +235,7 @@ export default function IntroQueuePage() {
                         {/* Update button */}
                         <div className="flex justify-end">
                           <button
+                            data-testid="details-update-btn"
                             onClick={() => handleUpdateStatus(intro._id)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                           >
