@@ -75,23 +75,24 @@ export default function TransformStep({ startup, investor, onSuccess }: Transfor
             <div className="grid grid-cols-2 gap-4 text-sm bg-white p-4 rounded-md border border-gray-100">
                 <div>
                     <p className="font-semibold text-black">Startup:</p>
-                    <p className="text-black">{startup.name}</p>
+                    <p data-testid="transform-startup-name" className="text-black">{startup.name}</p>
                 </div>
                 <div>
                     <p className="font-semibold text-black">Investor:</p>
-                    <p className="text-black">{investor.name}</p>
+                    <p data-testid="transform-investor-name" className="text-black">{investor.name}</p>
                 </div>
                 <div>
                     <p className="font-semibold text-black">Startup blurb:</p>
-                    <p className="text-black">{startup.blurb}</p>
+                    <p data-testid="transform-startup-blurb" className="text-black">{startup.blurb}</p>
                 </div>
                 <div className="col-span-2">
                     <p className="font-semibold text-black">Investor Preference:</p>
-                    <p className="text-black">{investor.preferred_intro_format || 'Default (Email)'}</p>
+                    <p data-testid="transform-investor-preference" className="text-black">{investor.preferred_intro_format || 'Default (Email)'}</p>
                 </div>
             </div>
 
             <button
+                data-testid="transform-generate-btn"
                 onClick={handleTransform}
                 disabled={isTransforming}
                 className="w-full flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50"

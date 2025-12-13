@@ -5,6 +5,7 @@ import InvestorForm from '../../components/investors/InvestorForm';
 const CreateInvestorPage = () => {
  return (
   <div
+    data-testid="page-investor-create"
     className="min-h-screen bg-cover bg-center pt-20 pb-12"
     style={{ backgroundImage: "url('/background-img.jpg')" }}
   >

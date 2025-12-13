@@ -55,6 +55,7 @@ const FormField: React.FC<{
 
       {isSelect ? (
         <select
+          data-testid={`input-${name as string}`}
           id={name as string}
           name={name as string}
           value={value}
@@ -73,6 +74,7 @@ const FormField: React.FC<{
         </select>
       ) : isTextArea ? (
         <textarea
+          data-testid={`input-${name as string}`}
           id={name as string}
           name={name as string}
           value={value}
@@ -82,6 +84,7 @@ const FormField: React.FC<{
         />
       ) : (
         <input
+          data-testid={`input-${name as string}`}
           id={name as string}
           name={name as string}
           value={value}
@@ -198,6 +201,7 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
 
   return (
     <form
+      data-testid="investor-form"
       onSubmit={handleSubmit}
       className="bg-white rounded-xl p-6 shadow-2xl space-y-4"
     >
@@ -297,6 +301,7 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
         </button>
 
         <button
+          data-testid="submit-investor"
           type="submit"
           disabled={loading || disabled}
           className="w-full ml-4 bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg shadow-xl hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2"

@@ -75,7 +75,7 @@ const InvestorListPage = () => {
             <p className="text-white/70">Manage your investor list</p>
           </div>
           <Link href="/investors/create" passHref>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 whitespace-nowrap">
+            <button data-testid="add-investor-btn" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 whitespace-nowrap">
               + Add Investor
             </button>
           </Link>
@@ -123,7 +123,7 @@ const InvestorListPage = () => {
                 </tr>
               ) : (
                 investors.map((investor, index) => (
-                  <tr key={investor._id} className="transition duration-150 bg-white">
+                  <tr data-testid="investor-row" key={investor._id} className="transition duration-150 bg-white">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">{investor.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -138,11 +138,11 @@ const InvestorListPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-3">
                         <Link href={`/investors/${investor._id}/edit`} passHref>
-                          <button title="Edit" className="text-black hover:text-gray-600 transition duration-150">
+                          <button data-testid="edit-investor-btn" title="Edit" className="text-black hover:text-gray-600 transition duration-150">
                             <Pencil className="h-5 w-5" />
                           </button>
                         </Link>
-                        <button onClick={() => handleDelete(investor._id)} title="Delete" className="text-red-400 hover:text-red-500 transition duration-150">
+                        <button data-testid="delete-investor-btn" onClick={() => handleDelete(investor._id)} title="Delete" className="text-red-400 hover:text-red-500 transition duration-150">
                           <Trash2 className="h-5 w-5" />
                         </button>
                       </div>

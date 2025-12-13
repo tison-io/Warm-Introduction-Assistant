@@ -74,7 +74,7 @@ const EditInvestorPage = () => {
       style={{ backgroundImage: "url('/background-img.jpg')" }}
     >
       <div className="max-w-4xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-2xl text-white">
+        <div data-testid="page-investor-edit" className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-2xl text-white">
           <h1 className="text-4xl font-light mb-2">Edit Investor</h1>
           <p className="text-white/70 mb-6">
             Editing details for <strong>{investor.name}</strong>
