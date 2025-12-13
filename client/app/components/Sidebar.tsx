@@ -3,8 +3,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import styles from "./Sidebar.module.css";
+import { AUTH_EVENT } from '@/app/lib/auth-events';
 
-// NEW: Wand icon for the Intro Wizard
+
 const icons = {
   dashboard: (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -57,7 +58,6 @@ const icons = {
       <path d="M13 7l3 3-3 3M16 10H7M10 17v-1a4 4 0 0 0-4-4H4a4 4 0 0 0-4 4v1" stroke="#e23c3c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
-  // NEW ICON: Wand for Intro Wizard
   wand: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M15 4l4 4L8 19l-4-4L15 4z" />
@@ -83,7 +83,6 @@ const menu: MenuItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
   { href: "/investors", label: "Investors", icon: icons.investors },
   { href: "/startups", label: "Startups", icon: icons.startups },
-  // NEW MENU ITEM: Intro Wizard
   { href: "/intro-wizard", label: "Intro Wizard", icon: icons.wand },
   { href: "/intro-queue", label: "Intro Queue", icon: icons.queue },
   { href: "/reminders", label: "Reminders", icon: icons.reminders },
@@ -121,6 +120,9 @@ const Sidebar: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+
+    window.dispatchEvent(new Event(AUTH_EVENT));
+
     router.push('/');
   };
 

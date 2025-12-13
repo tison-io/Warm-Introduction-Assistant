@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, EyeClosed, Eye, Loader2 } from 'lucide-react';
 import { loginFounder } from '../lib/founder-api';
 import { FounderLoginResponse } from '../types/founder';
+import { AUTH_EVENT } from '../lib/auth-events';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +25,8 @@ export default function LoginPage() {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+
+      window.dispatchEvent(new Event(AUTH_EVENT));
 
       router.push('/dashboard');
     } catch (err: any) {

@@ -5,7 +5,7 @@ import Sidebar from "./Sidebar";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  const dashboardRoutes = ['/dashboard', '/investors', '/startups', '/create-startup', '/generate-intro', '/intro-queue', '/reminders', '/terms-of-service', '/settings', '/profile'];
+  const dashboardRoutes = ['/dashboard', '/investors', '/startups', '/create-startup', '/generate-intro',  '/intro-wizard', '/intro-queue', '/reminders', '/terms-of-service', '/settings', '/profile'];
   const showSidebar = dashboardRoutes.some(route => pathname?.startsWith(route));
 
   if (!showSidebar) {

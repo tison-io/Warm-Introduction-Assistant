@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { User } from 'lucide-react';
+import { AUTH_EVENT } from '../lib/auth-events';
 
 export default function Navbar() {
   const router = useRouter();
@@ -13,23 +14,26 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const checkLogin = () => {
+    const syncAuth = () => {
       const token = localStorage.getItem('token');
       setIsLoggedIn(!!token);
     };
 
-    checkLogin(); // initial check
-    window.addEventListener('logout', checkLogin);
+    syncAuth(); // initial read
+
+    window.addEventListener(AUTH_EVENT, syncAuth);
 
     return () => {
-      window.removeEventListener('logout', checkLogin);
+      window.removeEventListener(AUTH_EVENT, syncAuth);
     };
-  }, []); 
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.dispatchEvent(new Event('logout')); // notify Navbar
+
+    window.dispatchEvent(new Event(AUTH_EVENT));
+
     router.push('/');
   };
 
@@ -43,6 +47,7 @@ export default function Navbar() {
     pathname?.startsWith('/startups') ||
     pathname?.startsWith('/create-startup') ||
     pathname?.startsWith('/generate-intro') ||
+    pathname?.startsWith('/intro-wizard') ||
     pathname?.startsWith('/intro-queue') ||
     pathname?.startsWith('/reminders') ||
     pathname?.startsWith('/terms-of-service') ||
@@ -84,9 +89,21 @@ export default function Navbar() {
         <div className="flex items-center space-x-3">
           {isDashboardPage ? (
             isLoggedIn && (
-              <Link href="/settings">
-                <User className="w-6 h-6 text-gray-700 hover:text-blue-600" />
-              </Link>
+              <>
+                <Link href="/about">
+                  <button className="bg-transparent text-gray-800 rounded-lg px-3 py-1.5 text-sm hover:text-[#0347D2]">
+                    About Us
+                  </button>
+                </Link>
+                <Link href="/contact">
+                  <button className="bg-transparent text-gray-800 rounded-lg px-3 py-1.5 text-sm hover:text-[#0347D2]">
+                    Contact Us
+                  </button>
+                </Link>
+                <Link href="/settings">
+                  <User className="w-6 h-6 text-gray-700 hover:text-blue-600" />
+                </Link>
+              </> 
             )
           ) : (
             <div className="hidden md:flex items-center space-x-2">

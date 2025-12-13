@@ -1,3 +1,5 @@
+import { IntroStatus } from "./intro";
+
 export interface Intro {
   _id: string;
   startupId: string;
@@ -6,6 +8,7 @@ export interface Intro {
   investorName: string;
   generatedIntro: string;
   followUpDueDate: string;
+  status: IntroStatus;
 }
 
 export interface Reminder {
@@ -16,4 +19,5 @@ export interface Reminder {
   status: string;
   createdAt: string;
   updatedAt: string;
+  isCompleted?: boolean;
 }
