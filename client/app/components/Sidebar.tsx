@@ -4,56 +4,65 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import styles from "./Sidebar.module.css";
 
+// NEW: Wand icon for the Intro Wizard
 const icons = {
   dashboard: (
     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-      <rect x="2" y="3" width="7" height="6" rx="2" fill="currentColor"/>
-      <rect x="11" y="3" width="7" height="4" rx="2" fill="currentColor" opacity="0.55"/>
-      <rect x="11" y="9" width="7" height="8" rx="2" fill="currentColor"/>
-      <rect x="2" y="11" width="7" height="6" rx="2" fill="currentColor" opacity="0.6"/>
+      <rect x="2" y="3" width="7" height="6" rx="2" fill="currentColor" />
+      <rect x="11" y="3" width="7" height="4" rx="2" fill="currentColor" opacity="0.55" />
+      <rect x="11" y="9" width="7" height="8" rx="2" fill="currentColor" />
+      <rect x="2" y="11" width="7" height="6" rx="2" fill="currentColor" opacity="0.6" />
     </svg>
   ),
   investors: (
     <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <circle cx="7" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M13.4 14.1A4 4 0 0 0 3.6 14.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="14.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.2"/>
-      <path d="M18 15a3 3 0 0 0-4-2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <circle cx="7" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M13.4 14.1A4 4 0 0 0 3.6 14.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="14.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M18 15a3 3 0 0 0-4-2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   ),
   startups: (
     <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <path d="M3 17l7-13 7 13h-3.5L10 10l-3.5 7H3z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <path d="M3 17l7-13 7 13h-3.5L10 10l-3.5 7H3z" stroke="currentColor" strokeWidth="1.5" fill="none" />
     </svg>
   ),
   queue: (
     <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <rect x="3" y="5" width="14" height="2" rx="1" fill="currentColor"/>
-      <rect x="3" y="9" width="14" height="2" rx="1" fill="currentColor" opacity="0.7"/>
-      <rect x="3" y="13" width="14" height="2" rx="1" fill="currentColor" opacity="0.5"/>
+      <rect x="3" y="5" width="14" height="2" rx="1" fill="currentColor" />
+      <rect x="3" y="9" width="14" height="2" rx="1" fill="currentColor" opacity="0.7" />
+      <rect x="3" y="13" width="14" height="2" rx="1" fill="currentColor" opacity="0.5" />
     </svg>
   ),
   reminders: (
     <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-      <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   terms: (
     <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <rect x="4" y="3" width="12" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-      <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+      <rect x="4" y="3" width="12" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   ),
   settings: (
     <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
-      <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.3"/>
-      <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.41 1.41M14.37 14.37l1.41 1.41M4.22 15.78l1.41-1.41M14.37 5.63l1.41-1.41" stroke="currentColor" strokeWidth="1"/>
+      <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.41 1.41M14.37 14.37l1.41 1.41M4.22 15.78l1.41-1.41M14.37 5.63l1.41-1.41" stroke="currentColor" strokeWidth="1" />
     </svg>
   ),
   logout: (
     <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
-      <path d="M13 7l3 3-3 3M16 10H7M10 17v-1a4 4 0 0 0-4-4H4a4 4 0 0 0-4 4v1" stroke="#e23c3c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13 7l3 3-3 3M16 10H7M10 17v-1a4 4 0 0 0-4-4H4a4 4 0 0 0-4 4v1" stroke="#e23c3c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  // NEW ICON: Wand for Intro Wizard
+  wand: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 4l4 4L8 19l-4-4L15 4z" />
+      <path d="M19 8l-4-4" />
+      <path d="M2 22l2-2" />
     </svg>
   )
 };
@@ -74,6 +83,8 @@ const menu: MenuItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
   { href: "/investors", label: "Investors", icon: icons.investors },
   { href: "/startups", label: "Startups", icon: icons.startups },
+  // NEW MENU ITEM: Intro Wizard
+  { href: "/intro-wizard", label: "Intro Wizard", icon: icons.wand },
   { href: "/intro-queue", label: "Intro Queue", icon: icons.queue },
   { href: "/reminders", label: "Reminders", icon: icons.reminders },
   { href: "/terms-of-service", label: "Terms of Service", icon: icons.terms }
