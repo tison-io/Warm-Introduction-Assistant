@@ -6,16 +6,9 @@ import Workflow from "../components/landing-page/Workflow";
 
 
 export const metadata: Metadata = {
-  title: "Warmly Intro Assistant - Personalized Startup Introductions",
+  title: "Warmly Intro Assistant",
   description:
-    "Generate tailored, high-quality warm introductions for investors with AI. Built for founders, accelerators, and venture scouts.",
-  keywords: [
-    "warm introductions",
-    "startup intros",
-    "investor outreach",
-    "AI tools for founders",
-    "startup fundraising",
-  ],
+    "Generate tailored, high-quality warm introductions for investors with AI.",
   openGraph: {
     title: "Warmly Intro Assistant",
     description:
@@ -24,7 +17,7 @@ export const metadata: Metadata = {
     siteName: "Warmly Intro Assistant",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "https://warmly-intro-assistant.vercel.app/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Warmly Intro Assistant - AI for investor introductions",
@@ -37,7 +30,9 @@ export const metadata: Metadata = {
     title: "Warmly Intro Assistant",
     description:
       "Generate personalized warm introductions automatically for your startup.",
-    images: ["/og-image.jpg"],
+    images: [
+      "https://warmly-intro-assistant.vercel.app/og-image.jpg",
+    ],
   },
 };
 
