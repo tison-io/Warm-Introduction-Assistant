@@ -18,6 +18,8 @@
 </p>
 > ⚠️ The backend API may take a few seconds to respond on first request due to cold starts.
 
+
+
 A platform that connects startups with investors through warm introductions, making fundraising more personal and effective.
 
  **Quick Overview**
