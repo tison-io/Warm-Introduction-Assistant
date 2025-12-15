@@ -1,5 +1,11 @@
 # Warm Introduction Assistant 🤝
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://warmly-intro-assistant.vercel.app)
+[![API](https://img.shields.io/badge/Backend-API-blue)](https://warm-intro-assistant.onrender.com)
+> ⚠️ The backend API may take a few seconds to respond on first request due to cold starts.
+
+A platform that connects startups with investors through warm introductions, making fundraising more personal and effective.
+
  **Quick Overview**
 
 - Warm Introduction Assistant is a full-stack platform that helps startup founders get warm introductions to investors instead of cold outreach, using structured profiles, automated intro workflows, and an AI-powered transform engine.
