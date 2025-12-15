@@ -1,11 +1,21 @@
 # Warm Introduction Assistant 🤝
 
 <p align="center">
-  <img src="https://warmly-intro-assistant.vercel.app/logo.png" alt="Warm Introduction Assistant Logo" width="120" />
+  <img
+    src="https://warmly-intro-assistant.vercel.app/logo.png"
+    alt="Warm Introduction Assistant Logo"
+    width="120"
+  />
 </p>
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://warmly-intro-assistant.vercel.app)
-[![API](https://img.shields.io/badge/Backend-API-blue)](https://warm-intro-assistant.onrender.com)
+<p align="center">
+  <a href="https://warmly-intro-assistant.vercel.app">
+    <img src="https://img.shields.io/badge/Live-Demo-green" alt="Live Demo" />
+  </a>
+  <a href="https://warm-intro-assistant.onrender.com">
+    <img src="https://img.shields.io/badge/Backend-API-blue" alt="Backend API" />
+  </a>
+</p>
 > ⚠️ The backend API may take a few seconds to respond on first request due to cold starts.
 
 A platform that connects startups with investors through warm introductions, making fundraising more personal and effective.
