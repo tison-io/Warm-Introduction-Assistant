@@ -1,5 +1,9 @@
 # Warm Introduction Assistant 🤝
 
+<p align="center">
+  <img src="https://warmly-intro-assistant.vercel.app/logo.png" alt="Warm Introduction Assistant Logo" width="120" />
+</p>
+
 [![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://warmly-intro-assistant.vercel.app)
 [![API](https://img.shields.io/badge/Backend-API-blue)](https://warm-intro-assistant.onrender.com)
 > ⚠️ The backend API may take a few seconds to respond on first request due to cold starts.
