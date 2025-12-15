@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContactController } from './contact.controller';
+import { MailService } from '../mail/mail.service';
 
 describe('ContactController', () => {
   let controller: ContactController;
@@ -7,6 +8,14 @@ describe('ContactController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ContactController],
+      providers: [
+        {
+          provide: MailService,
+          useValue: {
+            sendContactEmail: jest.fn().mockResolvedValue(true),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<ContactController>(ContactController);
