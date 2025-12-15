@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Reminder extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'Founders', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'Founder', required: true })
   founderId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'IntroQueue', required: true })
@@ -12,8 +12,8 @@ export class Reminder extends Document {
   @Prop({ required: true })
   date: Date;
 
-  @Prop({ enum: ['queued', 'sent'], default: 'queued' })
-  status: 'queued' | 'sent';
+  @Prop({ enum: ['queued', 'sent', 'completed'], default: 'queued' })
+  status: 'queued' | 'sent' | 'completed';
 }
 
 export const ReminderSchema = SchemaFactory.createForClass(Reminder);

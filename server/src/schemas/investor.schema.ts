@@ -1,9 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+export type InvestorDocument = Investor & Document;
+
 @Schema({ timestamps: true })
-export class Investor extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+export class Investor {
+  @Prop({ type: Types.ObjectId, ref: 'Founder', required: true })
   userId: Types.ObjectId;
 
   @Prop({ required: true })

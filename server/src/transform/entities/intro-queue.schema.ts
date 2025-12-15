@@ -1,30 +1,30 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type IntroQueueDocument = IntroQueue & Document;
 
 @Schema({ timestamps:true })
 export class IntroQueue {
-    @Prop({ required: true })
-    startupId:string;
+    @Prop({ type: Types.ObjectId, ref: 'Startup', required: true })
+    startupId: Types.ObjectId;
 
     @Prop({ required:true })
-    startupName:string;
+    startupName: string;
+
+    @Prop({ type: Types.ObjectId, ref: 'Investor', required: true })
+    investorId: Types.ObjectId; 
 
     @Prop({ required: true })
-    investorId:string;
+    investorName: string;
 
-    @Prop({ required: true })
-    investorName:string;
-
-    @Prop({ required: true })
-    founderId:string;
+    @Prop({ type: Types.ObjectId, ref: 'Founder', required: true })
+    founderId: Types.ObjectId; 
 
     @Prop()
-    prefferedIntroFormat:string;
+    preferredIntroFormat: string; 
 
     @Prop()
-    introPreferencesText:string;
+    introPreferencesText: string;
 
     @Prop()
     generatedIntro: string;
@@ -33,10 +33,10 @@ export class IntroQueue {
     status: 'queued' | 'sent' | 'completed';
 
     @Prop({ type: Date, default: null })
-    followUpDueDate?: Date; //Only when status = 'sent'
+    followUpDueDate?: Date | null; 
 
     @Prop({ type: Date, default: null })
-    sentDate?: Date;
+    sentDate?: Date | null;
 
     @Prop({ default: false })
     reminderSent?: boolean;

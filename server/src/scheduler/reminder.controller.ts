@@ -14,10 +14,10 @@ export class ReminderController {
     }
 
     @Patch(':id/complete')
-    async markAsDone(@Param('id') id: string, @Req() req) {
-        const founderId = req.user.userId;
-        return this.reminderService.markAsCompleted(id, founderId);
-    }
+    async markAsDone(@Param('id') id: string, @Req() req) {
+        const founderId = req.user.userId;
+        return this.reminderService.markReminderAndIntroCompleted(id, founderId);
+    }
 
     @Delete(':id')
     async deleteReminder(@Param('id') reminderId: string, @Req() req) {

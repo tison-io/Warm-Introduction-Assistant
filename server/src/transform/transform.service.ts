@@ -1,6 +1,8 @@
+// src/transform/transform.service.ts (Updated to handle Types.ObjectId and denormalized fields)
+
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose'; // <-- Import Types here
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
 import { ReminderService } from '../scheduler/reminder.service';
@@ -13,7 +15,7 @@ export class TransformService {
     private readonly reminderService: ReminderService
   ) {}
 
-  //Call GenAI endpoint for transforming intros
+  // GenAI Transform engine
   async transformIntro(dto: TransformIntroDto) {
     console.log("Received Transform Intro Payload:", dto);
 
@@ -27,9 +29,7 @@ export class TransformService {
     try {
       const response = await fetch("https://warm-introduction-assistant.onrender.com/transform", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           blurb: dto.blurb,
           investor_preference: dto.investor_preference
@@ -64,15 +64,17 @@ export class TransformService {
     }
   }
 
+  // GetIntrosByFounder
   async getIntrosByFounder(founderId: string) {
     const intros = await this.introQueueModel
-      .find({ founderId })
+      .find({ founderId: new Types.ObjectId(founderId) })
       .sort({ createdAt: -1 }) 
       .exec();
 
     return intros;
   }
 
+  // QueueIntro
   async queueIntro(data: {
     startupId: string;
     startupName: string;
@@ -86,21 +88,31 @@ export class TransformService {
   }) {
     // Prevent followUpDueDate input since status will be first queued
     if (data.followUpDueDate) {
-      throw new Error(
+      throw new BadRequestException(
         "Cannot set follow-up date when creating a queued intro. Set it only when marking as sent."
       );
     }
+    
+    const createData = {
+      startupId: new Types.ObjectId(data.startupId),
+      startupName: data.startupName,
+      investorId: new Types.ObjectId(data.investorId),
+      investorName: data.investorName,
+      founderId: new Types.ObjectId(data.founderId),
+      preferredIntroFormat: data.preferredIntroFormat,
+      introPreferencesText: data.introPreferencesText,
+      generatedIntro: data.generatedIntro,
+      status: 'queued' as const,
+      reminderSent: false,
+      followUpCount: 0,
+    };
 
-    const introRecord = await this.introQueueModel.create({
-      ...data,
-      status: 'queued',    
-      reminderSent: false,     
-      followUpCount: 0,      
-    });
+    const introRecord = await this.introQueueModel.create(createData);
 
     return introRecord;
   }
 
+  // UpdateIntroStatus
   async updateIntroStatus(
     introId: string, 
     status: 'queued' | 'sent' | 'completed', 
@@ -111,9 +123,16 @@ export class TransformService {
       throw new NotFoundException('Intro not found');
     } 
 
-    // Only allow setting follow-up date if status = 'sent'
+    if (status === 'sent' && !followUpDueDate) {
+        throw new BadRequestException('A follow-up date is required when status is "sent".');
+    }
+
     if (followUpDueDate && status !== 'sent') {
       throw new BadRequestException('Follow-up date can only be set when status is "sent".');
+    }
+    
+    if (status === 'queued' && intro.status !== 'queued') {
+         throw new BadRequestException('Cannot set status back to "queued".');
     }
 
     intro.status = status;
@@ -121,21 +140,20 @@ export class TransformService {
     if (status === 'sent') {
       intro.sentDate = new Date();
     
-
       if(followUpDueDate) {
         intro.followUpDueDate = followUpDueDate;
 
-        //Integrating reminder scheduler
         await this.reminderService.createReminder(
-          intro.founderId,
+          intro.founderId.toString(), // Convert ObjectId to string for external service call
           intro._id.toString(),
           followUpDueDate
         )
       }
+    } else if (status === 'completed') {
+        intro.followUpDueDate = null;
     }
     
     await intro.save();
     return intro;
   }
-
 }

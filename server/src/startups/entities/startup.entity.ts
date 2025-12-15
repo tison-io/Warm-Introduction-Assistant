@@ -15,7 +15,7 @@ export class Startup {
     pitchLink: string;
 
     @Prop({ type: Types.ObjectId, ref:'Founder', required:true })
-    founderId:string;
+    founderId:Types.ObjectId;
 }
 
 export const StartupSchema = SchemaFactory.createForClass(Startup);
