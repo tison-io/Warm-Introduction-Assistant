@@ -1,12 +1,15 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeClosed } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -83,30 +86,46 @@ export default function ResetPasswordPage() {
         <form className="rp-form" onSubmit={handleSubmit}>
           <div className="input-group">
             <label className="rp-label" htmlFor="password">New Password</label>
-            <input
-              id="password"
-              className="rp-input"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              disabled={loading || !token}
-              minLength={6}
-            />
+            <div className="password-input-container">
+              <input
+                id="password"
+                className="rp-input"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                disabled={loading || !token}
+                minLength={6}
+              />
+              <span
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
+              </span>
+            </div>
           </div>
           
           <div className="input-group">
             <label className="rp-label" htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              className="rp-input"
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              required
-              disabled={loading || !token}
-              minLength={6}
-            />
+            <div className="password-input-container">
+              <input
+                id="confirmPassword"
+                className="rp-input"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required
+                disabled={loading || !token}
+                minLength={6}
+              />
+              <span
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
+              </span>
+            </div>
           </div>
           
           {message && (
@@ -187,6 +206,9 @@ export default function ResetPasswordPage() {
           color: #232b46;
           font-weight: 500;
         }
+        .password-input-container {
+          position: relative;
+        }
         .rp-input {
           width: 100%;
           background: #f4f6fb;
@@ -195,6 +217,22 @@ export default function ResetPasswordPage() {
           padding: 12px 10px;
           font-size: 16px;
           outline: none;
+        }
+        .password-input-container .rp-input {
+          padding-right: 45px;
+        }
+        .password-toggle {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          cursor: pointer;
+          color: #6c757d;
+          display: flex;
+          align-items: center;
+        }
+        .password-toggle:hover {
+          color: #495057;
         }
         .rp-input:disabled {
           background: #f8f9fa;
