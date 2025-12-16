@@ -1,6 +1,11 @@
 import { FounderLoginResponse, FounderResponse, FounderSignupInput, FounderUpdateInput } from "../types/founder";
 
 const BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
+const AUTH_URL = `${BASE_URL}/auth/google`;
+
+export function initiateGoogleLogin(): void {
+    window.location.href = AUTH_URL;
+}
 
 export async function signupFounder(data: FounderSignupInput): Promise<FounderResponse> {
     try {

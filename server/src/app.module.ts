@@ -12,6 +12,7 @@ import { MailService } from './mail/mail.service';
 import { ContactModule } from './contact/contact.module';
 import { StartupsModule } from './startups/startups.module';
 import { TransformModule } from './transform/transform.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { TransformModule } from './transform/transform.module';
     ContactModule,
     StartupsModule,
     TransformModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailService],
