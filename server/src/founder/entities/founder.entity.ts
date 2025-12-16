@@ -11,11 +11,14 @@ export class Founder {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true })
-  password: string;
+  @Prop({ required: false, select: false })
+  password?: string;
 
-  @Prop({ required: true })
-  phone: string;
+  @Prop({ required: false })
+  phone?: string;
+
+  @Prop({ required: false, unique: true, sparse:true })
+  googleId?: string;
 
   @Prop()
   profileImage: string;

@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, EyeClosed, Eye, Loader2 } from 'lucide-react';
-import { loginFounder } from '../lib/founder-api';
+import { loginFounder, initiateGoogleLogin } from '../lib/founder-api';
 import { FounderLoginResponse } from '../types/founder';
 import { AUTH_EVENT } from '../lib/auth-events';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -34,6 +35,11 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    setLoading(true);
+    initiateGoogleLogin();
   };
 
   const [isVisible, setIsVisible] = useState(false);
@@ -158,6 +164,26 @@ export default function LoginPage() {
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        <button
+          data-testid="login-google"
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-gray-300 text-gray-700 font-semibold transition-colors hover:bg-gray-50 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          <Image src="/google.svg" width={20} height={20} alt="Google" />
+          Sign in with Google
+        </button>
 
         <div className="text-center text-sm text-gray-600 mt-2">
           Don't have an account?{' '}
