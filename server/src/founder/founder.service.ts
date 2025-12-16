@@ -63,15 +63,15 @@ export class FounderService {
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
       
-    const user = await this.founderModel.findOne({ email });
+    const user = await this.founderModel.findOne({ email }).select('+password');
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (!user.password) {
+    if (user.googleId && !user.password) {
       throw new UnauthorizedException(
-        'This account uses Google sign-in. Please log in with Google.'
+        'This account was created with Google. Please log in with Google.'
       );
     }
       
