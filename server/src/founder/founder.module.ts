@@ -6,6 +6,7 @@ import { FounderController } from './founder.controller';
 import { JwtStrategy } from 'src/guards/jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { MailService } from '../mail/mail.service';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { JwtModule } from '@nestjs/jwt';
     ]),
   ],
   controllers: [FounderController],
-  providers: [FounderService, JwtStrategy],
+  providers: [FounderService, JwtStrategy, MailService],
 })
 export class FounderModule {}

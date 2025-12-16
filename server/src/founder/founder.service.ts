@@ -10,6 +10,10 @@ import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateFounderDto } from './dto/update-founder.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MailService } from '../mail/mail.service';
+import * as crypto from 'crypto';
 
 
 @Injectable()
@@ -17,7 +21,8 @@ export class FounderService {
   constructor(
     @InjectModel(Founder.name) private founderModel: Model<FounderDocument>,
     private configService: ConfigService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private mailService: MailService
   ) {}
   
   async signup(createFounderDto: CreateFounderDto): Promise<FounderResponse> {
@@ -193,5 +198,69 @@ export class FounderService {
       token,
       user: mockUser,
     };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const { email } = forgotPasswordDto;
+    
+    const user = await this.founderModel.findOne({ email });
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return { message: 'If the email exists, a password reset link has been sent.' };
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+
+    // Save reset token to user
+    await this.founderModel.findByIdAndUpdate(
+      user._id,
+      {
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: resetTokenExpiry
+      },
+      { runValidators: false }
+    );
+
+    // Send reset email
+    try {
+      await this.mailService.sendPasswordResetEmail(email, resetToken);
+      return { message: 'If the email exists, a password reset link has been sent.' };
+    } catch (error) {
+      console.error('Failed to send reset email:', error);
+      throw new Error('Failed to send password reset email');
+    }
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { token, password } = resetPasswordDto;
+
+    const user = await this.founderModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() }
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update password and clear reset token
+    await this.founderModel.findByIdAndUpdate(
+      user._id, 
+      {
+        password: hashedPassword,
+        $unset: {
+          resetPasswordToken: 1,
+          resetPasswordExpires: 1
+        }
+      },
+      { runValidators: false }
+    );
+
+    return { message: 'Password has been reset successfully' };
   }
 }

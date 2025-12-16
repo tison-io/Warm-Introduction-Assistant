@@ -5,6 +5,8 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Req } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { UpdateFounderDto } from './dto/update-founder.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('founder')
 export class FounderController {
@@ -60,5 +62,15 @@ export class FounderController {
   @Patch('profile')
   updateProfile(@Req() req: any, @Body() updateDto: UpdateFounderDto) {
     return this.founderService.updateProfile(req.user.userId, updateDto);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.founderService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.founderService.resetPassword(resetPasswordDto);
   }
 }

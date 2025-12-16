@@ -4,7 +4,10 @@ import { useRouter } from "next/navigation";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const [input, setInput] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   return (
     <div className="fp-bg">
@@ -24,21 +27,56 @@ export default function ForgotPasswordPage() {
         <form
           className="fp-form"
           autoComplete="off"
-          onSubmit={e => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            router.push("/reset-password");
+            setLoading(true);
+            setError("");
+            setMessage("");
+
+            try {
+              const response = await fetch(`${process.env.NEXT_PUBLIC_FOUNDER_API_URL}/founder/forgot-password`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+              });
+
+              const data = await response.json();
+
+              if (response.ok) {
+                setMessage(data.message);
+              } else {
+                setError(data.message || 'Failed to send reset email');
+              }
+            } catch (error) {
+              setError('Network error. Please try again.');
+            } finally {
+              setLoading(false);
+            }
           }}
         >
-          <label className="fp-label" htmlFor="fp-input">Email or Phone number</label>
+          <label className="fp-label" htmlFor="fp-input">Email Address</label>
           <input
             id="fp-input"
             className="fp-input"
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
-          <button className="fp-btn" type="submit">Submit</button>
+          
+          {message && (
+            <div className="fp-message success">{message}</div>
+          )}
+          
+          {error && (
+            <div className="fp-message error">{error}</div>
+          )}
+          <button className="fp-btn" type="submit" disabled={loading}>
+            {loading ? 'Sending...' : 'Send Reset Link'}
+          </button>
         </form>
       </div>
       <style jsx>{`
@@ -121,6 +159,27 @@ export default function ForgotPasswordPage() {
         .fp-btn:hover,
         .fp-btn:focus {
           background: #123bb4;
+        }
+        .fp-btn:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+        }
+        .fp-message {
+          padding: 10px;
+          border-radius: 5px;
+          margin-top: 10px;
+          text-align: center;
+          font-size: 14px;
+        }
+        .fp-message.success {
+          background: #d4edda;
+          color: #155724;
+          border: 1px solid #c3e6cb;
+        }
+        .fp-message.error {
+          background: #f8d7da;
+          color: #721c24;
+          border: 1px solid #f5c6cb;
         }
         @media (max-width: 500px) {
           .fp-center-card {

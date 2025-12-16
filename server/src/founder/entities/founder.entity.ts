@@ -21,6 +21,12 @@ export class Founder {
   profileImage: string;
 
   @Prop()
+  resetPasswordToken?: string;
+
+  @Prop()
+  resetPasswordExpires?: Date;
+
+  @Prop()
   createdAt: Date;
 
   @Prop()
