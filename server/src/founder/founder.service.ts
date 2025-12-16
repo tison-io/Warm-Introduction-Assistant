@@ -68,6 +68,12 @@ export class FounderService {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    if (!user.password) {
+      throw new UnauthorizedException(
+        'This account uses Google sign-in. Please log in with Google.'
+      );
+    }
       
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
