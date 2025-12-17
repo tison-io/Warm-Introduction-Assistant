@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeClosed, Loader2 } from "lucide-react";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import { signupFounder } from "../lib/founder-api";
 import { useToast } from "../components/Toast";
 
@@ -29,6 +31,17 @@ export default function SignupPage() {
     setIsVisible(true);
   }, []);
 
+  const handlePhoneChange = (value: string, country: any) => {
+    const dialCode = country.dialCode;
+    const localPart = value.slice(dialCode.length);
+
+    let cleanValue = value;
+    if(localPart.startsWith("0")) {
+      cleanValue = dialCode + localPart.substring(1);
+    }
+    setForm({ ...form, phone: cleanValue});
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -41,7 +54,8 @@ export default function SignupPage() {
     if (form.password !== form.confirmPassword) { showToast("Passwords do not match", "error"); setLoading(false); return; }
 
     try {
-      const fullPhone = countryCode + form.phone;
+      const fullPhone = `+${form.phone}`;
+
       const result = await signupFounder({
         name: form.name,
         email: form.email,
@@ -50,7 +64,7 @@ export default function SignupPage() {
       });
 
       // Show success toast
-      showToast(`Account created for ${result.name}. Please login.`, "success");
+      showToast(`Account created for ${result.name}. Redirecting you to login.`, "success");
 
       // Redirect after short delay
       setTimeout(() => router.push("/login"), 2000);
@@ -110,25 +124,20 @@ export default function SignupPage() {
           />
 
           {/* Phone Field */}
-          <div className="flex gap-2 w-full">
-            <select
-              data-testid="signup-country-code"
-              value={countryCode}
-              onChange={(e) => setCountryCode(e.target.value)}
-              className="w-20 p-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base cursor-pointer"
-            >
-              <option value="+1">US +1</option>
-              <option value="+254">Kenya +254</option>
-              <option value="+233">Ghana +233</option>
-            </select>
-            <input
-              data-testid="signup-phone"
-              type="tel"
-              placeholder="Phone number"
+          <div className="phone-input-container">
+            <PhoneInput
+              country={"ke"}
               value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              required
+              onChange={handlePhoneChange}
+              enableSearch={true}
+              inputProps={{
+                name: "phone",
+                required: true,
+                autoFocus: false,
+              }}
+              containerClass="!w-full"
+              inputClass="!w-full !h-[50px] !text-base !rounded-lg !border-gray-300 focus:!ring-1 focus:!ring-blue-500 focus:!border-blue-500"
+              buttonClass="!rounded-l-lg !border-gray-300 !bg-white"
             />
           </div>
 
