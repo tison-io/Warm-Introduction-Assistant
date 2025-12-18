@@ -6,13 +6,15 @@ import { Model, Types } from 'mongoose'; // <-- Import Types here
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
 import { ReminderService } from '../scheduler/reminder.service';
+import { MailService } from 'src/mail/mail.service';
 
 
 @Injectable()
 export class TransformService {
   constructor(
     @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>,
-    private readonly reminderService: ReminderService
+    private readonly reminderService: ReminderService,
+    private readonly mailService: MailService,
   ) {}
 
   // GenAI Transform engine
@@ -112,6 +114,57 @@ export class TransformService {
     const introRecord = await this.introQueueModel.create(createData);
 
     return introRecord;
+  }
+
+  // Send Intro-Mails
+  async sendGeneratedIntroEmail(options: {
+    investorEmail: string;
+    startupName: string;
+    generatedIntro: string;
+  }) {
+    const { investorEmail, startupName, generatedIntro } = options;
+
+    if (!investorEmail) throw new BadRequestException("Investor email is required.");
+    if (!startupName) throw new BadRequestException("Startup name is required.");
+    if (!generatedIntro) throw new BadRequestException("Generated intro text is required.");
+
+    // --- Normalize intro to be safe for JSON and emails ---
+    function normalizeGeneratedIntro(rawIntro: string): string {
+      let intro = rawIntro;
+
+      // Remove surrounding quotes if present
+      if (intro.startsWith('"') && intro.endsWith('"')) {
+        intro = intro.slice(1, -1).trim();
+      }
+
+      // Replace escaped sequences with actual characters
+      intro = intro.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
+      // Remove other control characters that could break JSON
+      intro = intro.replace(/[\u0000-\u001F\u007F]/g, '');
+
+      return intro;
+    }
+
+    const formattedIntro = normalizeGeneratedIntro(generatedIntro);
+    const subject = `Warm Intro from ${startupName} startup`;
+
+    try {
+      const result = await this.mailService.sendGeneratedIntroEmail({
+        investorEmail,
+        startupName,
+        generatedIntro: formattedIntro,
+      });
+
+      return {
+        success: true,
+        message: "Intro email sent successfully to investor.",
+        result,
+      };
+    } catch (error) {
+      console.error("Investor intro email failed:", error);
+      throw new BadRequestException("Failed to send investor intro email.");
+    }
   }
 
   // UpdateIntroStatus

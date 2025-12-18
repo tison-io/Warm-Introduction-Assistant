@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Param, Patch, UseGuards, Get, Req, } from '@nestjs/common';
 import { TransformService } from './transform.service';
 import { TransformIntroDto } from './dto/transform-intro.dto';
+import { SendIntroDto } from './dto/send-intro.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Controller('intros')
@@ -22,6 +23,15 @@ export class TransformController {
   @Post('queue')
   async queue(@Body() data: any) {
     return this.transformService.queueIntro(data);
+  }
+
+  @Post('send-intro')
+  async sendIntroEmail(@Body() dto: SendIntroDto) {
+    return this.transformService.sendGeneratedIntroEmail({
+      investorEmail: dto.investorEmail,
+      startupName: dto.startupName,
+      generatedIntro: dto.generatedIntro,
+    });
   }
 
   @Patch(':id/status')

@@ -4,11 +4,13 @@ import { IntroQueue, IntroQueueSchema } from './entities/intro-queue.schema';
 import { TransformService } from './transform.service';
 import { TransformController } from './transform.controller';
 import { SchedulerModule } from 'src/scheduler/scheduler.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: IntroQueue.name, schema: IntroQueueSchema }]),
-    SchedulerModule
+    SchedulerModule,
+    MailModule,
   ],
   controllers: [TransformController],
   providers: [TransformService],
