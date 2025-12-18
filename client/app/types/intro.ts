@@ -8,6 +8,7 @@ export interface IntroQueue {
     startupName: string;
     investorId: string;
     investorName: string;
+    investorEmail: string;
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText?: string;

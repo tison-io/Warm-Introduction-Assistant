@@ -220,6 +220,12 @@ export default function IntroQueuePage() {
                           )}
                         </div>
 
+                        {/* Investor Email */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Investor Email</label>
+                          <p className="mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-100">{expandedIntro.investorEmail}</p>
+                        </div>
+
                         {/* Notes */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Notes</label>

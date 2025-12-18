@@ -80,6 +80,7 @@ export class TransformService {
     startupName: string;
     investorId: string;
     investorName: string;
+    investorEmail: string;
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText?: string;
@@ -98,6 +99,7 @@ export class TransformService {
       startupName: data.startupName,
       investorId: new Types.ObjectId(data.investorId),
       investorName: data.investorName,
+      investorEmail: data.investorEmail,
       founderId: new Types.ObjectId(data.founderId),
       preferredIntroFormat: data.preferredIntroFormat,
       introPreferencesText: data.introPreferencesText,

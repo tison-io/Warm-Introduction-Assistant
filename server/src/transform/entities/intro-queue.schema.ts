@@ -17,6 +17,9 @@ export class IntroQueue {
     @Prop({ required: true })
     investorName: string;
 
+    @Prop({ required: true })
+    investorEmail: string;
+
     @Prop({ type: Types.ObjectId, ref: 'Founder', required: true })
     founderId: Types.ObjectId; 
 

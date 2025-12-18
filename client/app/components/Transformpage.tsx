@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Save, ArrowLeft, Copy, Loader2 } from 'lucide-react';
+import { ArrowLeft, Copy, Loader2 } from 'lucide-react';
 import { QueueIntroDto } from '../types/transform'; 
 import { queueIntroApi } from '../lib/transform-api'; 
 import { useToast } from '../components/Toast';
@@ -12,6 +12,7 @@ interface TransformResultData {
     startupName: string;
     investorId: string;
     investorName: string;
+    investorEmail: string;
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText: string;
@@ -24,7 +25,8 @@ function parseQueryData(params: URLSearchParams): TransformResultData | null {
         'startupId', 
         'startupName', 
         'investorId', 
-        'investorName', 
+        'investorName',
+        'investorEmail', 
         'founderId', 
         'preferredIntroFormat', 
         'generatedIntro'
@@ -33,7 +35,10 @@ function parseQueryData(params: URLSearchParams): TransformResultData | null {
     const data: Partial<TransformResultData> = {};
     for (const key of requiredKeys) {
         const value = params.get(key);
-        if (!value) return null;
+        if (!value) {
+            console.error(`Missing value for key: ${key}`);
+            return null;
+        } 
         data[key as keyof TransformResultData] = value;
     }
     
@@ -55,7 +60,7 @@ export default function GeneratedIntroPage() {
         const parsedData = parseQueryData(searchParams);
         if (!parsedData) {
             showToast('Missing data. Please start the transformation process again.', 'error');
-            router.push('/startups');
+            router.push('/intro-wizard');
             return;
         }
         setData(parsedData);
@@ -93,6 +98,7 @@ export default function GeneratedIntroPage() {
             startupName: data.startupName,
             investorId: data.investorId,
             investorName: data.investorName,
+            investorEmail: data.investorEmail,
             founderId: data.founderId,
             preferredIntroFormat: data.preferredIntroFormat,
             introPreferencesText: data.introPreferencesText,
@@ -143,7 +149,22 @@ export default function GeneratedIntroPage() {
                     </p>
                     
                     <div className="border border-gray-200 rounded-xl p-6 shadow-md">
-                        <h2 data-testid="review-investor-name" className="text-xl font-semibold text-gray-900">{investorDisplayName}</h2>
+                        <h2
+                            data-testid="review-investor-name"
+                            className="text-xl font-semibold text-gray-900 flex items-center gap-3"
+                        >
+                            {investorDisplayName}
+
+                            <span
+                                className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded cursor-pointer"
+                                title={data.investorEmail}
+                            >
+                                {data.investorEmail.length > 18
+                                    ? data.investorEmail.substring(0, 18) + "..."
+                                    : data.investorEmail
+                                }
+                            </span>
+                        </h2>
                         <p data-testid="review-intro-format" className="text-sm text-gray-500 mb-4">Preferred Intro Format: {introType}</p>
                         
                         <textarea
