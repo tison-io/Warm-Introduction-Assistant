@@ -6,13 +6,15 @@ import { Model, Types } from 'mongoose'; // <-- Import Types here
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
 import { ReminderService } from '../scheduler/reminder.service';
+import { MailService } from 'src/mail/mail.service';
 
 
 @Injectable()
 export class TransformService {
   constructor(
     @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>,
-    private readonly reminderService: ReminderService
+    private readonly reminderService: ReminderService,
+    private readonly mailService: MailService,
   ) {}
 
   // GenAI Transform engine
@@ -112,6 +114,126 @@ export class TransformService {
     const introRecord = await this.introQueueModel.create(createData);
 
     return introRecord;
+  }
+
+  async requestInvestorConsent(introId: string) {
+    const intro = await this.introQueueModel.findById(introId);
+    if (!intro) throw new NotFoundException('Intro not found');
+
+    if (intro.status !== 'queued') {
+      throw new BadRequestException('Intro must be queued to request consent.');
+    }
+
+    const approvalUrl = `${process.env.FRONTEND_URL}/approve-intro?introId=${intro._id}`;
+
+    const consentMessage = `
+      Hi ${intro.investorName},
+
+      The founder of ${intro.startupName} wants to send you a warm introduction.
+
+      Would you like to receive the intro?
+
+      <a href="${approvalUrl}" style="background-color:#0347D2;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;">
+      Yes, send me the intro
+      </a>
+    `;
+
+    await this.mailService.sendGeneratedIntroEmail({
+      investorEmail: intro.investorEmail,
+      startupName: intro.startupName,
+      generatedIntro: consentMessage,
+    });
+
+    intro.status = 'investor_approval_requested';
+    await intro.save();
+
+    return {
+      success: true,
+      message: 'Investor consent email sent successfully.',
+      intro,
+    };
+  }
+
+  async approveInvestorIntro(introId: string) {
+    const intro = await this.introQueueModel.findById(introId);
+    if (!intro) throw new NotFoundException('Intro not found');
+
+    if (intro.status !== 'investor_approval_requested') {
+      throw new BadRequestException('Intro is not awaiting investor consent.');
+    }
+
+    // Update status to approved
+    intro.status = 'investor_approved';
+    await intro.save();
+
+    // Send actual generated intro
+    await this.sendGeneratedIntroEmail({
+      investorEmail: intro.investorEmail,
+      startupName: intro.startupName,
+      generatedIntro: intro.generatedIntro,
+    });
+
+    // Mark as sent
+    intro.status = 'sent';
+    intro.sentDate = new Date();
+    await intro.save();
+
+    return {
+      success: true,
+      message: 'Investor approved and intro email sent successfully.',
+      intro,
+    };
+  }
+
+  // Send Intro-Mails
+  async sendGeneratedIntroEmail(options: {
+    investorEmail: string;
+    startupName: string;
+    generatedIntro: string;
+  }) {
+    const { investorEmail, startupName, generatedIntro } = options;
+
+    if (!investorEmail) throw new BadRequestException("Investor email is required.");
+    if (!startupName) throw new BadRequestException("Startup name is required.");
+    if (!generatedIntro) throw new BadRequestException("Generated intro text is required.");
+
+    // --- Normalize intro to be safe for JSON and emails ---
+    function normalizeGeneratedIntro(rawIntro: string): string {
+      let intro = rawIntro;
+
+      // Remove surrounding quotes if present
+      if (intro.startsWith('"') && intro.endsWith('"')) {
+        intro = intro.slice(1, -1).trim();
+      }
+
+      // Replace escaped sequences with actual characters
+      intro = intro.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
+      // Remove other control characters that could break JSON
+      intro = intro.replace(/[\u0000-\u001F\u007F]/g, '');
+
+      return intro;
+    }
+
+    const formattedIntro = normalizeGeneratedIntro(generatedIntro);
+    const subject = `Warm Intro from ${startupName} startup`;
+
+    try {
+      const result = await this.mailService.sendGeneratedIntroEmail({
+        investorEmail,
+        startupName,
+        generatedIntro: formattedIntro,
+      });
+
+      return {
+        success: true,
+        message: "Intro email sent successfully to investor.",
+        result,
+      };
+    } catch (error) {
+      console.error("Investor intro email failed:", error);
+      throw new BadRequestException("Failed to send investor intro email.");
+    }
   }
 
   // UpdateIntroStatus

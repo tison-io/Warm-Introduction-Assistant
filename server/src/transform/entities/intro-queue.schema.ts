@@ -33,7 +33,7 @@ export class IntroQueue {
     generatedIntro: string;
 
     @Prop({ default: 'queued'})
-    status: 'queued' | 'sent' | 'completed';
+    status: 'queued' | 'sent' | 'completed' | 'investor_approval_requested' | 'investor_approved';
 
     @Prop({ type: Date, default: null })
     followUpDueDate?: Date | null; 
