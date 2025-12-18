@@ -11,6 +11,9 @@ export class Investor {
   @Prop({ required: true })
   name: string;
 
+  @Prop({ required: true, unique: true, lowercase: true, trim: true })
+  email:string;
+
   @Prop({ type: [String], required: true })
   tags: string[];
 

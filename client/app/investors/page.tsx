@@ -12,6 +12,14 @@ const revalidatePath = (path: string) => {
   console.log(`Simulating revalidation for path: ${path}`);
 };
 
+// Mask email like: ash*****@gmail.com
+const maskEmail = (email: string) => {
+  const [name, domain] = email.split('@');
+  if (!name || !domain) return email;
+  const starting = name.slice(0, 3);
+  return `${starting}${'*'.repeat(5)}@${domain}`;
+};
+
 const InvestorListPage = () => {
   const [investors, setInvestors] = useState<Investor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +56,7 @@ const InvestorListPage = () => {
       showToast('Investor deleted successfully!', 'success');
       startTransition(() => {
         setInvestors(prev => prev.filter(inv => inv._id !== investorId));
-        revalidatePath('/investors'); 
+        revalidatePath('/investors');
       });
     } catch (error) {
       console.error('Error deleting investor:', error);
@@ -68,14 +76,18 @@ const InvestorListPage = () => {
       style={{ backgroundImage: "url('/background-img.jpg')" }}
     >
       <div className="max-w-7xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
+        
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="text-white">
             <h1 className="text-4xl font-light mb-1">Investors</h1>
             <p className="text-white/70">Manage your investor list</p>
           </div>
+
           <Link href="/investors/create" passHref>
-            <button data-testid="add-investor-btn" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 whitespace-nowrap">
+            <button
+              data-testid="add-investor-btn"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-150 whitespace-nowrap">
               + Add Investor
             </button>
           </Link>
@@ -98,16 +110,18 @@ const InvestorListPage = () => {
         {/* Investor Table */}
         <div className="overflow-x-auto rounded-lg shadow-lg bg-gray-400">
           <table className="min-w-full divide-y divide-white/20">
+            
             <thead className="bg-white">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">No.</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Tags</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Preferred Format</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Intro Prefs</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Email</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-black uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-white/10">
               {loading || isPending ? (
                 <tr>
@@ -123,34 +137,71 @@ const InvestorListPage = () => {
                 </tr>
               ) : (
                 investors.map((investor, index) => (
-                  <tr data-testid="investor-row" key={investor._id} className="transition duration-150 bg-white">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">{investor.name}</td>
+                  <tr 
+                    data-testid="investor-row"
+                    key={investor._id}
+                    className="transition duration-150 bg-white"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                      {index + 1}
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-black">
+                      {investor.name}
+                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex flex-wrap gap-2">
                         {investor.tags.map((tag, i) => (
-                          <span key={i} className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500 text-white">{tag}</span>
+                          <span 
+                            key={i}
+                            className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500 text-white">
+                            {tag}
+                          </span>
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{investor.preferred_intro_format}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">{investor.intro_preferences_text}</td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                      {investor.preferred_intro_format}
+                    </td>
+
+                    {/* EMAIL COLUMN */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                      <span 
+                        title={investor.email} 
+                        className="cursor-help"
+                      >
+                        {maskEmail(investor.email)}
+                      </span>
+                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-3">
                         <Link href={`/investors/${investor._id}/edit`} passHref>
-                          <button data-testid="edit-investor-btn" title="Edit" className="text-black hover:text-gray-600 transition duration-150">
+                          <button data-testid="edit-investor-btn" 
+                            title="Edit"
+                            className="text-black hover:text-gray-600 transition duration-150">
                             <Pencil className="h-5 w-5" />
                           </button>
                         </Link>
-                        <button data-testid="delete-investor-btn" onClick={() => handleDelete(investor._id)} title="Delete" className="text-red-400 hover:text-red-500 transition duration-150">
+
+                        <button
+                          data-testid="delete-investor-btn"
+                          onClick={() => handleDelete(investor._id)}
+                          title="Delete"
+                          className="text-red-400 hover:text-red-500 transition duration-150"
+                        >
                           <Trash2 className="h-5 w-5" />
                         </button>
                       </div>
                     </td>
+
                   </tr>
                 ))
               )}
             </tbody>
+
           </table>
         </div>
       </div>

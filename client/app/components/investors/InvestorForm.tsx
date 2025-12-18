@@ -112,6 +112,7 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
 
   const [formData, setFormData] = useState<InvestorFormData>({
     name: initialData?.name || '',
+    email: initialData?.email || '',  
     tags: initialData?.tags || [],
     preferred_intro_format: initialData?.preferred_intro_format || '',
     intro_preferences_text: initialData?.intro_preferences_text || '',
@@ -258,6 +259,14 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
         </div>
 
         <div className="md:col-span-2">
+          <FormField
+            label="Email"
+            name="email"
+            required
+            value={formData.email}
+            onChange={handleChange}
+          />
+
           <FormField
             label="Tags (Press Enter to add)"
             name="tagInput"

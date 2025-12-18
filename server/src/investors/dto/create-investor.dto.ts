@@ -1,9 +1,13 @@
-import { IsString, IsNotEmpty, IsArray, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, IsOptional, IsEmail } from 'class-validator';
 
 export class CreateInvestorDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
 
   @IsArray()
   @IsString({ each: true })

@@ -7,6 +7,7 @@ export interface TransformIntroDto {
     blurb: string; 
     investor_id: string;
     investor_name: string;
+    investor_email: string;
     investor_preference: IntroFormat; 
     intro_preferences_text: string;
     founder_id: string;
@@ -27,6 +28,7 @@ export interface QueueIntroDto {
     startupName: string;
     investorId: string;
     investorName: string;
+    investorEmail: string;
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText?: string;
