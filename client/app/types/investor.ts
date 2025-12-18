@@ -4,6 +4,7 @@ export type Investor = {
     _id: string;
     userId: string;
     name: string;
+    email: string;
     tags: string[];
     preferred_intro_format: IntroFormat;
     intro_preferences_text: string;
@@ -14,6 +15,7 @@ export type Investor = {
 
 export type CreateInvestorDto = {
   name: string;
+  email: string;
   tags: string[];
   preferred_intro_format: IntroFormat;
   intro_preferences_text: string;
