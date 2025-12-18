@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { IntroQueue, IntroStatus, StatusUpdatePayload } from '../types/intro';
-import { fetchIntrosByFounder, updateIntroStatus } from '../lib/intro-api';
-import { ChevronUp, ChevronDown, Plus, Loader2 } from 'lucide-react';
+import { fetchIntrosByFounder, updateIntroStatus, sendIntroRequest } from '../lib/intro-api';
+import { ChevronUp, ChevronDown, Plus, Loader2, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../components/Toast';
 
@@ -70,6 +70,16 @@ export default function IntroQueuePage() {
       showToast(err.message || 'Failed to load intro queue', 'error');
     } finally {
       setTimeout(() => setLoading(false), 800);
+    }
+  };
+
+  const handleSendIntro = async (introId: string) => {
+    try {
+      await sendIntroRequest(introId);
+      showToast("Email request sent to investor!", "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to send intro request.", "error");
     }
   };
 
@@ -239,9 +249,16 @@ export default function IntroQueuePage() {
                         </div>
 
                         {/* Update button */}
-                        <div className="flex justify-end">
+                        <div className="flex justify-end space-x-3">
                           <button
-                            data-testid="details-update-btn"
+                            onClick={() => handleSendIntro(intro._id)}
+                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center space-x-2"
+                          >
+                            <Mail className="w-4 h-4" />
+                            <span>Send Intro</span>
+                          </button>
+
+                          <button
                             onClick={() => handleUpdateStatus(intro._id)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                           >
