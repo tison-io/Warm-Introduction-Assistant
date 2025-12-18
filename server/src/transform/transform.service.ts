@@ -116,6 +116,75 @@ export class TransformService {
     return introRecord;
   }
 
+  async requestInvestorConsent(introId: string) {
+    const intro = await this.introQueueModel.findById(introId);
+    if (!intro) throw new NotFoundException('Intro not found');
+
+    if (intro.status !== 'queued') {
+      throw new BadRequestException('Intro must be queued to request consent.');
+    }
+
+    const approvalUrl = `${process.env.FRONTEND_URL}/approve-intro?introId=${intro._id}`;
+
+    const consentMessage = `
+      Hi ${intro.investorName},
+
+      The founder of ${intro.startupName} wants to send you a warm introduction.
+
+      Would you like to receive the intro?
+
+      <a href="${approvalUrl}" style="background-color:#0347D2;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;">
+      Yes, send me the intro
+      </a>
+    `;
+
+    await this.mailService.sendGeneratedIntroEmail({
+      investorEmail: intro.investorEmail,
+      startupName: intro.startupName,
+      generatedIntro: consentMessage,
+    });
+
+    intro.status = 'investor_approval_requested';
+    await intro.save();
+
+    return {
+      success: true,
+      message: 'Investor consent email sent successfully.',
+      intro,
+    };
+  }
+
+  async approveInvestorIntro(introId: string) {
+    const intro = await this.introQueueModel.findById(introId);
+    if (!intro) throw new NotFoundException('Intro not found');
+
+    if (intro.status !== 'investor_approval_requested') {
+      throw new BadRequestException('Intro is not awaiting investor consent.');
+    }
+
+    // Update status to approved
+    intro.status = 'investor_approved';
+    await intro.save();
+
+    // Send actual generated intro
+    await this.sendGeneratedIntroEmail({
+      investorEmail: intro.investorEmail,
+      startupName: intro.startupName,
+      generatedIntro: intro.generatedIntro,
+    });
+
+    // Mark as sent
+    intro.status = 'sent';
+    intro.sentDate = new Date();
+    await intro.save();
+
+    return {
+      success: true,
+      message: 'Investor approved and intro email sent successfully.',
+      intro,
+    };
+  }
+
   // Send Intro-Mails
   async sendGeneratedIntroEmail(options: {
     investorEmail: string;
