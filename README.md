@@ -245,7 +245,7 @@ npm run dev
 - `GET /intros/my-queue` - List all your personal intro-queues
 - `PATCH /intros/:id/status` - Update intro status
 - `POST /intros/:id/request-consent` - Send consent mail to investor
-- `Post /intros/:id/approve` - Investor approves intro to receive intro mail
+- `Post /intros/:id/approve` - Investor approves to receive an intro mail then the mail is sent to the investor
 
 ### Reminders
 - `GET /reminders` - List personal reminders
