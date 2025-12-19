@@ -57,3 +57,32 @@ export async function updateIntroStatus(introId: string, payload: StatusUpdatePa
 
     return response.json();
 }
+
+export async function sendIntroRequest(introId: string): Promise<any> {
+    const response = await fetch(`${INTRO_ENDPOINT}/${introId}/request-consent`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.message || 'Failed to send intro request.');
+    }
+
+    return response.json();
+}
+
+export async function approveIntro(introId: string): Promise<any> {
+    const response = await fetch(`${INTRO_ENDPOINT}/${introId}/approve`, {
+        method: 'POST',
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    // Treat "already approved" as normal response
+    if (!response.ok && !data.message?.includes("Intro is not awaiting investor consent")) {
+        throw new Error(data.message || 'Failed to approve intro.');
+    }
+
+    return data;
+}

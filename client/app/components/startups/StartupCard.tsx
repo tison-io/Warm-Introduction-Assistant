@@ -39,6 +39,9 @@ export default function StartupCard({ startup, refreshList, onDelete }: Props) {
     return (
         <div data-testid="startup-card" className="bg-white rounded-xl shadow-lg p-6 relative hover:cursor-pointer">
             <div className="absolute top-4 right-4 flex space-x-2 z-10">
+                <Link href={`/startups/${startup._id}`} className="text-blue-600 hover:text-blue-700 hover:underline">
+                    View Details
+                </Link>
                 <button
                     data-testid="edit-startup-btn"
                     aria-label="Edit"
@@ -58,12 +61,12 @@ export default function StartupCard({ startup, refreshList, onDelete }: Props) {
                 </button>
             </div>
 
-            <Link href={`/startups/${startup._id}`}>
-                <div className="pr-16">
+            <div className="pr-16">
                     <h2 className="text-xl font-bold text-gray-900 mb-1">{startup.name}</h2>
-                    <p className="text-gray-700 text-sm">{startup.blurb}</p>
-                </div>
-            </Link>
+                    <p className="text-gray-700 text-sm truncate">
+                        {startup.blurb}
+                    </p>
+            </div>
         </div>
     );
 }

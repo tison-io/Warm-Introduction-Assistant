@@ -209,20 +209,25 @@ export class TransformService {
       // Replace escaped sequences with actual characters
       intro = intro.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 
-      // Remove other control characters that could break JSON
-      intro = intro.replace(/[\u0000-\u001F\u007F]/g, '');
+      intro = intro.replace(/\n/g, '<br />');
 
-      return intro;
+      return intro.trim();
     }
 
     const formattedIntro = normalizeGeneratedIntro(generatedIntro);
     const subject = `Warm Intro from ${startupName} startup`;
 
+    const htmlFormattedIntro = `
+      <div style="white-space: pre-wrap; font-family: sans-serif; line-height: 1.6; color: #333;">
+        ${formattedIntro}
+      </div>
+    `;
+
     try {
       const result = await this.mailService.sendGeneratedIntroEmail({
         investorEmail,
         startupName,
-        generatedIntro: formattedIntro,
+        generatedIntro: htmlFormattedIntro,
       });
 
       return {

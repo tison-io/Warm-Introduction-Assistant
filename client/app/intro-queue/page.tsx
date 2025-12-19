@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { IntroQueue, IntroStatus, StatusUpdatePayload } from '../types/intro';
-import { fetchIntrosByFounder, updateIntroStatus } from '../lib/intro-api';
-import { ChevronUp, ChevronDown, Plus, Loader2 } from 'lucide-react';
+import { fetchIntrosByFounder, updateIntroStatus, sendIntroRequest } from '../lib/intro-api';
+import { ChevronUp, ChevronDown, Plus, Loader2, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../components/Toast';
 
@@ -55,6 +55,10 @@ export default function IntroQueuePage() {
   const [newStatus, setNewStatus] = useState<IntroStatus>('queued');
   const [noteContent, setNoteContent] = useState('');
   const [followUpDate, setFollowUpDate] = useState(getDefaultFollowUpDate());
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [hasDateChanged, setHasDateChanged] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [hasStatusChanged, setHasStatusChanged] = useState(false);
 
   useEffect(() => {
     loadIntros();
@@ -73,6 +77,19 @@ export default function IntroQueuePage() {
     }
   };
 
+  const handleSendIntro = async (introId: string) => {
+    setIsSendingEmail(true);
+    try {
+      await sendIntroRequest(introId);
+      showToast("Email consent request has been sent to investor", "success");
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || "Failed to send intro request.", "error");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   const handleToggleExpand = (intro: IntroQueue) => {
     if (expandedId === intro._id) {
       setExpandedId(null);
@@ -80,6 +97,8 @@ export default function IntroQueuePage() {
       setExpandedId(intro._id);
       setDraftContent(intro.generatedIntro);
       setNewStatus(intro.status);
+      setHasDateChanged(false);
+      setHasStatusChanged(false);
       setFollowUpDate(
         intro.status === 'sent' && intro.followUpDueDate
           ? new Date(intro.followUpDueDate).toISOString().split('T')[0]
@@ -100,10 +119,13 @@ export default function IntroQueuePage() {
       payload.followUpDueDate = new Date(followUpDate);
     }
 
+    setIsUpdatingStatus(true);
     try {
       const updatedIntro = await updateIntroStatus(introId, payload);
       setIntros(intros.map(i => i._id === introId ? { ...i, ...updatedIntro } : i));
       setExpandedId(null);
+      setHasDateChanged(false);
+      setHasStatusChanged(false);
       showToast(
         `Status updated to ${newStatus}. ${newStatus === 'sent' ? `Follow-up scheduled for ${new Date(followUpDate).toLocaleDateString()}.` : ''}`,
         'success'
@@ -111,6 +133,8 @@ export default function IntroQueuePage() {
     } catch (err: any) {
       console.error(err);
       showToast(err.message || 'Failed to update intro status', 'error');
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
@@ -197,7 +221,10 @@ export default function IntroQueuePage() {
                             <select
                               data-testid="details-status-select"
                               value={newStatus}
-                              onChange={(e) => setNewStatus(e.target.value as IntroStatus)}
+                              onChange={(e) => {
+                                setNewStatus(e.target.value as IntroStatus);
+                                setHasStatusChanged(true);
+                              }}
                               className="mt-1 border border-gray-300 rounded-md p-2 text-sm"
                             >
                               <option value="queued">Queued</option>
@@ -208,12 +235,15 @@ export default function IntroQueuePage() {
 
                           {newStatus === 'sent' && (
                             <div data-testid="details-followup-container">
-                              <label className="block text-sm font-medium text-gray-700">Follow-up Date</label>
+                              <label className="block text-sm font-medium text-gray-700">Set a Follow-up Date for your Sent Intro</label>
                               <input
                                 data-testid="details-followup-date-input"
                                 type="date"
                                 value={followUpDate}
-                                onChange={(e) => setFollowUpDate(e.target.value)}
+                                onChange={(e) => {
+                                  setFollowUpDate(e.target.value);
+                                  setHasDateChanged(true);
+                                }}
                                 className="mt-1 border border-gray-300 rounded-md p-2 text-sm"
                               />
                             </div>
@@ -238,15 +268,28 @@ export default function IntroQueuePage() {
                           />
                         </div>
 
-                        {/* Update button */}
-                        <div className="flex justify-end">
+                        {/* Action Buttons Row */}
+                        <div className="flex justify-end space-x-3">
                           <button
-                            data-testid="details-update-btn"
-                            onClick={() => handleUpdateStatus(intro._id)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                            disabled={isSendingEmail}
+                            onClick={() => handleSendIntro(intro._id)}
+                            className={`px-4 py-2 text-white rounded-md transition flex items-center space-x-2 
+                              ${(isSendingEmail) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
                           >
-                            Update Status
+                            {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                            <span>{isSendingEmail ? 'Sending' : 'Send Intro'}</span>
                           </button>
+
+                          {(hasStatusChanged || hasDateChanged) && (
+                            <button
+                              disabled={isUpdatingStatus}
+                              onClick={() => handleUpdateStatus(intro._id)}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center space-x-2"
+                            >
+                              {isUpdatingStatus && <Loader2 className="w-4 h-4 animate-spin" />}
+                              <span>{isUpdatingStatus ? 'Saving...' : 'Save Changes'}</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
