@@ -146,18 +146,37 @@ npm install
 
 3. **Environment variables Setup**
 ```bash
-# Client (.env.local)
+# Client (.env.local) - Optional
 NEXT_PUBLIC_FOUNDER_API_URL=http://localhost:4000
 ```
 
 ```bash
 # Server (.env)
+
+#Ports config
 PORT=4000
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
+FRONTEND_URL=http://localhost:3000
+
+# Database & Auth
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/dbname
+JWT_SECRET=your_random_jwt_secret_key
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:4000/auth/google/callback
+
+# Resend Email Config
+RESEND_API_KEY=re_your_api_key
 RESEND_FROM_EMAIL=onboarding@resend.dev
-RESEND_API_KEY=your_resend_api_key
-CONTACT_RECEIVER_EMAIL=kashbel747@gmail.com
+CONTACT_RECEIVER_EMAIL=your_admin_email@example.com
+
+# Brevo Email Config
+BREVO_HOST=smtp-relay.brevo.com
+BREVO_PORT=587
+BREVO_USERNAME=your_brevo_username
+BREVO_PASSWORD=your_brevo_smtp_password
+BREVO_FROM_EMAIL=your_verified_sender_email@example.com
+BREVO_API_KEY=xkeysib-your_api_key
+BREVO_FROM_NAME="Warm Introduction Assistant"
 ```
 
 4. **Run the application**
@@ -182,7 +201,7 @@ npm run dev
 
 ### Authentication & Profiles
 - User registration
-- Secure JWT-based authentication
+- Secure JWT-based authentication & OAuth(Google login)
 - Country code support for international users
 
 ### Introduction Workflow
@@ -220,11 +239,13 @@ npm run dev
 - `PATCH /investors/:id` - Update investor details
 - `DELETE /investors:id` - Delete investor
 
-### Transform
+### Intro-flow
 - `POST /intros/transform` - Send blurb and preffered format to transform engine
 - `POST /intros/queue` -  Queue a new intro   
 - `GET /intros/my-queue` - List all your personal intro-queues
 - `PATCH /intros/:id/status` - Update intro status
+- `POST /intros/:id/request-consent` - Send consent mail to investor
+- `Post /intros/:id/approve` - Investor approves intro to receive intro mail
 
 ### Reminders
 - `GET /reminders` - List personal reminders
@@ -253,7 +274,6 @@ For support and questions:
 - Create an issue on GitHub
 - Submit your question through the in-app contact form
 - Contact the development team
-- Check the documentation wiki
 
 ---
 
