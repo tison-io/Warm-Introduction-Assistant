@@ -46,7 +46,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Basic validation
+    // Validation
     if (!form.name.trim()) { showToast("Please enter your name", "error"); setLoading(false); return; }
     if (!form.email.trim()) { showToast("Please enter your email", "error"); setLoading(false); return; }
     if (!form.phone.trim()) { showToast("Please enter your phone number", "error"); setLoading(false); return; }
@@ -63,10 +63,7 @@ export default function SignupPage() {
         phone: fullPhone,
       });
 
-      // Show success toast
       showToast(`Account created for ${result.name}. Redirecting you to login.`, "success");
-
-      // Redirect after short delay
       setTimeout(() => router.push("/login"), 2000);
 
     } catch (err: any) {
@@ -80,8 +77,6 @@ export default function SignupPage() {
 
   return (
     <div className="relative min-h-screen w-full bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('/backeground.jpg')" }}>
-      
-      {/* Back Button */}
       <div className="absolute top-4 left-4 z-10">
         <button
           onClick={() => router.push("/")}
@@ -91,11 +86,9 @@ export default function SignupPage() {
         </button>
       </div>
 
-      {/* Container */}
       <div
         className={`bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-10 max-w-md w-11/12 flex flex-col items-center transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
       >
-        {/* Logo */}
         <div className={`mb-3 transition-all duration-1200 ${isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-50 -translate-y-8"}`}>
           <Image src="/logo.png" width={60} height={48} alt="Warmly Logo" />
         </div>

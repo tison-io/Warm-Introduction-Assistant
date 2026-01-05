@@ -22,5 +22,4 @@ export type CreateInvestorDto = {
   notes?: string;
 };
 
-// DTO for updating an existing investor
 export type UpdateInvestorDto = Partial<CreateInvestorDto>;

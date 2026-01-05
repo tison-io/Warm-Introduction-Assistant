@@ -1,4 +1,3 @@
-// app/login/success/page.tsx (The Page Wrapper)
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import LoginSuccessLogic from './LoginSuccessLogic';

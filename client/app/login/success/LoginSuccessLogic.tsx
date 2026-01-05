@@ -15,7 +15,7 @@ export default function LoginSuccessLogic() {
         const error = searchParams.get('error');
         if (error) {
             setStatusMessage(`Login failed: ${error}`);
-             setTimeout(() => {
+            setTimeout(() => {
                 router.push('/login?error=social_auth_failed');
             }, 3000);
             return;

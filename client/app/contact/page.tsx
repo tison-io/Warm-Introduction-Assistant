@@ -91,7 +91,6 @@ export default function ContactPage() {
       className="min-h-screen bg-cover bg-center flex flex-col"
       style={{ backgroundImage: `url('${BACKGROUND_IMAGE_PATH}')` }}
     >
-      {/* Top Section */}
       <div className="relative z-10 max-w-7xl mx-auto pt-4 px-4 sm:px-6 lg:px-8 shrink-0 w-full">
         <div className="flex justify-center items-center relative py-2">
           <button
@@ -104,10 +103,9 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Main Grid */}
       <section className="relative z-10 grow max-h-[88vh] overflow-y-auto">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-4 px-4 sm:px-6 lg:px-8 h-full items-start">
-          {/* LEFT COLUMN */}
+          {/* LEFT COLUMN: Contact Details */}
           <div className="lg:col-span-1 flex flex-col h-full">
             <div className="bg-white rounded-xl p-4 shadow-xl shrink-0 mb-4">
               <h3 className="text-lg font-bold text-gray-900 mb-3">Get In Touch</h3>

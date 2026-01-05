@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-        // Remove API key for now - test if it works without it
       },
       body: JSON.stringify({
         message: message,

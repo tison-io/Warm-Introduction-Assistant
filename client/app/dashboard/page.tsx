@@ -47,7 +47,7 @@ const differenceInDays = (targetDate: Date) => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-// Dashboard Data Hook
+// Dashboard Data
 interface DashboardData {
     totalIntros: number;
     pendingFollowUps: number;

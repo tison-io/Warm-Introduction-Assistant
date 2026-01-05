@@ -3,7 +3,7 @@
 export type IntroStatus = 'queued' | 'sent' | 'completed';
 
 export interface IntroQueue {
-    _id: string; // MongoDB ID for the intro record
+    _id: string;
     startupId: string;
     startupName: string;
     investorId: string;
@@ -12,7 +12,7 @@ export interface IntroQueue {
     founderId: string;
     preferredIntroFormat: string;
     introPreferencesText?: string;
-    generatedIntro: string; // The draft content
+    generatedIntro: string;
     status: IntroStatus;
     sentDate?: Date | string;
     followUpDueDate?: Date | string;

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { getFounderProfile, updateFounderProfile } from "../lib/founder-api";
 import { FounderUpdateInput } from "../types/founder";
-import { useToast } from "../components/Toast"; // <-- import toast hook
+import { useToast } from "../components/Toast"; 
 import { Loader2, Eye, EyeClosed } from "lucide-react";
 
 export default function SettingsPage() {
@@ -24,7 +24,7 @@ export default function SettingsPage() {
     link: "https://abc.com",
   });
 
-  // Fetch profile on mount
+  // Fetch Profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -47,7 +47,7 @@ export default function SettingsPage() {
     try {
       await updateFounderProfile(profile);
       showToast("Profile updated successfully!", "success");
-      setProfile(p => ({ ...p, password: "" })); // clear password input
+      setProfile(p => ({ ...p, password: "" }));
     } catch (err: any) {
       showToast(err.message || "Failed to update profile", "error");
     } finally {
@@ -58,8 +58,6 @@ export default function SettingsPage() {
   const handleSaveStartup = async () => {
     setLoading(true);
     try {
-      // Implement startup save API call if available
-      // await updateStartup(startup);
       showToast("Startup details updated successfully!", "success");
     } catch (err: any) {
       showToast(err.message || "Failed to update startup details", "error");

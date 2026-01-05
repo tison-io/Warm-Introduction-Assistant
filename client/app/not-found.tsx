@@ -20,7 +20,6 @@ export default function NotFound() {
             className="min-h-screen flex flex-col items-center justify-center px-4 bg-cover bg-center relative"
             style={{ backgroundImage: "url('/background-img.jpg')" }}
         >
-            {/* Optional overlay for better contrast */}
             <div className="absolute inset-0 bg-black/50"></div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
