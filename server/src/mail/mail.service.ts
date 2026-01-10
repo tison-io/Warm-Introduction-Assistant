@@ -109,4 +109,47 @@ export class MailService {
       throw new BadRequestException("Failed to send investor intro email.");
     }
   }
+
+  // --- Brevo: Worspace Invitation Emails ---
+  async sendWorkspaceInvite(email: string, workspaceName: string, inviterName: string, token: string) {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+    const inviteUrl = `${frontendUrl}/accept-invite?token=${token}`;
+
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    
+    sendSmtpEmail.sender = {
+      name: this.brevoFromName,
+      email: this.brevoFromEmail,
+    };
+    
+    sendSmtpEmail.to = [{ email: email }];
+    sendSmtpEmail.subject = `Invitation to join ${workspaceName} on Warm Intro`;
+    
+    sendSmtpEmail.htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #f0f0f0; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #0347D2; text-align: center;">Workspace Invitation</h2>
+        <p>Hi there,</p>
+        <p><strong>${inviterName}</strong> has invited you to join the <strong>${workspaceName}</strong> workspace on the Warm Introduction Assistant.</p>
+        <p>Collaborate with your team to manage startup blurbs, pitch decks, and warm introductions.</p>
+        
+        <div style="margin: 35px 0; text-align: center;">
+          <a href="${inviteUrl}" style="background-color: #0347D2; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">Accept Invitation</a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px;">If the button above doesn't work, copy and paste this link into your browser:</p>
+        <p style="color: #0347D2; font-size: 12px; word-break: break-all;">${inviteUrl}</p>
+        
+        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="color: #999; font-size: 12px; text-align: center;">This invitation was sent via Warm Introduction Assistant.</p>
+      </div>
+    `;
+
+    try {
+      const result = await this.brevoApi.sendTransacEmail(sendSmtpEmail);
+      return result;
+    } catch (error) {
+      console.error('Brevo Workspace Invite Error:', error.response?.body || error.message);
+      throw new BadRequestException("Failed to send workspace invitation email via Brevo.");
+    }
+  }
 }

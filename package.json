@@ -1,4 +1,7 @@
 {
+  "dependencies": {
+    "@nestjs/mapped-types": "*"
+  },
   "name": "warm-introduction-assistant",
   "version": "1.0.0",
   "description": "",
