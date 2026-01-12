@@ -7,12 +7,14 @@ import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
 import { ReminderService } from '../scheduler/reminder.service';
 import { MailService } from 'src/mail/mail.service';
+import { Investor, InvestorDocument } from 'src/schemas/investor.schema';
 
 
 @Injectable()
 export class TransformService {
   constructor(
     @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>,
+    @InjectModel(Investor.name) private investorModel: Model<InvestorDocument>,
     private readonly reminderService: ReminderService,
     private readonly mailService: MailService,
   ) {}
@@ -177,6 +179,11 @@ export class TransformService {
     intro.status = 'sent';
     intro.sentDate = new Date();
     await intro.save();
+
+    //Update investor status to 'contacted'
+    await this.investorModel.findByIdAndUpdate(intro.investorId, {
+      status: 'contacted'
+    });
 
     return {
       success: true,

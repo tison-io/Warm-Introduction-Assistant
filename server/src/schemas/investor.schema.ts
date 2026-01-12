@@ -25,6 +25,9 @@ export class Investor {
 
   @Prop()
   notes?: string;
+
+  @Prop({ type: String, enum: ['not-contacted', 'contacted'], default:'not-contacted' })
+  status: 'not-contacted' | 'contacted';
 }
 
 export const InvestorSchema = SchemaFactory.createForClass(Investor);

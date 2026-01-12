@@ -8,5 +8,6 @@ import { Investor, InvestorSchema } from '../schemas/investor.schema';
   imports: [MongooseModule.forFeature([{ name: Investor.name, schema: InvestorSchema }])],
   controllers: [InvestorsController],
   providers: [InvestorsService],
+  exports: [MongooseModule],
 })
 export class InvestorsModule {}
