@@ -6,13 +6,19 @@ import { TransformController } from './transform.controller';
 import { SchedulerModule } from 'src/scheduler/scheduler.module';
 import { MailModule } from 'src/mail/mail.module';
 import { InvestorsModule } from 'src/investors/investors.module';
+import { WorkspaceModule } from 'src/workspace/workspace.module';
+import { Investor, InvestorSchema } from 'src/schemas/investor.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: IntroQueue.name, schema: IntroQueueSchema }]),
+    MongooseModule.forFeature([
+      { name: IntroQueue.name, schema: IntroQueueSchema },
+      { name: Investor.name, schema: InvestorSchema }
+    ]),
     SchedulerModule,
     MailModule,
     InvestorsModule,
+    WorkspaceModule,
   ],
   controllers: [TransformController],
   providers: [TransformService],

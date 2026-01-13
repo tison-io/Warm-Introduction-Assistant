@@ -46,6 +46,9 @@ export class IntroQueue {
 
     @Prop({ default: 0 })
     followUpCount?: number;
+
+    @Prop({ type: Types.ObjectId, ref: 'Workspace', default: null })
+    workspaceId: Types.ObjectId;
 }
 
 export const IntroQueueSchema = SchemaFactory.createForClass(IntroQueue);
