@@ -5,6 +5,10 @@ export class CreateInvestorDto {
   @IsNotEmpty()
   name!: string;
 
+  @IsOptional()
+  @IsString()
+  workspaceId?: string;
+
   @IsEmail()
   @IsNotEmpty()
   email!: string;

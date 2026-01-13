@@ -61,7 +61,7 @@ export class WorkspacesService {
     );
 
     if (!isMember) {
-      throw new ForbiddenException('You do not have access to view members of this workspace');
+      throw new ForbiddenException('You do not have access to this workspace');
     }
 
     return workspace.members;

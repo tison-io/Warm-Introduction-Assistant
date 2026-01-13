@@ -182,7 +182,8 @@ export class TransformService {
 
     //Update investor status to 'contacted'
     await this.investorModel.findByIdAndUpdate(intro.investorId, {
-      status: 'contacted'
+      status: 'contacted',
+      contactedAt: new Date(),
     });
 
     return {
