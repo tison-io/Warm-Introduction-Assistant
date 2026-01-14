@@ -37,6 +37,16 @@ export class TransformController {
     });
   }
 
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async updateIntro(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() body: { investorEmail?: string; generatedIntro?: string }
+  ) {
+    return this.transformService.updateIntro(id, req.user.userId, body);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string, @Req() req: any) {

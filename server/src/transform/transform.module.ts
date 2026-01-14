@@ -8,6 +8,7 @@ import { MailModule } from 'src/mail/mail.module';
 import { InvestorsModule } from 'src/investors/investors.module';
 import { WorkspaceModule } from 'src/workspace/workspace.module';
 import { Investor, InvestorSchema } from 'src/schemas/investor.schema';
+import { InvestorsService } from 'src/investors/investors.service';
 
 @Module({
   imports: [
@@ -19,8 +20,9 @@ import { Investor, InvestorSchema } from 'src/schemas/investor.schema';
     MailModule,
     InvestorsModule,
     WorkspaceModule,
+    InvestorsModule,
   ],
   controllers: [TransformController],
-  providers: [TransformService],
+  providers: [TransformService, InvestorsService],
 })
 export class TransformModule {}

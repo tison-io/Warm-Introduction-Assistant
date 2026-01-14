@@ -311,4 +311,23 @@ export class TransformService {
     await intro.save();
     return intro;
   }
+
+  async updateIntro( introId: string, userId: string, updateData: {investorEmail?: string; generatedIntro?: string }) {
+    const intro = await this.validateAccess(introId, userId, 'modify');
+    //If email, update both intro and investor record
+    if(updateData.investorEmail) {
+      await this.investorModel.findByIdAndUpdate(
+        intro.investorId,
+        { email: updateData.investorEmail.toLowerCase().trim() },
+        {new: true}
+      );
+      intro.investorEmail = updateData.investorEmail.toLowerCase().trim();   
+    }
+
+    if (updateData.generatedIntro !== undefined) {
+      intro.generatedIntro = updateData.generatedIntro;
+    }
+
+    return await intro.save();
+  }
 }
