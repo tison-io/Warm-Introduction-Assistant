@@ -9,12 +9,14 @@ import { InvestorsModule } from 'src/investors/investors.module';
 import { WorkspaceModule } from 'src/workspace/workspace.module';
 import { Investor, InvestorSchema } from 'src/schemas/investor.schema';
 import { InvestorsService } from 'src/investors/investors.service';
+import { IntroOutcomeLogSchema } from './entities/intro-logs.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: IntroQueue.name, schema: IntroQueueSchema },
-      { name: Investor.name, schema: InvestorSchema }
+      { name: Investor.name, schema: InvestorSchema },
+      { name: 'IntroOutcomeLog', schema: IntroOutcomeLogSchema }
     ]),
     SchedulerModule,
     MailModule,

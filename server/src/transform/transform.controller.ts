@@ -37,6 +37,22 @@ export class TransformController {
     });
   }
 
+  @Get('outcomes/history')
+  @UseGuards(JwtAuthGuard)
+  async getHistory(
+    @Req() req: any,
+    @Query('workspaceId') workspaceId?: string
+  ) {
+    return this.transformService.getOutcomeLogs(req.user.userId, workspaceId);
+  }
+
+  @Get('metrics/execution-rate')
+  @UseGuards(JwtAuthGuard)
+  async getRate(@Req() req: any, @Query('workspaceId') workspaceId?: string) {
+    const rate = await this.transformService.getExecutionRate(req.user.userId, workspaceId);
+    return { executionRate: rate }; // Output example: { "executionRate": 75 }
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   async updateIntro(

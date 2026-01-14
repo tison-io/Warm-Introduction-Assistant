@@ -9,12 +9,14 @@ import { ReminderService } from '../scheduler/reminder.service';
 import { MailService } from 'src/mail/mail.service';
 import { Investor, InvestorDocument } from 'src/schemas/investor.schema';
 import { WorkspacesService } from 'src/workspace/workspace.service';
+import { IntroOutcomeLogDocument } from './entities/intro-logs.schema';
 
 
 @Injectable()
 export class TransformService {
   constructor(
     @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>,
+    @InjectModel('IntroOutcomeLog') private auditLogModel: Model<IntroOutcomeLogDocument>,
     @InjectModel(Investor.name) private investorModel: Model<InvestorDocument>,
     private readonly reminderService: ReminderService,
     private readonly workspaceService: WorkspacesService,
@@ -186,6 +188,9 @@ export class TransformService {
     intro.status = 'investor_approved';
     await intro.save();
 
+    //Trigger logging
+    await this.captureLog(intro, 'investor_approved_consent', `Investor ${intro.investorName} approved consent mail.`);
+
     // Send actual generated intro
     await this.sendGeneratedIntroEmail({
       investorEmail: intro.investorEmail,
@@ -197,6 +202,9 @@ export class TransformService {
     intro.status = 'sent';
     intro.sentDate = new Date();
     await intro.save();
+
+    //Trigger logging
+    await this.captureLog(intro, 'intro_mail_delivered', `Intro mail to ${intro.startupName} has been sent to investor ${intro.investorName}.`);
 
     //Update investor status to 'contacted'
     await this.investorModel.findByIdAndUpdate(intro.investorId, {
@@ -329,5 +337,71 @@ export class TransformService {
     }
 
     return await intro.save();
+  }
+
+  async getOutcomeLogs(userId: string, workspaceId?: string) {
+    let query: any;
+
+    if (workspaceId) {
+      await this.workspaceService.getMembers(workspaceId, userId);
+      query = { workspaceId: new Types.ObjectId(workspaceId) };
+    } else {
+      query = {userId: new Types.ObjectId(userId), workspaceId: null };
+    }
+
+    return this.auditLogModel.find(query).sort({ createdAt:-1 }).exec();
+  }
+
+  // Internal helper: Capture event for logging
+  private async captureLog(intro: any, outcome: string, notes?: string) {
+    return await this.auditLogModel.create({
+      introId: intro._id,
+      userId: intro.founderId,
+      workspaceId: intro.workspaceId,
+      investorName: intro.investorName,
+      outcome: outcome,
+      notes: notes || `Event triggered: ${outcome}`,
+    });
+  }
+
+  async getExecutionRate(userId: string, workspaceId?: string): Promise<number> {
+    let matchQuery: any;
+
+    if (workspaceId) {
+      await this.workspaceService.getMembers(workspaceId, userId);
+      matchQuery = { workspaceId: new Types.ObjectId(workspaceId) };
+    } else {
+      matchQuery = { founderId: new Types.ObjectId(userId), workspaceId: null };
+    }
+
+    const stats = await this.introQueueModel.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          sent: {
+            $sum: { 
+              $cond: [{ $in: ['$status', ['sent', 'completed', 'investor_approved']] }, 1, 0] 
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          rate: {
+            $cond: [
+              { $eq: ['$total', 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ['$sent', '$total'] }, 100] }, 0] }
+            ]
+          }
+        }
+      }
+    ]);
+
+    //default to 0 if no stats
+    return stats.length > 0 ? stats[0].rate : 0;
   }
 }
