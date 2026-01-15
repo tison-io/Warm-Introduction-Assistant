@@ -1,151 +1,70 @@
 "use client";
 import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="footer-bg">
-      <div className="footer-row">
-        <div className="footer-left">
-          <img src="/logo.png" alt="Warmly Logo" className="footer-logo" />
-          <div className="footer-desc">
-            The easiest way to manage investor introductions.
+    <footer className="bg-gray-900 text-slate-400 py-12 border-t border-slate-900">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-12">
+          
+          {/* Left Side: Logo and Description */}
+          <div className="max-w-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <Image 
+                src="/logo.png" 
+                alt="Warmly Logo" 
+                width={64} 
+                height={64} 
+                className="w-10 h-auto"
+              />
+            </div>
+            <p className="text-sm leading-relaxed">
+              AI-powered investor outreach that helps founders raise capital faster with personalized, scalable communication.
+            </p>
           </div>
-        </div>
-        <div className="footer-center">
-          <div className="footer-links-title">Nav Links</div>
-          <div className="footer-links-cols">
-            <div className="footer-links-col">
-              <Link href="/terms-of-service" className="footer-link">Terms of Service</Link>
-              <Link href="/contact" className="footer-link">Contact Us</Link>
-              <Link href="/about" className="footer-link">About Us</Link>
+
+          {/* Right Side: Navigation Links */}
+          <div className="flex flex-col items-start md:items-end">
+            <h4 className="text-white font-semibold mb-4 uppercase tracking-widest text-xs">
+              Nav Links
+            </h4>
+            <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+              <Link 
+                href="/about" 
+                className="hover:text-blue-500 transition-colors text-sm"
+              >
+                About Us
+              </Link>
+              <Link 
+                href="/contact" 
+                className="hover:text-blue-500 transition-colors text-sm"
+              >
+                Contact Us
+              </Link>
+              <Link 
+                href="/terms-of-service" 
+                className="hover:text-blue-500 transition-colors text-sm"
+              >
+                Terms of Service
+              </Link>
             </div>
           </div>
         </div>
+
+        {/* Divider */}
+        <div className="border-t border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs">
+            © {new Date().getFullYear()} Warmly. All rights reserved.
+          </p>
+          
+          {/* Social Icons Placeholder (Optional) */}
+          <div className="flex gap-6 text-xs italic">
+            <span>Powered by Warmly AI</span>
+          </div>
+        </div>
       </div>
-      <hr className="footer-divider" />
-      <div className="footer-copyright">
-        © 2025 Warm Introduction Assistant. All rights reserved.
-      </div>
-      <style jsx>{`
-        .footer-bg {
-          background: #fff;
-          width: 100%;
-          padding: 40px 10vw 0 10vw;
-          border-top: 1px solid #ececec;
-          font-family: inherit;
-        }
-        .footer-row {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: flex-start;
-          justify-content: space-evenly;
-        }
-        .footer-left {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          min-width: 240px;
-        }
-        .footer-logo {
-          width: 90px;
-          margin-bottom: 6px;
-        }
-        .footer-desc {
-          color: #222;
-          font-size: 15px;
-          margin-top: 2px;
-          font-weight: 600;
-        }
-        .footer-center {
-          min-width: 290px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        .footer-links-title {
-          font-size: 18px;
-          font-weight: 600;
-          margin-bottom: 6px;
-        }
-        .footer-links-cols {
-          display: flex;
-          gap: 45px;
-        }
-        .footer-links-col {
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
-        }
-        .footer-link {
-          color: #333;
-          text-decoration: none;
-          font-size: 15px;
-          transition: color 0.13s;
-        }
-        .footer-link:hover, .footer-link:focus {
-          color: #175de6;
-          text-decoration: underline;
-        }
-        .footer-divider {
-          margin: 23px 0 7px 0;
-          border: none;
-          border-top: 1px solid #ececec;
-        }
-        .footer-copyright {
-          text-align: center;
-          font-size: 15px;
-          color: #757575;
-          margin-bottom: 8px;
-        }
-        @media (max-width: 768px) {
-          .footer-bg {
-            padding: 24px 4vw 0 4vw;
-            text-align: center;
-          }
-          .footer-row {
-            flex-direction: column;
-            gap: 28px;
-            align-items: center;
-            justify-content: center;
-          }
-          .footer-left {
-            align-items: center;
-            text-align: center;
-          }
-          .footer-center {
-            margin-left: 0;
-            align-items: center;
-            text-align: center;
-          }
-          .footer-links-cols {
-            gap: 20px;
-            flex-direction: column;
-            align-items: center;
-          }
-          .footer-links-col {
-            align-items: center;
-            text-align: center;
-          }
-          .footer-logo {
-            width: 80px;
-          }
-          .footer-desc {
-            font-size: 14px;
-            text-align: center;
-          }
-          .footer-links-title {
-            font-size: 16px;
-            text-align: center;
-          }
-          .footer-link {
-            font-size: 14px;
-          }
-          .footer-copyright {
-            font-size: 13px;
-          }
-        }
-      `}</style>
     </footer>
   );
 }
