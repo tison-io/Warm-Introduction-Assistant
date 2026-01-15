@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Features from "../components/landing-page/Features";
 import Footer from "../components/landing-page/Footer";
 import Hero from "../components/landing-page/Hero";
-import Workflow from "../components/landing-page/Workflow";
+import CTASection from "../components/landing-page/CTA";
 
 
 export const metadata: Metadata = {
@@ -40,8 +40,10 @@ export default function HomePage() {
   return (
     <main className="min-h-screen">
         <Hero />
-        <Features />
-        <Workflow />
+        <section id="features">
+          <Features />
+        </section>
+        <CTASection />
         <Footer />
     </main>
   );

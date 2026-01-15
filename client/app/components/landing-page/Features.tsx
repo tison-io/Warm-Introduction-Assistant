@@ -1,12 +1,9 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { Zap, Users, Clock, BarChart3, FileText } from 'lucide-react';
+import { Zap, Users, BarChart3, Rocket, Target, ShieldCheck } from 'lucide-react';
 
-// Asset Path
-const BACKGROUND_IMAGE = '/background-img.jpg';
-
-//Reusable feature card
-const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description: string, index: number }> = ({ icon, title, description, index }) => {
+//Reusable feature card - With Glassmorphism
+const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description: string, index: number, colorClass: string }> = ({ icon, title, description, index, colorClass }) => {
     const [isVisible, setIsVisible] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -27,19 +24,35 @@ const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description:
         return () => observer.disconnect();
     }, []);
 
+    // Map the color prop to Tailwind classes for the icon background
+    const bgColors: Record<string, string> = {
+        purple: "bg-purple-500/10 text-purple-400",
+        blue: "bg-blue-500/10 text-blue-400",
+        pink: "bg-pink-500/10 text-pink-400",
+        green: "bg-green-500/10 text-green-400",
+        orange: "bg-orange-500/10 text-orange-400",
+    };
+
     return (
         <div 
             ref={cardRef}
-            className="bg-white/95 backdrop-blur-sm rounded-xl p-8 md:p-10 shadow-2xl transition-all duration-700 hover:scale-[1.02] hover:shadow-purple-500/50"
+            className="bg-slate-900/50 border border-slate-800 backdrop-blur-sm rounded-2xl p-8 transition-all duration-700 hover:border-blue-500/30 hover:bg-slate-900/80 group"
             style={{
                 opacity: isVisible ? 1 : 0,
-                transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
-                transitionDelay: `${index * 150}ms`
+                transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+                transitionDelay: `${index * 100}ms`
             }}
         >
-            <div className="text-indigo-700 mb-4">{icon}</div>
-            <h3 className="text-xl font-bold mb-2 text-gray-900">{title}</h3>
-            <p className="text-gray-600 text-base">{description}</p>
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${bgColors[colorClass] || "bg-slate-800 text-white"}`}>
+                {icon}
+            </div>
+
+            <h3 className="text-xl font-bold mb-3 text-white">
+                {title}
+            </h3>
+            <p className="text-slate-400 text-sm leading-relaxed">
+                {description}
+            </p>
         </div>
     );
 };
@@ -47,41 +60,64 @@ const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description:
 // Feature card details
 const FEATURES = [
     {
-        icon: <Zap size={32} strokeWidth={2.5} />,
-        title: "Smart Templates",
-        description: "Generate investor-preferred introduction formats instantly",
+        icon: <Zap size={32} />,
+        title: "AI-Powered Personalization",
+        description: "Our AI analyzes investor profiles and crafts intros that speak directly to their investment thesis.",
+        color: "purple",
     },
     {
-        icon: <FileText size={32} strokeWidth={2.5} />,
-        title: "Intro Queue",
-        description: "Organize and track all your investor introductions in one place",
+        icon: <Rocket size={24} />,
+        title: "10x Faster Outreach",
+        description: "What used to take days now takes minutes. Scale your fundraising without sacrificing quality.",
+        color: "blue",
     },
     {
-        icon: <Clock size={32} strokeWidth={2.5} />,
-        title: "Follow-up Reminders",
-        description: "Never miss a follow-up with automatic reminder notifications",
+        icon: <Target size={24} />,
+        title: "Smart Investor Matching",
+        description: "Automatically find investors who are the perfect fit for your startup's stage abd sector.",
+        color: "pink"
     },
     {
-        icon: <BarChart3 size={32} strokeWidth={2.5} />,
+        icon: <BarChart3 size={24} />,
         title: "Analytics Dashboard",
-        description: "Track your outreach performance and completion rates",
+        description: "Track open investor outreach, intro success rate, and intro-outcome logs. Know exactly what's working.",
+        color: "green",
+    },
+    {
+        icon: <Users size={24} />,
+        title: "Team Collaboration",
+        description: "Coordinate outreach across your funding team and speed up your fundraising journey",
+        color: "orange",
+    },
+    {
+        icon: <ShieldCheck size={24} />,
+        title: "Relationship CRM",
+        description: "Keep track of every interaction, follow-up, and meeting in one unified workspace.",
+        color: "blue",
     },
 ];
 
 const Features: React.FC = () => {
     return (
         <section
-            className="relative min-h-screen flex items-center justify-center py-20 bg-cover bg-center"
-            style={{ backgroundImage: `url('${BACKGROUND_IMAGE}')` }}
+            className="relative min-h-screen flex items-center justify-center py-24 overflow-hidden"
         >
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-                <h2 className="text-4xl md:text-5xl font-extrabold text-white text-center mb-16 tracking-tight">
-                    Features
-                </h2>
+            <div className='absolute inset-0 z-0 bg-gradient-to-br from-gray-900 to-blue-900' />
 
-                {/* Map over the FEATURES card */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-6">
+                
+                {/* Header Section */}
+                <div className="text-center mb-20">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+                        Everything You Need to <span className="text-blue-500">Raise Capital</span>
+                    </h2>
+                    <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+                        From finding the right investors to closing the deal, Warmly has you covered.
+                    </p>
+                </div>
+
+                {/* Features Grid - 3 Columns on Large Screens */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {FEATURES.map((feature, index) => (
                         <FeatureCard
                             key={index}
@@ -89,10 +125,10 @@ const Features: React.FC = () => {
                             title={feature.title}
                             description={feature.description}
                             index={index}
+                            colorClass={feature.color}
                         />
                     ))}
                 </div>
-
             </div>
         </section>
     );
