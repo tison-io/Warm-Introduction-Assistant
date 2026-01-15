@@ -12,5 +12,6 @@ import { Startup, StartupSchema } from './entities/startup.entity';
   ],
   controllers: [StartupsController],
   providers: [StartupsService],
+  exports: [MongooseModule]
 })
 export class StartupsModule {}

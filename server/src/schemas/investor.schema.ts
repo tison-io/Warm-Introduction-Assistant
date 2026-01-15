@@ -5,7 +5,7 @@ export type InvestorDocument = Investor & Document;
 
 @Schema({ timestamps: true })
 export class Investor {
-  @Prop({ type: Types.ObjectId, ref: 'Founder', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'Founder', required: false })
   userId: Types.ObjectId;
 
   @Prop({ required: true })
@@ -25,6 +25,9 @@ export class Investor {
 
   @Prop()
   notes?: string;
+
+  @Prop({ required: true, enum: ['public', 'private'], default: 'private' })
+  visibility: string;
 }
 
 export const InvestorSchema = SchemaFactory.createForClass(Investor);

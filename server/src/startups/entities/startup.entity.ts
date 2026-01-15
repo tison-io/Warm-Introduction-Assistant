@@ -16,6 +16,9 @@ export class Startup {
 
     @Prop({ type: Types.ObjectId, ref:'Founder', required:true })
     founderId:Types.ObjectId;
+
+    @Prop({ type: [String], default: [] })
+    tags:string[];
 }
 
 export const StartupSchema = SchemaFactory.createForClass(Startup);
