@@ -4,10 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Eye, EyeClosed, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { signupFounder } from "../lib/founder-api";
+import { initiateGoogleLogin, signupFounder } from "../lib/founder-api";
 import { useToast } from "../components/Toast";
 
 export default function SignupPage() {
@@ -16,7 +16,6 @@ export default function SignupPage() {
 
   const [showPass, setShowPass] = useState(false);
   const [showConf, setShowConf] = useState(false);
-  const [countryCode, setCountryCode] = useState("+1");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -34,19 +33,17 @@ export default function SignupPage() {
   const handlePhoneChange = (value: string, country: any) => {
     const dialCode = country.dialCode;
     const localPart = value.slice(dialCode.length);
-
     let cleanValue = value;
-    if(localPart.startsWith("0")) {
+    if (localPart.startsWith("0")) {
       cleanValue = dialCode + localPart.substring(1);
     }
-    setForm({ ...form, phone: cleanValue});
+    setForm({ ...form, phone: cleanValue });
   };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    // Validation
     if (!form.name.trim()) { showToast("Please enter your name", "error"); setLoading(false); return; }
     if (!form.email.trim()) { showToast("Please enter your email", "error"); setLoading(false); return; }
     if (!form.phone.trim()) { showToast("Please enter your phone number", "error"); setLoading(false); return; }
@@ -55,7 +52,6 @@ export default function SignupPage() {
 
     try {
       const fullPhone = `+${form.phone}`;
-
       const result = await signupFounder({
         name: form.name,
         email: form.email,
@@ -63,145 +59,156 @@ export default function SignupPage() {
         phone: fullPhone,
       });
 
-      showToast(`Account created for ${result.name}. Redirecting you to login.`, "success");
+      showToast(`Account created for ${result.name}. Redirecting to login.`, "success");
       setTimeout(() => router.push("/login"), 2000);
-
     } catch (err: any) {
-      const errorMsg =
-        err.message || err.error || "Network error. Please check your connection.";
-      showToast(errorMsg, "error");
+      showToast(err.message || "Network error.", "error");
     } finally {
       setLoading(false);
     }
   }
 
+  const handleGoogleLogin = () => {
+    setLoading(true);
+    initiateGoogleLogin();
+  };
+
   return (
-    <div className="relative min-h-screen w-full bg-cover bg-center flex items-center justify-center" style={{ backgroundImage: "url('/backeground.jpg')" }}>
-      <div className="absolute top-4 left-4 z-10">
+    <div className="relative min-h-screen w-full bg-linear-to-br from-blue-900 via-slate-800 to-gray-900 flex items-center justify-center font-sans p-4">
+      
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
         <button
           onClick={() => router.push("/")}
-          className="flex items-center text-white text-sm hover:text-gray-100 transition-colors"
+          className="flex items-center text-white hover:opacity-80 transition-opacity"
         >
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-6 h-6 sm:w-8 sm:h-8" />
         </button>
       </div>
 
       <div
-        className={`bg-white rounded-2xl shadow-lg border border-gray-200 p-6 sm:p-10 max-w-md w-11/12 flex flex-col items-center transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
+        className={`bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700 p-6 sm:p-10 max-w-md w-full flex flex-col items-center transition-all duration-1000 overflow-y-auto max-h-[95vh] sm:max-h-none ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+        }`}
       >
-        <div className={`mb-3 transition-all duration-1200 ${isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-50 -translate-y-8"}`}>
-          <Image src="/logo.png" width={60} height={48} alt="Warmly Logo" />
+        <div className="mb-6 flex flex-col items-center text-center">
+          <Image src="/logo.png" width={50} height={40} alt="Warmly Logo" className="mb-2" />
+          <h2 className="text-xl sm:text-2xl font-semibold text-white">Create account</h2>
+          <p className="text-gray-400 text-xs sm:text-sm">warm Introduction Assistant</p>
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-bold mb-1">Create Account</h2>
-        <div className="text-gray-600 text-sm sm:text-base mb-4">warm Introduction Assistant</div>
-
-        <form className="w-full flex flex-col gap-3" onSubmit={handleSubmit} data-testid="signup-form">
-          <input
-            data-testid="signup-name"
-            type="text"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-          <input
-            data-testid="signup-email"
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-
-          {/* Phone Field */}
-          <div className="phone-input-container">
-            <PhoneInput
-              country={"ke"}
-              value={form.phone}
-              onChange={handlePhoneChange}
-              enableSearch={true}
-              inputProps={{
-                name: "phone",
-                required: true,
-                autoFocus: false,
-              }}
-              containerClass="!w-full"
-              inputClass="!w-full !h-[50px] !text-base !rounded-lg !border-gray-300 focus:!ring-1 focus:!ring-blue-500 focus:!border-blue-500"
-              buttonClass="!rounded-l-lg !border-gray-300 !bg-white"
+        <form className="w-full flex flex-col gap-3 sm:gap-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Full name</label>
+            <input
+              type="text"
+              placeholder="Full name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-gray-500 transition-all"
+              required
             />
           </div>
 
-          {/* Password */}
-          <div className="relative">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Email</label>
             <input
-              data-testid="signup-password"
-              type={showPass ? "text" : "password"}
-              placeholder="Create Password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full p-3 border border-gray-300 rounded-lg pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-gray-500 transition-all"
               required
             />
-            <button
-              data-testid="toggle-password"
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowPass(!showPass)}
-              aria-label={showPass ? "Hide password" : "Show password"}
-            >
-              {showPass ? <EyeClosed /> : <Eye />}
-            </button>
           </div>
 
-          {/* Confirm Password */}
-          <div className="relative">
-            <input
-              data-testid="signup-confirm-password"
-              type={showConf ? "text" : "password"}
-              placeholder="Confirm Password"
-              value={form.confirmPassword}
-              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-              className="w-full p-3 border border-gray-300 rounded-lg pr-10 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowConf(!showConf)}
-              aria-label={showConf ? "Hide confirm password" : "Show confirm password"}
-            >
-              {showConf ? <EyeClosed /> : <Eye />}
-            </button>
-
-            <div className="flex items-center mt-2 text-xs text-gray-600">
-              <input data-testid="signup-terms" type="checkbox" id="terms" required className="mr-2" />
-              <label htmlFor="terms">I have read and agree to the Terms of Service</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Phone</label>
+            <div className="dark-phone-input">
+              <PhoneInput
+                country={"ke"}
+                value={form.phone}
+                onChange={handlePhoneChange}
+                containerClass="!w-full"
+                inputClass="!w-full !h-[44px] sm:!h-[50px] !bg-gray-400/20 !text-white !border-gray-600 !rounded-lg !text-sm sm:!text-base"
+                buttonClass="!bg-transparent !border-gray-600 !rounded-l-lg"
+                dropdownClass="!bg-slate-800 !text-white"
+              />
             </div>
           </div>
 
-          {/* Register Button */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Password</label>
+            <div className="relative">
+              <input
+                type={showPass ? "text" : "password"}
+                value={form.password}
+                placeholder="Password"
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none"
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                onClick={() => setShowPass(!showPass)}
+              >
+                {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConf ? "text" : "password"}
+                value={form.confirmPassword}
+                placeholder="Password"
+                onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none"
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                onClick={() => setShowConf(!showConf)}
+              >
+                {showConf ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
           <button
-            data-testid="signup-submit"
             type="submit"
             disabled={loading}
-            className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg text-white font-semibold text-base transition-colors ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className="w-full mt-2 py-2.5 sm:py-3 bg-blue-700 hover:bg-blue-600 text-white font-medium rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
           >
-            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-            {loading ? "Registering..." : "Register"}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign up"}
           </button>
 
-          {/* Login Link */}
-          <div className="text-center text-sm text-gray-600 mt-2">
-            Already have an account?{" "}
-            <Link href="/login" className="text-blue-600 underline hover:text-blue-800">
-              Log in
-            </Link>
+          <div className="flex items-center my-1 sm:my-2">
+            <div className="grow border-t border-gray-700"></div>
+            <span className="px-3 text-gray-500 text-[10px] sm:text-xs uppercase">or continue with</span>
+            <div className="grow border-t border-gray-700"></div>
           </div>
+
+          <button
+            data-testid="login-google"
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-lg border border-gray-600 text-gray-300 font-medium text-sm sm:text-base transition-colors hover:bg-white/5 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <Image src="/google.svg" width={18} height={18} alt="Google" />
+            Sign up with Google
+          </button>
+
+          <p className="text-center text-xs sm:text-sm text-gray-400 mt-2">
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-500 hover:underline font-medium">
+              Sign in
+            </Link>
+          </p>
         </form>
       </div>
     </div>
