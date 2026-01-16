@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AUTH_EVENT } from '../../lib/auth-events';
+import TypewriterComponent from 'typewriter-effect';
 
 const Hero: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -46,10 +47,20 @@ const Hero: React.FC = () => {
           Personalize Your Investor <br /> Outreach at Scale
         </h1>
 
-        {/* Subtext */}
-        <p className='text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed'>
-          Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster.
-        </p>
+        {/* Subtext with Typewriter Effect */}
+        <div className='text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed min-h-16 md:min-h-12'>
+          <TypewriterComponent
+            options={{
+              delay: 30,
+              cursor: '|',
+            }}
+            onInit={(typewriter) => {
+              typewriter
+                .typeString('Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster.')
+                .start();
+            }}
+          />
+        </div>
 
         {/* CTA Buttons – ONLY when NOT logged in */}
         {!isLoggedIn && (

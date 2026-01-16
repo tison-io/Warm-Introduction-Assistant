@@ -102,7 +102,7 @@ const Features: React.FC = () => {
         <section
             className="relative min-h-screen flex items-center justify-center py-24 overflow-hidden"
         >
-            <div className='absolute inset-0 z-0 bg-gradient-to-br from-gray-900 to-blue-900' />
+            <div className='absolute inset-0 z-0 bg-linear-to-br from-gray-900 to-blue-900' />
 
             <div className="relative z-10 max-w-7xl mx-auto px-6">
                 
