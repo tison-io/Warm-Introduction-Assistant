@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Patch, UseGuards, Get, Req, } from '@nestjs/common';
+import { Controller, Post, Body, Param, Patch, UseGuards, Get, Req, Query, Delete, } from '@nestjs/common';
 import { TransformService } from './transform.service';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { SendIntroDto } from './dto/send-intro.dto';
@@ -16,15 +16,15 @@ export class TransformController {
 
   @Get('my-queue')
   @UseGuards(JwtAuthGuard) 
-  async getMyIntros(@Req() req: any) {
+  async getMyIntros(@Req() req: any, @Query('workspaceId') workspaceId?:string) {
     const founderId = req.user.userId; 
-    return this.transformService.getIntrosByFounder(founderId);
+    return this.transformService.getIntros(req.user.userId, workspaceId);
   }
 
   @Post('queue')
   @UseGuards(JwtAuthGuard)
-  async queue(@Body() data: any) {
-    return this.transformService.queueIntro(data);
+  async queue(@Body() data: any, @Req() req: any) {
+    return this.transformService.queueIntro(data, req.user.userId);
   }
 
   @Post('send-intro')
@@ -37,13 +37,51 @@ export class TransformController {
     });
   }
 
+  @Get('outcomes/history')
+  @UseGuards(JwtAuthGuard)
+  async getHistory(
+    @Req() req: any,
+    @Query('workspaceId') workspaceId?: string
+  ) {
+    return this.transformService.getOutcomeLogs(req.user.userId, workspaceId);
+  }
+
+  @Get('metrics/execution-rate')
+  @UseGuards(JwtAuthGuard)
+  async getRate(@Req() req: any, @Query('workspaceId') workspaceId?: string) {
+    const rate = await this.transformService.getExecutionRate(req.user.userId, workspaceId);
+    return { executionRate: rate }; // Output example: { "executionRate": 75 }
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async updateIntro(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() body: { investorEmail?: string; generatedIntro?: string }
+  ) {
+    return this.transformService.updateIntro(id, req.user.userId, body);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id') id: string, @Req() req: any) {
+    return this.transformService.remove(id, req.user.userId);
+  }
+
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard)
   async updateStatus(
     @Param('id') id: string,
+    @Req() req: any,
     @Body() body: { status: 'queued' | 'sent' | 'completed'; followUpDueDate?: Date }
   ) {
-    return this.transformService.updateIntroStatus(id, body.status, body.followUpDueDate);
+    return this.transformService.updateIntroStatus(
+      id, 
+      req.user.userId, 
+      body.status, 
+      body.followUpDueDate
+    );
   }
 
   //Request investor consent ---

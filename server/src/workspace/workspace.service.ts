@@ -61,7 +61,7 @@ export class WorkspacesService {
     );
 
     if (!isMember) {
-      throw new ForbiddenException('You do not have access to view members of this workspace');
+      throw new ForbiddenException('You do not have access to this workspace');
     }
 
     return workspace.members;
@@ -159,5 +159,37 @@ export class WorkspacesService {
       workspaceId: workspace._id,
       slug: workspace.slug 
     };
+  }
+
+  async removeMember(workspaceId: string, memberIdToRemove: string, requesterId: string) {
+    const workspace = await this.workspaceModel.findById(workspaceId);
+    if(!workspace) throw new NotFoundException('Workspace not found');
+
+    //Only owner can remove
+    if(workspace.ownerId.toString() !== requesterId) {
+      throw new ForbiddenException('Only the owner can remove members');
+    }
+
+    if(memberIdToRemove === requesterId) {
+      throw new BadRequestException('Owner cannot be removed from workspace');
+    }
+
+    const updatedWorkspace = await this.workspaceModel.findByIdAndUpdate(
+      workspaceId,
+      { $pull: { members: { memberId: new Types.ObjectId(memberIdToRemove)}}},
+      { new: true }
+    );
+
+    return { message: 'Member removed successfully' };
+  }
+
+  async getUserWorkspaces(founderId: string) {
+    const workspaces = await this.workspaceModel.find({
+      'members.memberId': new Types.ObjectId(founderId)
+    })
+    .select('name slug ownerId members')
+    .sort({ createdAt: -1 });
+
+    return workspaces;
   }
 }

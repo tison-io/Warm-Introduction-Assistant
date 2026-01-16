@@ -99,6 +99,7 @@ export class FounderService {
         id: user._id,
         name: user.name,
         email: user.email,
+        tier: user.tier,
       },
     };
   }

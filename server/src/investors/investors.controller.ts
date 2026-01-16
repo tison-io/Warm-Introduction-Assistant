@@ -22,8 +22,16 @@ export class InvestorsController {
   }
 
   @Get()
-  async getInvestors(@Query('search') search: string, @Req() req: AuthenticatedRequest) {
-    return this.investorsService.findAll(req.user.userId, search);
+  async getInvestors(@Query('search') search: string, @Query('workspaceId') workspaceId: string, @Req() req: AuthenticatedRequest) {
+    return this.investorsService.findAll(req.user.userId, workspaceId, search);
+  }
+
+  @Get('analytics/velocity') 
+  async getVelocity(
+    @Query('workspaceId') workspaceId: string, 
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.investorsService.getFundraisingVelocity(req.user.userId, workspaceId);
   }
 
   @Get(':id')

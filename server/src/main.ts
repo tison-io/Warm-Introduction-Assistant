@@ -5,7 +5,7 @@ import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Enable validation
   app.useGlobalPipes(new ValidationPipe());
@@ -37,7 +37,7 @@ async function bootstrap() {
     Logger.warn('⚠️ MongoDB disconnected', 'Database');
   });
 
-  await app.listen(process.env.PORT ?? 4000);
+  await app.listen(process.env.PORT ?? 4000, '0.0.0.0');
 }
 
 bootstrap().catch(error => {

@@ -34,6 +34,12 @@ export class Founder {
 
   @Prop()
   updatedAt: Date;
+
+  @Prop({ type: String, enum: ['free', 'pro'], default: 'free' })
+  tier: string;
+
+  @Prop({ required: false })
+  stripeCustomerId?: string;
 }
 
 export const FounderSchema = SchemaFactory.createForClass(Founder);

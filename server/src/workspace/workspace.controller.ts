@@ -21,6 +21,11 @@ export class WorkspacesController {
     return this.workspacesService.acceptInvitation(token, req.user);
   }
 
+  @Get('my-workspaces')
+  getMyWorkspaces(@Req() req) {
+    return this.workspacesService.getUserWorkspaces(req.user.userId);
+  }
+  
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateWorkspaceDto, @Req() req) {
     return this.workspacesService.update(id, dto, req.user.userId);
@@ -39,5 +44,10 @@ export class WorkspacesController {
   @Post(':id/invite')
   invite(@Param('id') id: string, @Body('email') email: string, @Req() req) {
     return this.workspacesService.inviteMember(email, id, req.user);
+  }
+
+  @Delete(':id/members/:memberId')
+  removeMember(@Param('id') id:string, @Param('memberId') memberId:string, @Req() req) {
+    return this.workspacesService.removeMember(id, memberId, req.user.userId);
   }
 }
