@@ -12,7 +12,7 @@ const CTASection: React.FC = () => {
 
   return (
     <section className="relative min-h-[70vh] flex items-center justify-center py-20 overflow-hidden">
-      <div className="absolute inset-0 z-0 bg-gradient-to-tr from-gray-900 to-blue-900" />
+      <div className="absolute inset-0 z-0 bg-linear-to-tr from-gray-900 to-blue-900" />
 
       <div
         className="relative z-10 w-full max-w-5xl px-6"
@@ -35,7 +35,7 @@ const CTASection: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
             <Link
               href="/signup"
-              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white font-semibold py-4 px-10 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 flex items-center justify-center group"
+              className="w-full sm:w-auto bg-linear-to-r from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white font-semibold py-4 px-10 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 flex items-center justify-center group"
             >
               Start Your Free Trial 
               <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>

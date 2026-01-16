@@ -30,7 +30,7 @@ const Hero: React.FC = () => {
     >
       {/*BG- Gradient*/}
       <div
-        className='absolute inset-0 z-0 bg-gradient-to-br from-blue-900 to-gray-900'
+        className='absolute inset-0 z-0 bg-linear-to-br from-blue-900 to-gray-900'
       />
       <div
         className="relative z-10 text-center text-white px-4 py-20 max-w-3xl mx-auto"
@@ -58,7 +58,7 @@ const Hero: React.FC = () => {
           >
             <Link
               href="/signup"
-              className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center group"
+              className="bg-linear-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center group"
             >
               Start your free trial
             </Link>
