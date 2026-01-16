@@ -19,8 +19,13 @@ export class WorkspacesService {
   ) {}
 
   async create(dto: CreateWorkspaceDto, founderId:string) {
-    const founder = await this.founderModel.findById(founderId).select('name email');
+    const founder = await this.founderModel.findById(founderId).select('name email tier');
     if (!founder) throw new NotFoundException('Founder not found');
+
+    // Tier-based restriction
+    if (founder.tier !== 'pro') {
+      throw new ForbiddenException('Please upgrade to pro version to start a workspace');
+    }
 
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const slug = `${dto.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')}-${randomSuffix}`;

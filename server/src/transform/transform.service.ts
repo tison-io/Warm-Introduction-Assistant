@@ -10,6 +10,7 @@ import { MailService } from 'src/mail/mail.service';
 import { Investor, InvestorDocument } from 'src/schemas/investor.schema';
 import { WorkspacesService } from 'src/workspace/workspace.service';
 import { IntroOutcomeLogDocument } from './entities/intro-logs.schema';
+import { Founder, FounderDocument } from 'src/founder/entities/founder.entity';
 
 
 @Injectable()
@@ -18,13 +19,30 @@ export class TransformService {
     @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>,
     @InjectModel('IntroOutcomeLog') private auditLogModel: Model<IntroOutcomeLogDocument>,
     @InjectModel(Investor.name) private investorModel: Model<InvestorDocument>,
+    @InjectModel(Founder.name) private founderModel: Model<FounderDocument>,
     private readonly reminderService: ReminderService,
     private readonly workspaceService: WorkspacesService,
     private readonly mailService: MailService,
   ) {}
 
   // GenAI Transform engine
-  async transformIntro(dto: TransformIntroDto) {
+  async transformIntro(dto: TransformIntroDto, userId: string) {
+    const founder = await this.founderModel.findById(userId);
+    if (!founder) throw new NotFoundException('Founder not found');
+
+    //Tier-based restriction
+    if (founder.tier === 'free') {
+      const transformationCount = await this.introQueueModel.countDocuments({
+        founderId: new Types.ObjectId(userId)
+      });
+
+      if (transformationCount >= 5) {
+        throw new ForbiddenException(
+          'You have reached the limit of 5 transformation for the free tier. Please upgrade to continue using this service.'
+        );
+      }
+    }
+
     console.log("Received Transform Intro Payload:", dto);
 
     if (!dto.blurb) {
@@ -58,7 +76,8 @@ export class TransformService {
           blurb: dto.blurb,
           investor_preference: dto.investor_preference
         },
-        transformed_intro: transformed
+        transformed_intro: transformed,
+        usage: founder.tier === 'free' ? 'limited' : 'unlimited'
       };
 
     } catch (error) {

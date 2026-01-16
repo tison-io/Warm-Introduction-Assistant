@@ -10,8 +10,8 @@ export class TransformController {
 
   @Post('transform')
   @UseGuards(JwtAuthGuard)
-  async transformIntro(@Body() dto: TransformIntroDto) {
-    return this.transformService.transformIntro(dto);
+  async transformIntro(@Body() dto: TransformIntroDto, @Req() req: any) {
+    return this.transformService.transformIntro(dto, req.user.userId);
   }
 
   @Get('my-queue')
