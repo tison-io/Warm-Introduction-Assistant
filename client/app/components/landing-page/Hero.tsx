@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AUTH_EVENT } from '../../lib/auth-events';
+import TypewriterComponent from 'typewriter-effect';
 
 const Hero: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -30,7 +31,7 @@ const Hero: React.FC = () => {
     >
       {/*BG- Gradient*/}
       <div
-        className='absolute inset-0 z-0 bg-gradient-to-br from-blue-900 to-gray-900'
+        className='absolute inset-0 z-0 bg-linear-to-br from-blue-900 via-slate-800 to-gray-950'
       />
       <div
         className="relative z-10 text-center text-white px-4 py-20 max-w-3xl mx-auto"
@@ -46,10 +47,20 @@ const Hero: React.FC = () => {
           Personalize Your Investor <br /> Outreach at Scale
         </h1>
 
-        {/* Subtext */}
-        <p className='text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed'>
-          Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster.
-        </p>
+        {/* Subtext with Typewriter Effect */}
+        <div className='text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed min-h-16 md:min-h-12'>
+          <TypewriterComponent
+            options={{
+              delay: 30,
+              cursor: '|',
+            }}
+            onInit={(typewriter) => {
+              typewriter
+                .typeString('Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster.')
+                .start();
+            }}
+          />
+        </div>
 
         {/* CTA Buttons – ONLY when NOT logged in */}
         {!isLoggedIn && (
@@ -58,7 +69,7 @@ const Hero: React.FC = () => {
           >
             <Link
               href="/signup"
-              className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center group"
+              className="bg-linear-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center group"
             >
               Start your free trial
             </Link>
