@@ -31,7 +31,7 @@ const Hero: React.FC = () => {
     >
       {/*BG- Gradient*/}
       <div
-        className='absolute inset-0 z-0 bg-linear-to-br from-blue-900 to-gray-900'
+        className='absolute inset-0 z-0 bg-linear-to-br from-blue-900 via-slate-800 to-gray-950'
       />
       <div
         className="relative z-10 text-center text-white px-4 py-20 max-w-3xl mx-auto"

@@ -12,7 +12,7 @@ const CTASection: React.FC = () => {
 
   return (
     <section className="relative min-h-[70vh] flex items-center justify-center py-20 overflow-hidden">
-      <div className="absolute inset-0 z-0 bg-linear-to-tr from-gray-900 to-blue-900" />
+      <div className="absolute inset-0 z-0 bg-linear-to-tr from-gray-950 via-slate-800 to-blue-900" />
 
       <div
         className="relative z-10 w-full max-w-5xl px-6"

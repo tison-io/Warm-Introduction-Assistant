@@ -1,184 +1,123 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
-import styles from "./Sidebar.module.css";
+import React, { useEffect } from "react";
 import { AUTH_EVENT } from '@/app/lib/auth-events';
+import { 
+  LayoutDashboard, Users, Rocket, Wand2, ListOrdered, 
+  Bell, FileText, Settings, LogOut, Home, ChevronLeft, ChevronRight 
+} from "lucide-react";
 
+interface SidebarProps {
+  isCollapsed: boolean;
+  setIsCollapsed: (value: boolean) => void;
+  isMobile: boolean;
+}
 
-const icons = {
-  dashboard: (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-      <rect x="2" y="3" width="7" height="6" rx="2" fill="currentColor" />
-      <rect x="11" y="3" width="7" height="4" rx="2" fill="currentColor" opacity="0.55" />
-      <rect x="11" y="9" width="7" height="8" rx="2" fill="currentColor" />
-      <rect x="2" y="11" width="7" height="6" rx="2" fill="currentColor" opacity="0.6" />
-    </svg>
-  ),
-  investors: (
-    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <circle cx="7" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M13.4 14.1A4 4 0 0 0 3.6 14.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="14.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M18 15a3 3 0 0 0-4-2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
-  ),
-  startups: (
-    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <path d="M3 17l7-13 7 13h-3.5L10 10l-3.5 7H3z" stroke="currentColor" strokeWidth="1.5" fill="none" />
-    </svg>
-  ),
-  queue: (
-    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <rect x="3" y="5" width="14" height="2" rx="1" fill="currentColor" />
-      <rect x="3" y="9" width="14" height="2" rx="1" fill="currentColor" opacity="0.7" />
-      <rect x="3" y="13" width="14" height="2" rx="1" fill="currentColor" opacity="0.5" />
-    </svg>
-  ),
-  reminders: (
-    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  ),
-  terms: (
-    <svg width="18" height="18" fill="none" viewBox="0 0 20 20">
-      <rect x="4" y="3" width="12" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-      <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  ),
-  settings: (
-    <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
-      <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.41 1.41M14.37 14.37l1.41 1.41M4.22 15.78l1.41-1.41M14.37 5.63l1.41-1.41" stroke="currentColor" strokeWidth="1" />
-    </svg>
-  ),
-  logout: (
-    <svg width="17" height="17" fill="none" viewBox="0 0 20 20">
-      <path d="M13 7l3 3-3 3M16 10H7M10 17v-1a4 4 0 0 0-4-4H4a4 4 0 0 0-4 4v1" stroke="#e23c3c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  wand: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 4l4 4L8 19l-4-4L15 4z" />
-      <path d="M19 8l-4-4" />
-      <path d="M2 22l2-2" />
-    </svg>
-  )
-};
-
-type MenuItem = {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-};
-
-const menu: MenuItem[] = [
-  { href: "/", label: "Home", icon: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  ) },
-  { href: "/dashboard", label: "Dashboard", icon: icons.dashboard },
-  { href: "/investors", label: "Investors", icon: icons.investors },
-  { href: "/startups", label: "Startups", icon: icons.startups },
-  { href: "/intro-wizard", label: "Intro Wizard", icon: icons.wand },
-  { href: "/intro-queue", label: "Intro Queue", icon: icons.queue },
-  { href: "/reminders", label: "Reminders", icon: icons.reminders },
-  { href: "/terms-of-service", label: "Terms of Service", icon: icons.terms }
+const menu = [
+  { href: "/", label: "Home", icon: Home },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/investors", label: "Investors", icon: Users },
+  { href: "/startups", label: "Startups", icon: Rocket },
+  { href: "/intro-wizard", label: "Intro Wizard", icon: Wand2 },
+  { href: "/intro-queue", label: "Intro Queue", icon: ListOrdered },
+  { href: "/reminders", label: "Reminders", icon: Bell },
+  { href: "/terms-of-service", label: "Terms of Service", icon: FileText }
 ];
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
-        setIsMobileOpen(false);
-      }
-    };
-    
-    const handleToggleSidebar = () => {
-      setIsMobileOpen(prev => !prev);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+    const handleToggleSidebar = () => setIsCollapsed(!isCollapsed);
     window.addEventListener('toggleSidebar', handleToggleSidebar);
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-      window.removeEventListener('toggleSidebar', handleToggleSidebar);
-    };
-  }, []);
+    return () => window.removeEventListener('toggleSidebar', handleToggleSidebar);
+  }, [isCollapsed, setIsCollapsed]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-
     window.dispatchEvent(new Event(AUTH_EVENT));
-
     router.push('/');
   };
 
+  const sidebarWidth = isCollapsed ? "w-[70px]" : "w-[220px]";
+  const shadowClass = (!isCollapsed && isMobile) ? "shadow-2xl ring-1 ring-black/5" : "border-r border-gray-100";
+
   return (
     <>
-
-      
-      {/* Mobile Overlay */}
-      {isMobile && isMobileOpen && (
+      {/* Mobile Overlay - Only when expanded */}
+      {isMobile && !isCollapsed && (
         <div 
-          className={`${styles['mobile-overlay']} ${isMobileOpen ? styles.show : ''}`}
-          onClick={() => setIsMobileOpen(false)}
+          className="fixed inset-0 bg-black/40 z-1000 transition-opacity duration-300" 
+          onClick={() => setIsCollapsed(true)} 
         />
       )}
       
-      <aside className={`${styles['sidebar-root']} ${isMobile && isMobileOpen ? styles['mobile-open'] : ''} ${isMobile && !isMobileOpen ? styles['mobile-closed'] : ''}`}>
-      <div>
-        <nav>
-          <ul className={styles['sidebar-list']}>
-            {menu.map(({ href, label, icon }) => (
-              <li key={href}>
-                <Link 
-                  href={href} 
-                  className={`${styles['sidebar-link']}${pathname === href ? ` ${styles.active}` : ""}`}
-                  onClick={() => isMobile && setIsMobileOpen(false)}
-                >
-                  <span className={styles['sidebar-ico']}>{icon}</span>
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-      <div>
-        <Link 
-          href="/settings" 
-          className={styles['sidebar-btn']}
-          onClick={() => isMobile && setIsMobileOpen(false)}
-        >
-          <span className={styles['sidebar-ico']}>{icons.settings}</span>
-          Settings
-        </Link>
-        <button 
-          className={`${styles['sidebar-btn']} ${styles['sidebar-logout']}`} 
-          type="button" 
-          onClick={() => {
-            handleLogout();
-            isMobile && setIsMobileOpen(false);
-          }}
-        >
-          <span className={styles['sidebar-ico']}>{icons.logout}</span>
-          <span>Log Out</span>
-        </button>
-      </div>
-    </aside>
+      <aside 
+        className={`fixed top-16 left-0 h-[calc(100vh-64px)] bg-white flex flex-col justify-between py-6 transition-all duration-300 ease-in-out
+          ${sidebarWidth} 
+          ${shadowClass}
+          ${isMobile ? "z-1011" : "z-999"}
+        `}
+      >
+        {!isMobile && (
+          <button 
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="absolute -right-3 top-4 bg-white border border-gray-200 rounded-full p-1 shadow-sm hover:bg-gray-50 z-1012"
+          >
+            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+        )}
+
+        <div className="overflow-y-auto px-3 custom-scrollbar">
+          <nav>
+            <ul className="space-y-1 list-none p-0 m-0">
+              {menu.map(({ href, label, icon: Icon }) => {
+                const isActive = pathname === href;
+                return (
+                  <li key={href}>
+                    <Link 
+                      href={href} 
+                      title={isCollapsed ? label : ""}
+                      onClick={() => isMobile && setIsCollapsed(true)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-all duration-200
+                        ${isActive ? "bg-[#393fa7] text-white" : "text-[#151633] hover:bg-indigo-50 hover:text-[#2730a8]"}
+                        ${isCollapsed ? "justify-center" : "justify-start"}`}
+                    >
+                      <Icon size={20} className="shrink-0" />
+                      {(!isCollapsed || (!isMobile && !isCollapsed)) && (
+                        <span className="text-[15.5px] truncate animate-in fade-in duration-500">
+                          {label}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+
+        <div className={`space-y-2 pt-4 px-3 border-t border-gray-50 ${isCollapsed ? "flex flex-col items-center" : ""}`}>
+          <Link 
+            href="/settings" 
+            onClick={() => isMobile && setIsCollapsed(true)}
+            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border border-gray-100 text-[#2a2b34] font-medium text-[15px] hover:bg-indigo-50 transition-colors ${isCollapsed ? "justify-center" : ""}`}
+          >
+            <Settings size={20} className="text-[#393fa7] shrink-0" />
+            {!isCollapsed && <span className="truncate">Settings</span>}
+          </Link>
+          <button 
+            onClick={handleLogout} 
+            className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border border-red-100 bg-white text-[#e23c3c] font-medium text-[15px] hover:bg-red-50 transition-colors ${isCollapsed ? "justify-center" : ""}`}
+          >
+            <LogOut size={20} className="shrink-0" />
+            {!isCollapsed && <span className="truncate">Log Out</span>}
+          </button>
+        </div>
+      </aside>
     </>
   );
 };
