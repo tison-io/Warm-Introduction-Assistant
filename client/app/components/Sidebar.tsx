@@ -19,14 +19,14 @@ interface SidebarProps {
 // Updated menu to match the labels in your screenshot
 const menu = [
   { href: "/dashboard", label: "My Dashboard", icon: LayoutGrid, category: "PERSONAL" },
-  { href: "/workspace-db", label: "Workspace Db", icon: Database, category: "WORKSPACE" },
-  { href: "/pipeline", label: "Pipeline", icon: ListOrdered },
+  { href: "/workspace/dashboard", label: "Workspace Db", icon: Database, category: "WORKSPACE" },
+  { href: "/workspace/pipeline", label: "Pipeline", icon: ListOrdered },
   { href: "/startups", label: "Startups", icon: Rocket },
   { href: "/investors", label: "Investors", icon: Users },
   { href: "/intro-queue", label: "Intro Queue", icon: ListOrdered },
   { href: "/intro-wizard", label: "Intro Wizard", icon: Wand2 },
   { href: "/ai-writer", label: "Ai Writer", icon: PenTool },
-  { href: "/team", label: "Team", icon: Users },
+  { href: "/workspace/teams", label: "Team", icon: Users },
   { href: "/terms-of-service", label: "Terms of Service", icon: PenTool },
   { href: "/about", label: "About", icon: Info }
 ];

@@ -52,11 +52,12 @@ export default function Navbar() {
     pathname?.startsWith('/reminders') ||
     pathname?.startsWith('/terms-of-service') ||
     pathname?.startsWith('/settings') ||
-    pathname?.startsWith('/profile');
+    pathname?.startsWith('/profile') ||
+    pathname?.startsWith('/workspace');
 
   return (
     <>
-      <nav className="flex items-center justify-between px-4 sm:px-6 h-16 bg-linear-to-l from-gray-900 via-slate-800 to-blue-900 border-b border-white/10 sticky top-0 z-50">
+      <nav className="flex items-center justify-between px-4 sm:px-6 h-16 bg-linear-to-r from-gray-800 via-slate-900 to-black border-b border-white/10 sticky top-0 z-50">
         {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center no-underline">
