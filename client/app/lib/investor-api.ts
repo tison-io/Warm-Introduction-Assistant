@@ -1,4 +1,4 @@
-import { Investor, CreateInvestorDto, UpdateInvestorDto } from '../types/investor';
+import { Investor, CreateInvestorDto, UpdateInvestorDto, velocityData } from '../types/investor';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 
@@ -79,3 +79,17 @@ export async function deleteInvestor(id: string): Promise<void> {
     throw new Error(errorBody.message || 'Failed to delete investor');
   }
 }
+
+//Get fundraising velocity data
+export const fetchFundraisingVelocity = async (workspaceId?: string): Promise<velocityData[]> => {
+  const url = workspaceId 
+    ? `${API_BASE_URL}/investors/analytics/velocity?workspaceId=${workspaceId}`
+    : `${API_BASE_URL}/investors/analytics/velocity`;
+    
+  const response = await fetch(url, {
+    headers: getAuthHeaders(),
+  });
+  
+  if (!response.ok) throw new Error('Failed to fetch velocity data');
+  return response.json(); 
+};

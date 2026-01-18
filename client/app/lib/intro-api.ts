@@ -1,6 +1,6 @@
 // lib/intro-api.ts
 
-import { IntroQueue, StatusUpdatePayload } from '../types/intro';
+import { ExecutionRateResponse, IntroQueue, OutcomeLog, StatusUpdatePayload } from '../types/intro';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 const INTRO_ENDPOINT = `${API_BASE_URL}/intros`;
@@ -85,4 +85,36 @@ export async function approveIntro(introId: string): Promise<any> {
     }
 
     return data;
+}
+
+export async function fetchExecutionRate(workspaceId?: string): Promise<number> {
+    const headers = getAuthHeaders();
+
+    const url = new URL(`${API_BASE_URL}/intros/metrics/execution-rate`);
+    if (workspaceId) url.searchParams.append('workspaceId', workspaceId);
+
+    const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: headers,
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch execution rate');
+    }
+
+    const data: ExecutionRateResponse = await response.json();
+    return data.executionRate;
+}
+
+export async function fetchOutcomeLogs(workspaceId?: string): Promise<OutcomeLog[]> {
+    const url = workspaceId
+        ? `${API_BASE_URL}/intros/outcomes/history?workspaceId=${workspaceId}`
+        : `${API_BASE_URL}/intros/outcomes/history`;
+
+    const response = await fetch(url, {
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch activity logs');
+    return response.json();
 }

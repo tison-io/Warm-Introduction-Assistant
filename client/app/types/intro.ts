@@ -26,3 +26,17 @@ export interface StatusUpdatePayload {
     status: IntroStatus;
     followUpDueDate?: Date;
 }
+
+export interface ExecutionRateResponse {
+    executionRate: number;
+}
+
+export interface OutcomeLog {
+    _id:string;
+    userId: string;
+    workspaceId?: string | null;
+    investorName: string;
+    outcome:string;
+    notes: string;
+    createdAt: string;
+}

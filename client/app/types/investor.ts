@@ -22,4 +22,9 @@ export type CreateInvestorDto = {
   notes?: string;
 };
 
+export interface velocityData {
+  date: string;
+  investorsContacted: number;
+}
+
 export type UpdateInvestorDto = Partial<CreateInvestorDto>;

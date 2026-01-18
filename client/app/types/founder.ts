@@ -11,6 +11,7 @@ export interface FounderResponse {
     email:string;
     phone?:string;
     createdAt:string;
+    tier: string;
 }
 
 export interface FounderLoginResponse {
@@ -19,6 +20,7 @@ export interface FounderLoginResponse {
     id: string;
     name: string;
     email: string;
+    tier: string;
   };
 }
 
