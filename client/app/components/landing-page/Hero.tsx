@@ -34,7 +34,7 @@ const Hero: React.FC = () => {
         className='absolute inset-0 z-0 bg-linear-to-br from-blue-900 via-slate-800 to-gray-950'
       />
       <div
-        className="relative z-10 text-center text-white px-4 py-20 max-w-3xl mx-auto"
+        className="relative z-10 text-center text-white px-4 max-w-7xl mx-auto -mt-20"
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
@@ -42,46 +42,37 @@ const Hero: React.FC = () => {
         }}
       >
 
+        {/* Logo */}
+        <div className='mb-2'>
+          <img src='/logo.png' alt='Logo' className='w-52 h-30 mx-auto font-black' style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
+        </div>
+
         {/* Main Heading */}
-        <h1 className='text-5xl md:text-7xl font-bold mb-8 tracking-tight leading-tight'>
+        <h1 className='text-5xl md:text-7xl font-bold mb-4 tracking-tight leading-tight'>
           Personalize Your Investor <br /> Outreach at Scale
         </h1>
 
-        {/* Subtext with Typewriter Effect */}
-        <div className='text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed min-h-16 md:min-h-12'>
-          <TypewriterComponent
-            options={{
-              delay: 30,
-              cursor: '|',
-            }}
-            onInit={(typewriter) => {
-              typewriter
-                .typeString('Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster.')
-                .start();
-            }}
-          />
+        {/* Subtext */}
+        <div className='text-gray-400 text-sm md:text-base mb-8 max-w-4xl mx-auto leading-relaxed font-normal'>
+          Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster and build meaningful connections.
         </div>
 
-        {/* CTA Buttons – ONLY when NOT logged in */}
-        {!isLoggedIn && (
-          <div
-            className="flex flex-col sm:flex-row justify-center items-center gap-4"
+        {/* New CTA Buttons */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <Link
+            href="/signup"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 transform hover:scale-105 hover:shadow-xl hover:shadow-blue-500/30"
           >
-            <Link
-              href="/signup"
-              className="bg-linear-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center group"
-            >
-              Start your free trial
-            </Link>
+            Start Free Trial
+          </Link>
 
-            <Link
-              href="/login"
-              className="bg-[#1a1f2e]/50 border border-gray-700 hover:bg-[#1a1f2e] text-gray-200 font-medium py-3 px-8 rounded-lg transition-all duration-300"
-            >
-              Log in
-            </Link>
-          </div>
-        )}
+          <Link
+            href="/about"
+            className="bg-[#1a1f2e]/50 border border-gray-700 hover:bg-[#1a1f2e] text-gray-200 font-medium py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:border-blue-400"
+          >
+            See How It Works
+          </Link>
+        </div>
       </div>
     </div>
   );

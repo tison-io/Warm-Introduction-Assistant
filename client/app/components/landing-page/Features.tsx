@@ -36,7 +36,7 @@ const FeatureCard: React.FC<{ icon: React.ReactNode, title: string, description:
     return (
         <div 
             ref={cardRef}
-            className="bg-slate-900/50 border border-slate-800 backdrop-blur-sm rounded-2xl p-8 transition-all duration-700 hover:border-blue-500/30 hover:bg-slate-900/80 group"
+            className="bg-slate-900/50 border border-slate-800 backdrop-blur-sm rounded-2xl p-8 transition-all duration-300 hover:border-blue-500/30 hover:bg-slate-900/80 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 group cursor-pointer"
             style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
