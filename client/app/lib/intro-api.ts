@@ -27,9 +27,12 @@ const getAuthHeaders = () => {
 };
 
 
-export async function fetchIntrosByFounder(): Promise<IntroQueue[]> {
-    const url = `${INTRO_ENDPOINT}/my-queue`;
+export async function fetchIntrosByFounder(workspaceId?: string): Promise<IntroQueue[]> {
+    const url = workspaceId
+        ? `${API_BASE_URL}/intros/my-queue?workspaceId=${workspaceId}`
+        : `${API_BASE_URL}/intros/my-queue`;
     
+
     const response = await fetch(url, {
         headers: getAuthHeaders(),
         cache: 'no-cache' 
