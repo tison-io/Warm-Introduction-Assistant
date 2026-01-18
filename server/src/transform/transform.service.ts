@@ -311,10 +311,6 @@ export class TransformService {
     if (followUpDueDate && status !== 'sent') {
       throw new BadRequestException('Follow-up date can only be set when status is "sent".');
     }
-    
-    if (status === 'queued' && intro.status !== 'queued') {
-      throw new BadRequestException('Cannot set status back to "queued".');
-    }
 
     //State Update
     intro.status = status;
