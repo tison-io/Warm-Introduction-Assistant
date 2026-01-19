@@ -19,14 +19,14 @@ interface SidebarProps {
 // Updated menu to match the labels in your screenshot
 const menu = [
   { href: "/dashboard", label: "My Dashboard", icon: LayoutGrid, category: "PERSONAL" },
-  { href: "/workspace-db", label: "Workspace Db", icon: Database, category: "WORKSPACE" },
-  { href: "/pipeline", label: "Pipeline", icon: ListOrdered },
+  { href: "/workspace/dashboard", label: "Workspace Db", icon: Database, category: "WORKSPACE" },
+  { href: "/workspace/pipeline", label: "Pipeline", icon: ListOrdered },
   { href: "/startups", label: "Startups", icon: Rocket },
   { href: "/investors", label: "Investors", icon: Users },
   { href: "/intro-queue", label: "Intro Queue", icon: ListOrdered },
   { href: "/intro-wizard", label: "Intro Wizard", icon: Wand2 },
   { href: "/ai-writer", label: "Ai Writer", icon: PenTool },
-  { href: "/team", label: "Team", icon: Users },
+  { href: "/workspace/teams", label: "Team", icon: Users },
   { href: "/terms-of-service", label: "Terms of Service", icon: PenTool },
   { href: "/about", label: "About", icon: Info }
 ];
@@ -78,13 +78,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
         <div className="overflow-y-auto px-4 custom-scrollbar">
           {!isCollapsed && (
             <div className="px-3 mb-8">
-              <Image 
-                src="/logo.png" 
-                alt="Warmly Logo" 
-                width={64} 
-                height={64} 
-                className="w-10 h-auto"
-              />
+              <Link href="/" className="flex items-center no-underline">
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={64}
+                  height={64}
+                  className="sm:w-[55px] sm:h-[55px]"
+                />
+              </Link>
               <div className="h-1px bg-white/10 mt-4"></div>
             </div>
           )}

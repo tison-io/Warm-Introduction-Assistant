@@ -34,7 +34,7 @@ const Hero: React.FC = () => {
         className='absolute inset-0 z-0 bg-linear-to-br from-blue-900 via-slate-800 to-gray-950'
       />
       <div
-        className="relative z-10 text-center text-white px-4 py-20 max-w-3xl mx-auto"
+        className="relative z-10 text-center text-white px-4 max-w-7xl mx-auto -mt-20"
         style={{
           opacity: isVisible ? 1 : 0,
           transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
@@ -42,8 +42,13 @@ const Hero: React.FC = () => {
         }}
       >
 
+        {/* Logo */}
+        <div className='mb-2'>
+          <img src='/logo.png' alt='Logo' className='w-52 h-30 mx-auto font-black' style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
+        </div>
+
         {/* Main Heading */}
-        <h1 className='text-5xl md:text-7xl font-bold mb-8 tracking-tight leading-tight'>
+        <h1 className='text-5xl md:text-7xl font-bold mb-4 tracking-tight leading-tight'>
           Personalize Your Investor <br /> Outreach at Scale
         </h1>
 
