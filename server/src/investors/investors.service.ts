@@ -25,14 +25,19 @@ export class InvestorsService {
   async findAll(userId: string, workspaceId?: string, search?: string) {
     let query: any;
 
-    if (workspaceId) {
-      //Shared Pipeline- check membership first
-      await this.workspaceService.getMembers(workspaceId, userId);
+    const userObjectId = new Types.ObjectId(userId);
 
-      query = { workspaceId: new Types.ObjectId(workspaceId) };
+    if (workspaceId) {
+      await this.workspaceService.getMembers(workspaceId, userId);
+      query = { 
+        workspaceId: new Types.ObjectId(workspaceId) 
+      };
     } else {
-      //Personal Pipeline
-      query = { userId, workspaceId: null};
+      // Personal Pipeline
+      query = { 
+        userId: userObjectId,
+        workspaceId: { $in: [null, undefined] } 
+      };
     }
 
     if(search) {
@@ -76,6 +81,10 @@ export class InvestorsService {
   }
 
   async getFundraisingVelocity(userId: string, workspaceId?: string) {
+    // 1. Cast string IDs to ObjectIds for the Aggregation Pipeline
+    const userObjectId = new Types.ObjectId(userId);
+    const workspaceObjectId = workspaceId ? new Types.ObjectId(workspaceId) : null;
+
     if (workspaceId) {
       await this.workspaceService.getMembers(workspaceId, userId);
     }
@@ -84,13 +93,12 @@ export class InvestorsService {
       status: 'contacted',
     };
 
-    if (workspaceId) {
-      matchQuery.workspaceId = new Types.ObjectId(workspaceId);
+    if (workspaceObjectId) {
+      // Workspace velocity
+      matchQuery.workspaceId = workspaceObjectId;
     } else {
-      matchQuery.$or = [
-        { userId: userId }, 
-        { userId: new Types.ObjectId(userId) }
-      ];
+      // Personal velocity
+      matchQuery.userId = userObjectId;
       matchQuery.workspaceId = { $in: [null, undefined] };
     }
 
@@ -98,7 +106,6 @@ export class InvestorsService {
       { $match: matchQuery },
       {
         $addFields: {
-          // Fallback logic for old data
           effectiveDate: { $ifNull: ["$contactedAt", "$updatedAt", new Date()] }
         }
       },

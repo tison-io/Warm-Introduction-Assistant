@@ -16,8 +16,12 @@ const getAuthHeaders = () => {
 };
 
 // Fetch all investors
-export async function getInvestors(searchQuery?: string): Promise<Investor[]> {
+export async function getInvestors(workspaceId?: string, searchQuery?: string): Promise<Investor[]> {
   const url = new URL(`${API_BASE_URL}/investors`);
+  if (workspaceId) {
+    url.searchParams.append('workspaceId', workspaceId)
+  }
+  
   if (searchQuery) {
     url.searchParams.append('search', searchQuery);
   }
