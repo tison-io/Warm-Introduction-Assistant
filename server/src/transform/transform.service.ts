@@ -324,7 +324,8 @@ export class TransformService {
         await this.reminderService.createReminder(
           intro.founderId.toString(), 
           intro._id.toString(),
-          followUpDueDate
+          followUpDueDate,
+          intro.workspaceId?.toString()
         );
       }
     } else if (status === 'completed') {
