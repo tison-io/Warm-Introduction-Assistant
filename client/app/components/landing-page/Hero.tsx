@@ -52,27 +52,41 @@ const Hero: React.FC = () => {
           Personalize Your Investor <br /> Outreach at Scale
         </h1>
 
-        {/* Subtext */}
-        <div className='text-gray-400 text-sm md:text-base mb-8 max-w-4xl mx-auto leading-relaxed font-normal'>
-          Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster and build meaningful connections.
+        {/* Subtext with Typewriter Effect */}
+        <div className='text-gray-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed min-h-16 md:min-h-12'>
+          <TypewriterComponent
+            options={{
+              delay: 30,
+              cursor: '|',
+            }}
+            onInit={(typewriter) => {
+              typewriter
+                .typeString('Transform cold emails into warm introductions. Our AI crafts personalized messages that resonate with investors, helping you raise capital faster.')
+                .start();
+            }}
+          />
         </div>
 
-        {/* New CTA Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-          <Link
-            href="/signup"
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25 transform hover:scale-105 hover:shadow-xl hover:shadow-blue-500/30"
+        {/* CTA Buttons – ONLY when NOT logged in */}
+        {!isLoggedIn && (
+          <div
+            className="flex flex-col sm:flex-row justify-center items-center gap-4"
           >
-            Start Free Trial
-          </Link>
+            <Link
+              href="/signup"
+              className="bg-linear-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center group"
+            >
+              Start your free trial
+            </Link>
 
-          <Link
-            href="/about"
-            className="bg-[#1a1f2e]/50 border border-gray-700 hover:bg-[#1a1f2e] text-gray-200 font-medium py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 hover:border-blue-400"
-          >
-            See How It Works
-          </Link>
-        </div>
+            <Link
+              href="/login"
+              className="bg-[#1a1f2e]/50 border border-gray-700 hover:bg-[#1a1f2e] text-gray-200 font-medium py-3 px-8 rounded-lg transition-all duration-300"
+            >
+              Log in
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

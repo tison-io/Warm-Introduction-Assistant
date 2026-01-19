@@ -78,13 +78,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
         <div className="overflow-y-auto px-4 custom-scrollbar">
           {!isCollapsed && (
             <div className="px-3 mb-8">
-              <Image 
-                src="/logo.png" 
-                alt="Warmly Logo" 
-                width={64} 
-                height={64} 
-                className="w-10 h-auto"
-              />
+              <Link href="/" className="flex items-center no-underline">
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={64}
+                  height={64}
+                  className="sm:w-[55px] sm:h-[55px]"
+                />
+              </Link>
               <div className="h-1px bg-white/10 mt-4"></div>
             </div>
           )}
