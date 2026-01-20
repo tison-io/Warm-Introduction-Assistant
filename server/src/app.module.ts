@@ -15,6 +15,7 @@ import { TransformModule } from './transform/transform.module';
 import { AuthModule } from './auth/auth.module';
 import { WorkspaceModule } from './workspace/workspace.module';
 import { PaymentsModule } from './payments/payments.module';
+import { PresenceModule } from './presence/presence.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { PaymentsModule } from './payments/payments.module';
     AuthModule,
     WorkspaceModule,
     PaymentsModule,
+    PresenceModule,
   ],
   controllers: [AppController],
   providers: [AppService, MailService],

@@ -9,7 +9,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Founder } from '../founder/entities/founder.entity';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ 
+    cors: {
+    origin: '*',
+    credentials: true,
+  },
+  transports: ['websocket', 'polling'],
+})
 export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
 
@@ -19,18 +25,21 @@ export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     async handleConnection(client: Socket) {
         const userId = client.handshake.query.userId as string;
-        
+        console.log(`Connection attempt: ${userId}`);
+
         if (!userId || userId === 'undefined') {
             console.log('Connection attempt without valid userId');
             return;
         }
 
+        const now = new Date();
+
         await this.founderModel.findByIdAndUpdate(userId, {
             isOnline: true,
-            lastActive: new Date(),
+            lastActive: now,
         });
 
-        this.server.emit('userStatusUpdate', { userId, isOnline: true });
+        this.server.emit('userStatusUpdate', { userId, isOnline: true, lastActive: now });
     }
 
     async handleDisconnect(client: Socket) {

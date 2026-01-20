@@ -3,20 +3,34 @@ import { io, Socket } from 'socket.io-client';
 
 export function usePresence(userId: string | undefined, onUpdate: (data: any) => void) {
   useEffect(() => {
-    if (!userId) return;
+    console.log("Hook received userId:", userId);
+    if (!userId || userId === 'undefined') {
+        console.log("Presence: Waiting for valid userId...");
+        return;
+    }
 
-    // Connect to your NestJS backend
-    const socket: Socket = io(process.env.PUBLIC_NEXT_FOUNDER_API_URL || 'http://localhost:4000', {
+    console.log("Presence: Connecting for user", userId);
+
+    const socket: Socket = io(process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000', {
       query: { userId },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+    });
+
+    socket.on('connect', () => {
+      console.log("Presence: Connected to server");
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error("Presence: Connection error", err.message);
     });
 
     socket.on('userStatusUpdate', (data) => {
-      console.log('Real-time status change:', data);
       onUpdate(data);
     });
 
     return () => {
+      console.log("Presence: Disconnecting...");
       socket.disconnect();
     };
   }, [userId, onUpdate]);

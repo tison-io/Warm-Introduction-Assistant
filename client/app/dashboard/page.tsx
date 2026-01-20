@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usePresence } from '../hooks/usePresence';
 import { Users, CheckCircle2, Clock, ChevronRight, Filter, Bell, Check, Loader2, TrendingUp, Activity } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -139,27 +139,30 @@ export default function DashboardPage() {
     };
 
     useEffect(() => {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (parsed.id) {
+                    setFounder({
+                        ...parsed,
+                        _id: parsed.id
+                    });
+                }
+            } catch (e) {
+                console.error("Error parsing user from storage", e);
+            }
+        }
         loadDashboardData();
-        
-        // Fetch full profile to ensure we have the MongoDB _id
-        getFounderProfile()
-            .then(res => {
-                setFounder(res);
-                localStorage.setItem('user', JSON.stringify(res));
-            })
-            .catch(err => {
-                console.error(err);
-                // Fallback to local storage if API is slow/fails
-                const storedUser = localStorage.getItem('user');
-                if (storedUser) setFounder(JSON.parse(storedUser));
-            });
+
     }, []);
 
-    // --- Presence Hook ---
-    // This connects the WebSocket and flips 'isOnline' to true in the DB
-    usePresence(founder?._id, (presenceUpdate) => {
-        console.log("Presence status update received:", presenceUpdate);
-    });
+
+    const handlePresenceUpdate = useCallback((update: any) => {
+        console.log("Presence update received:", update);
+    }, []);
+
+    usePresence(founder?._id, handlePresenceUpdate);
 
     const handleMarkAsDone = async (reminder: Reminder) => {
         try {
