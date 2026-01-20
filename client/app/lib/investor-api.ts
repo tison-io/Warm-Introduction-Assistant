@@ -97,3 +97,22 @@ export const fetchFundraisingVelocity = async (workspaceId?: string): Promise<ve
   if (!response.ok) throw new Error('Failed to fetch velocity data');
   return response.json(); 
 };
+
+// Fetch recommendations based on Workspace or Startup tags
+export async function getRecommendations(workspaceId?: string, startupId?: string): Promise<Investor[]> {
+  const url = new URL(`${API_BASE_URL}/investors/recommendations`);
+  
+  if (workspaceId) url.searchParams.append('workspaceId', workspaceId);
+  if (startupId) url.searchParams.append('startupId', startupId);
+
+  const response = await fetch(url.toString(), {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.message || 'Failed to fetch recommendations');
+  }
+
+  return response.json();
+}

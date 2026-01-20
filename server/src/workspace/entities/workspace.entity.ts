@@ -15,6 +15,9 @@ export class Workspace extends Document{
     @Prop()
     pitchLink: string;
 
+    @Prop({ type: [String], default: [] })
+    tags: string[];
+
     @Prop({ type: Types.ObjectId, ref: 'Founder', required: true })
     ownerId: Types.ObjectId;
 

@@ -5,11 +5,15 @@ import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
 import { Investor } from '../schemas/investor.schema';
 import { WorkspacesService } from 'src/workspace/workspace.service';
+import { Startup } from 'src/startups/entities/startup.entity';
+import { Workspace } from 'src/workspace/entities/workspace.entity';
 
 @Injectable()
 export class InvestorsService {
   constructor(
     @InjectModel(Investor.name) private investorModel: Model<Investor>,
+    @InjectModel(Startup.name) private startupModel: Model<Startup>,
+    @InjectModel(Workspace.name) private workspaceModel: Model<Workspace>,
     private readonly workspaceService: WorkspacesService,
   ) {}
 
@@ -124,5 +128,39 @@ export class InvestorsService {
         }
       }
     ]);
+  }
+
+  async getRecommendations(userId: string, workspaceId?: string, startupId?: string) {
+    let targetTags: string[] = [];
+
+    if (workspaceId) {
+      const workspace = await this.workspaceModel.findById(workspaceId).select('tags').exec();
+      targetTags = workspace?.tags || [];
+    } else if (startupId) {
+      const startup = await this.startupModel.findOne({ _id: startupId, founderId: userId }).select('tags').exec();
+      targetTags = startup?.tags || [];
+    }
+
+    if (targetTags.length === 0) return [];
+
+
+    const exclusionCriteria: any = {};
+    if (workspaceId) exclusionCriteria.workspaceId = new Types.ObjectId(workspaceId);
+    if (startupId) exclusionCriteria.startupId = new Types.ObjectId(startupId);
+
+    const existingInPipeline = await this.investorModel
+      .find(exclusionCriteria)
+      .distinct('name');
+
+    return this.investorModel.find({
+      name: { $nin: existingInPipeline },
+      tags: { $in: targetTags },          
+      $or: [
+        { userId: new Types.ObjectId(userId) }, // My personal investors 
+        { visibility: 'public' }               // Global public investors
+      ]
+    })
+    .limit(20)
+    .exec();
   }
 }

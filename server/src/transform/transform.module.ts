@@ -11,6 +11,7 @@ import { Investor, InvestorSchema } from 'src/schemas/investor.schema';
 import { InvestorsService } from 'src/investors/investors.service';
 import { IntroOutcomeLogSchema } from './entities/intro-logs.schema';
 import { Founder, FounderSchema } from 'src/founder/entities/founder.entity';
+import { StartupsModule } from 'src/startups/startups.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { Founder, FounderSchema } from 'src/founder/entities/founder.entity';
     InvestorsModule,
     WorkspaceModule,
     InvestorsModule,
+    StartupsModule,
   ],
   controllers: [TransformController],
   providers: [TransformService, InvestorsService],

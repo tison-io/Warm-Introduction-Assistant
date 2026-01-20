@@ -34,6 +34,19 @@ export class InvestorsController {
     return this.investorsService.getFundraisingVelocity(req.user.userId, workspaceId);
   }
 
+  @Get('recommendations')
+  async getRecommendations(
+    @Query('workspaceId') workspaceId: string, 
+    @Query('startupId') startupId: string,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.investorsService.getRecommendations(
+      req.user.userId, 
+      workspaceId, 
+      startupId
+    );
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.investorsService.findOne(id, req.user.userId);

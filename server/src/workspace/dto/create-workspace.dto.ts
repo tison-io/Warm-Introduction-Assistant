@@ -12,5 +12,9 @@ export class CreateWorkspaceDto {
     @IsOptional()
     @IsUrl()
     pitchLink?: string;
+
+    @IsOptional()
+    @IsString({ each: true })
+    tags?: string[];
 }
 

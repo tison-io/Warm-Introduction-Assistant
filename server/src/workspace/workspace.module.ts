@@ -18,6 +18,6 @@ import { MailModule } from 'src/mail/mail.module';
   ],
   controllers: [WorkspacesController],
   providers: [WorkspacesService],
-  exports: [WorkspacesService]
+  exports: [WorkspacesService, MongooseModule]
 })
 export class WorkspaceModule {}
