@@ -40,6 +40,12 @@ export class Founder {
 
   @Prop({ required: false })
   stripeCustomerId?: string;
+
+  @Prop({ default: false })
+  isOnline: boolean;
+
+  @Prop({ default: Date.now })
+  lastActive: Date;
 }
 
 export const FounderSchema = SchemaFactory.createForClass(Founder);

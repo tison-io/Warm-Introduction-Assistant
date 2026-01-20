@@ -13,6 +13,10 @@ export default function LoginSuccessLogic() {
     useEffect(() => {
         const token = searchParams.get('token');
         const error = searchParams.get('error');
+        const callbackUrl = searchParams.get('callbackUrl');
+
+        console.log("SUCCESS PAGE DETECTED:", { token: !!token, callbackUrl });
+        
         if (error) {
             setStatusMessage(`Login failed: ${error}`);
             setTimeout(() => {
@@ -25,7 +29,7 @@ export default function LoginSuccessLogic() {
             localStorage.setItem('token', token);
             setStatusMessage("Login successful! Redirecting to dashboard..."); 
             window.dispatchEvent(new Event(AUTH_EVENT));
-            router.push('/dashboard');
+            router.push(callbackUrl || '/dashboard');
         } else {
             setStatusMessage("Login failed. No authentication data received.");
             

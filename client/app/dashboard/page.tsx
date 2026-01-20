@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePresence } from '../hooks/usePresence';
 import { Users, CheckCircle2, Clock, ChevronRight, Filter, Bell, Check, Loader2, TrendingUp, Activity } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from 'next/link';
@@ -94,7 +95,9 @@ export default function DashboardPage() {
         executionRate: 0, completedIntros: 0, latestIntros: [], reminders: [],
         velocity: [], logs: [],
     });
-    const [founder, setFounder] = useState<{ name: string; email: string; tier: string; } | null>(null);
+    
+    // Updated type to include _id for presence tracking
+    const [founder, setFounder] = useState<{ _id?: string; name: string; email: string; tier: string; } | null>(null);
 
     const loadDashboardData = async () => {
         try {
@@ -137,10 +140,26 @@ export default function DashboardPage() {
 
     useEffect(() => {
         loadDashboardData();
+        
+        // Fetch full profile to ensure we have the MongoDB _id
         getFounderProfile()
-            .then(data => setFounder({ name: data.name, email: data.email, tier: data.tier }))
-            .catch(err => console.error(err));
+            .then(res => {
+                setFounder(res);
+                localStorage.setItem('user', JSON.stringify(res));
+            })
+            .catch(err => {
+                console.error(err);
+                // Fallback to local storage if API is slow/fails
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) setFounder(JSON.parse(storedUser));
+            });
     }, []);
+
+    // --- Presence Hook ---
+    // This connects the WebSocket and flips 'isOnline' to true in the DB
+    usePresence(founder?._id, (presenceUpdate) => {
+        console.log("Presence status update received:", presenceUpdate);
+    });
 
     const handleMarkAsDone = async (reminder: Reminder) => {
         try {
@@ -221,52 +240,16 @@ export default function DashboardPage() {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={data.velocity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                         <defs>
-                                        {/* Increased opacity for that "glowing" reference look */}
                                         <linearGradient id="colorVel" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.6}/>
                                             <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                                         </linearGradient>
                                         </defs>
-                                        
-                                        <CartesianGrid 
-                                        strokeDasharray="3 3" 
-                                        vertical={true}
-                                        stroke="#1e293b" 
-                                        opacity={0.3} 
-                                        />
-                                        
-                                        <XAxis 
-                                        dataKey="date" 
-                                        stroke="#64748b" 
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        dy={15}
-                                        tickFormatter={(str, index) => `Week ${index + 1}`} 
-                                        />
-                                        
-                                        <YAxis 
-                                        stroke="#64748b" 
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={true}
-                                        domain={[0, 80]}
-                                        ticks={[0, 20, 40, 60, 80]}
-                                        />
-
-                                        <Tooltip 
-                                        contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
-                                        />
-
-                                        <Area
-                                        type="monotone"
-                                        dataKey="investorsContacted"
-                                        stroke="#a78bfa"
-                                        strokeWidth={3}
-                                        fillOpacity={1}
-                                        fill="url(#colorVel)"
-                                        animationDuration={1500}
-                                        />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={true} stroke="#1e293b" opacity={0.3} />
+                                        <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} dy={15} tickFormatter={(str, index) => `Week ${index + 1}`} />
+                                        <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={true} domain={[0, 80]} ticks={[0, 20, 40, 60, 80]} />
+                                        <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }} />
+                                        <Area type="monotone" dataKey="investorsContacted" stroke="#a78bfa" strokeWidth={3} fillOpacity={1} fill="url(#colorVel)" animationDuration={1500} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>

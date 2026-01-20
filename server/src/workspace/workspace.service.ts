@@ -57,19 +57,54 @@ export class WorkspacesService {
   }
 
   async getMembers(id: string, founderId: string) {
-    const workspace = await this.workspaceModel.findById(id).select('members');
-    if (!workspace) throw new NotFoundException('Workspace not found');
+    const workspaceObjectId = new Types.ObjectId(id);
 
-    // 2. Check if the current user is a member of this workspace
-    const isMember = workspace.members.some(
-      (member) => member.memberId.toString() === founderId
+    const workspaceWithDetails = await this.workspaceModel.aggregate([
+      { $match: { _id: workspaceObjectId } },
+      
+      { $unwind: '$members' },
+      
+      // Join with the Founders collection
+      {
+        $lookup: {
+          from: 'founders',        
+          localField: 'members.memberId',
+          foreignField: '_id',
+          as: 'founderStatus'
+        }
+      },
+      
+      // Flatten the founderStatus array
+      { $unwind: '$founderStatus' },
+      
+      {
+        $project: {
+          _id: 0,
+          memberId: '$members.memberId',
+          name: '$members.name',
+          email: '$members.email',
+          role: '$members.role',
+          joinedAt: '$members.joinedAt',
+          isOnline: '$founderStatus.isOnline',
+          lastActive: '$founderStatus.lastActive'
+        }
+      }
+    ]);
+
+    if (!workspaceWithDetails || workspaceWithDetails.length === 0) {
+      throw new NotFoundException('Workspace not found');
+    }
+
+    // Workspace Membership Verification
+    const isMember = workspaceWithDetails.some(
+      (m) => m.memberId.toString() === founderId
     );
 
     if (!isMember) {
       throw new ForbiddenException('You do not have access to this workspace');
     }
 
-    return workspace.members;
+    return workspaceWithDetails;
   }
 
   async delete(id: string, founderId: string) {
@@ -126,45 +161,59 @@ export class WorkspacesService {
 
     const invitation = await this.inviteModel.findOne({ token });
     if (!invitation) {
-      throw new NotFoundException('Invalid or expired invitation token.');
+        throw new NotFoundException('Invalid or expired invitation token.');
     }
 
     if (invitation.isAccepted) {
         throw new BadRequestException('This invitation has already been used.');
     }
 
-    const workspace = await this.workspaceModel.findById(invitation.workspaceId);
-    if (!workspace) throw new NotFoundException('Workspace no longer exists.');
-
-    const founderId = currentFounder.userId;
+    const founderId = currentFounder.userId || currentFounder._id;
     const founderRecord = await this.founderModel.findById(founderId);
     if (!founderRecord) throw new NotFoundException('Founder not found');
+    const workspace = await this.workspaceModel.findOneAndUpdate(
+        { 
+            _id: invitation.workspaceId,
+            'members.memberId': { $ne: new Types.ObjectId(founderId) } // Only update if NOT already a member
+        },
+        {
+            $push: {
+                members: {
+                    memberId: new Types.ObjectId(founderId),
+                    name: founderRecord.name,
+                    email: founderRecord.email,
+                    role: 'member',
+                    joinedAt: new Date(),
+                }
+            }
+        },
+        { new: true }
+    );
 
-    
+    if (!workspace) {
+        const existingWorkspace = await this.workspaceModel.findById(invitation.workspaceId);
+        if (!existingWorkspace) throw new NotFoundException('Workspace no longer exists.');
+        
+        invitation.isAccepted = true;
+        await invitation.save();
 
-    // Check if already in workspace
-    const exists = workspace.members.some(m => m.memberId.toString() === currentFounder._id);
-    
-    if (!exists) {
-      workspace.members.push({
-        memberId: new Types.ObjectId(founderId),
-        name: founderRecord.name,
-        email: founderRecord.email,
-        role: 'member',
-        joinedAt: new Date(),
-      });
-      await workspace.save();
+        return { 
+            message: 'Already a member of this workspace.', 
+            workspaceId: existingWorkspace._id,
+            slug: existingWorkspace.slug 
+        };
     }
 
+    // 4. Mark invitation as accepted
     invitation.isAccepted = true;
     await invitation.save();
 
     return { 
-      message: 'Successfully joined the workspace!', 
-      workspaceId: workspace._id,
-      slug: workspace.slug 
+        message: 'Successfully joined the workspace!', 
+        workspaceId: workspace._id,
+        slug: workspace.slug 
     };
-  }
+}
 
   async removeMember(workspaceId: string, memberIdToRemove: string, requesterId: string) {
     const workspace = await this.workspaceModel.findById(workspaceId);
