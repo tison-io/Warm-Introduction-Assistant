@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from "react";
+import { useState, KeyboardEvent } from "react";
 import { CreateStartupDto, Startup } from "../../types/startup";
 import { useToast } from "../Toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 
 interface Props {
     initialData?: Startup;
@@ -11,60 +11,47 @@ interface Props {
     submitLabel: string;
 }
 
-const FormField: React.FC<{
-    label: string;
-    name: keyof CreateStartupDto;
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-    required?: boolean;
-    isTextArea?: boolean;
-    helpText?: string;
-}> = ({ label, name, value, onChange, required, isTextArea, helpText }) => {
-    const InputComponent = isTextArea ? "textarea" : "input";
-    const inputProps = isTextArea ? { rows: 2 } : { type: 'text' }; 
-
-    return (
-        <div className="space-y-1">
-            <label data-testid={`label-${name}`} htmlFor={name} className="block text-black font-medium">
-                {label}{required && <span className="text-red-400">*</span>}
-            </label>
-
-            <InputComponent
-                data-testid={`input-${name}`}
-                id={name}
-                name={name}
-                value={value}
-                onChange={onChange}
-                required={required}
-                {...inputProps}
-                className="w-full p-2 text-base bg-white text-gray-900 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
-            />
-            {helpText && (
-                <p data-testid={`help-${name}`} className="text-xs text-gray-300 mt-1">{helpText}</p>
-            )}
-        </div>
-    );
-};
-
 export default function StartupForm({ initialData, onSubmit, submitLabel }: Props) {
-    const [form, setForm] = useState<CreateStartupDto>({
+    const { showToast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const [formData, setFormData] = useState({
         name: initialData?.name || "",
         blurb: initialData?.blurb || "",
         pitchLink: initialData?.pitchLink || "",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { showToast } = useToast();
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    }
+    const [tags, setTags] = useState<string[]>(initialData?.tags || []);
+    const [tagInput, setTagInput] = useState("");
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const addTag = () => {
+        const trimmed = tagInput.trim();
+        if (trimmed && !tags.includes(trimmed)) {
+            setTags([...tags, trimmed]);
+            setTagInput("");
+        }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); 
+            addTag();
+        }
+    };
+
+    const removeTag = (tagToRemove: string) => {
+        setTags(tags.filter(t => t !== tagToRemove));
+    };
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setIsSubmitting(true);
-
         try {
-            await onSubmit(form);
+            await onSubmit({ ...formData, tags: tags });
             showToast("Startup saved successfully!", "success");
         } catch (err) {
             console.error(err);
@@ -74,42 +61,76 @@ export default function StartupForm({ initialData, onSubmit, submitLabel }: Prop
         }
     }
 
+    const inputClasses = "w-full p-3 bg-[#161930] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-500";
+    const labelClasses = "block text-sm font-medium text-gray-400 mb-1";
+
     return (
-        <form data-testid="startup-form" onSubmit={handleSubmit} className="space-y-4"> 
-            <FormField
-                label="Startup Name"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-            />
+        <form 
+            onSubmit={handleSubmit} 
+            className="space-y-6 bg-[#0f1120]/80 p-8 rounded-2xl border border-gray-800 shadow-2xl"
+        >
+            <div>
+                <label className={labelClasses}>Startup Name*</label>
+                <input name="name" value={formData.name} onChange={handleChange} required className={inputClasses} placeholder="Your Startup Name" />
+            </div>
 
-            <FormField
-                label="Blurb"
-                name="blurb"
-                value={form.blurb}
-                onChange={handleChange}
-                isTextArea
-                required
-                helpText="This will be used to generate personalized investor introductions."
-            />
+            <div>
+                <label className={labelClasses}>Blurb*</label>
+                <textarea name="blurb" value={formData.blurb} onChange={handleChange} required rows={3} className={inputClasses} placeholder="What does your startup do?" />
+            </div>
 
-            <FormField 
-                label="Pitch Link" 
-                name="pitchLink"
-                value={form.pitchLink}
-                onChange={handleChange}
-                required
-            />
+            <div>
+                <label className={labelClasses}>Pitch Link*</label>
+                <input name="pitchLink" value={formData.pitchLink} onChange={handleChange} required className={inputClasses} placeholder="https://your-pitch/..." />
+            </div>
+
+            {/* Tags Field with Conditional Plus Button */}
+            <div>
+                <label className={labelClasses}>Industry Tags</label>
+                <div className="relative flex items-center">
+                    <input
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className={inputClasses}
+                        placeholder="Add a tag (e.g. Tech)"
+                    />
+                    
+                    {/* Conditional Plus Button: only shows if tagInput has text */}
+                    {tagInput.trim().length > 0 && (
+                        <button
+                            type="button"
+                            onClick={addTag}
+                            className="absolute right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-md transition-all animate-in fade-in zoom-in duration-200"
+                        >
+                            <Plus className="w-5 h-5" />
+                        </button>
+                    )}
+                </div>
+
+                <div className="flex flex-wrap gap-2 mt-3 min-h-8">
+                    {tags.map((tag) => (
+                        <span 
+                            key={tag}
+                            className="flex items-center gap-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-sm animate-in fade-in zoom-in duration-200"
+                        >
+                            {tag}
+                            <button type="button" onClick={() => removeTag(tag)} className="hover:text-white transition-colors">
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    ))}
+                    {tags.length === 0 && <span className="text-gray-600 text-xs italic">No tags added yet.</span>}
+                </div>
+            </div>
 
             <button 
-                data-testid="submit-startup"
                 type="submit" 
-                className={`w-full bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg mt-6 shadow-xl hover:bg-blue-800 transition duration-150 flex justify-center items-center space-x-2`}
                 disabled={isSubmitting}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex justify-center items-center gap-2"
             >
-                {isSubmitting && <Loader2 data-testid="loading-spinner" className="animate-spin h-5 w-5 text-white" />}
-                <span>{submitLabel}</span>
+                {isSubmitting && <Loader2 className="animate-spin h-5 w-5" />}
+                {submitLabel}
             </button>
         </form>
     );

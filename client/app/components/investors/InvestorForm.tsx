@@ -5,108 +5,23 @@ import React, { useState } from 'react';
 import { CreateInvestorDto, Investor } from '../../types/investor';
 import { IntroFormat } from '@/app/types/transform';
 import { createInvestor, updateInvestor } from '../../lib/investor-api';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, X, ChevronDown } from 'lucide-react';
 import { useToast } from '../Toast';
 
 type Props = {
   initialData?: Investor;
   isEdit: boolean;
+  workspaceId?: string;
   submitLabel?: string;
   disabled?: boolean;
   onSubmit?: (data: CreateInvestorDto) => Promise<void>;
 };
 
-const FormField: React.FC<{
-  label: string;
-  name: keyof CreateInvestorDto | 'tagInput';
-  value: string;
-  onChange: (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => void;
-  required?: boolean;
-  isTextArea?: boolean;
-  isSelect?: boolean;
-  selectOptions?: string[];
-  helpText?: string;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-}> = ({
-  label,
-  name,
-  value,
-  onChange,
-  required,
-  isTextArea,
-  isSelect,
-  selectOptions,
-  helpText,
-  onKeyDown,
-}) => {
-  const baseClass =
-    'w-full p-3 text-base bg-white text-black rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 border-none';
-
-  return (
-    <div className="space-y-1">
-      <label htmlFor={name as string} className="block text-black font-medium">
-        {label}
-        {required && <span className="text-black">*</span>}
-      </label>
-
-      {isSelect ? (
-        <select
-          data-testid={`input-${name as string}`}
-          id={name as string}
-          name={name as string}
-          value={value}
-          onChange={onChange}
-          required={required}
-          className={`${baseClass} appearance-none cursor-pointer`}
-        >
-          <option value="" disabled className="bg-gray-100 text-black">
-            Select a format
-          </option>
-          {selectOptions?.map(option => (
-            <option key={option} value={option} className="bg-white text-black">
-              {option === '3-bullet-lines' ? '3-Bullet Lines' : 'Email'}
-            </option>
-          ))}
-        </select>
-      ) : isTextArea ? (
-        <textarea
-          data-testid={`input-${name as string}`}
-          id={name as string}
-          name={name as string}
-          value={value}
-          onChange={onChange}
-          rows={3}
-          className={`${baseClass} resize-none`}
-        />
-      ) : (
-        <input
-          data-testid={`input-${name as string}`}
-          id={name as string}
-          name={name as string}
-          value={value}
-          onChange={onChange}
-          required={required}
-          onKeyDown={onKeyDown}
-          type="text"
-          className={baseClass}
-        />
-      )}
-
-      {helpText && <p className="text-xs text-black mt-1">{helpText}</p>}
-    </div>
-  );
-};
-
-const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOnSubmit, submitLabel, disabled = false }) => {
+export default function InvestorForm({ initialData, workspaceId, isEdit, onSubmit: wizardOnSubmit, submitLabel, disabled = false }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
 
-  interface InvestorFormData
-    extends Omit<CreateInvestorDto, 'preferred_intro_format'> {
+  interface InvestorFormData extends Omit<CreateInvestorDto, 'preferred_intro_format'> {
     preferred_intro_format: string;
   }
 
@@ -122,22 +37,22 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
-      e.preventDefault();
-      const newTag = tagInput.trim();
-      if (!formData.tags.includes(newTag)) {
-        setFormData({ ...formData, tags: [...formData.tags, newTag] });
-      }
+  const addTag = () => {
+    const trimmed = tagInput.trim();
+    if (trimmed && !formData.tags.includes(trimmed)) {
+      setFormData({ ...formData, tags: [...formData.tags, trimmed] });
       setTagInput('');
+    }
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
     }
   };
 
@@ -155,43 +70,32 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
     const payload: CreateInvestorDto = {
       ...formData,
       preferred_intro_format: formData.preferred_intro_format as IntroFormat,
+      workspaceId: workspaceId || initialData?.workspaceId,
     };
 
-    if (!isEdit && wizardOnSubmit) {
-        try {
-            await wizardOnSubmit(payload);
-            showToast('Investor submitted successfully!', 'success');
-        } catch (error) {
-            console.error('Wizard submission failed:', error);
-            showToast('Failed to submit investor details to the wizard.', 'error');
-        } finally {
-            setLoading(false);
-        }
-        return; // Exit here, let the parent handle navigation
-    }
-
     try {
-      if (isEdit && initialData) {
+      if (!isEdit && wizardOnSubmit) {
+        await wizardOnSubmit(payload);
+        showToast('Investor details captured!', 'success');
+      } else if (isEdit && initialData) {
         await updateInvestor(initialData._id, payload);
         showToast('Investor updated successfully!', 'success');
+        router.push(workspaceId ? `/workspace/${workspaceId}/pipeline` : '/investors');
       } else {
-        await createInvestor(payload);
+        await createInvestor(payload, workspaceId);
         showToast('Investor created successfully!', 'success');
+        router.push(workspaceId ? `/workspace/${workspaceId}/pipeline` : '/investors');
       }
-
-      router.push('/investors');
       router.refresh();
     } catch (error: any) {
-      showToast(
-        error.message || `Failed to ${isEdit ? 'update' : 'create'} investor.`,
-        'error'
-      );
+      showToast(error.message || "Something went wrong", 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const formatOptions: IntroFormat[] = ['3-bullet-lines', 'email'];
+  const inputClasses = "w-full p-3 bg-[#161930] border border-gray-800 text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-500 appearance-none";
+  const labelClasses = "block text-sm font-medium text-gray-400 mb-1";
 
   const introPreferenceOptions = [
     'Prefers short emails',
@@ -201,136 +105,144 @@ const InvestorForm: React.FC<Props> = ({ initialData, isEdit, onSubmit: wizardOn
   ];
 
   return (
-    <form
-      data-testid="investor-form"
-      onSubmit={handleSubmit}
-      className="bg-white rounded-xl p-6 shadow-2xl space-y-4"
+    <form 
+      onSubmit={handleSubmit} 
+      className="max-w-3xl mx-auto space-y-6 bg-[#0f1120]/80 p-8 rounded-2xl border border-gray-800 shadow-2xl mt-8"
     >
+      <header className="mb-8">
+        <h1 className="text-2xl font-bold text-white mb-2">
+          {isEdit ? 'Update Investor Profile' : 'Create New Investor Profile'}
+        </h1>
+        <p className="text-gray-400">Enter the details for the investors, including their preferences.</p>
+      </header>
+
+      {/* Name and Email Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FormField
-          label="Name"
-          name="name"
-          value={formData.name ?? ''}
-          onChange={handleChange}
-          required
-        />
-
-        <FormField
-          label="Preferred Format"
-          name="preferred_intro_format"
-          value={formData.preferred_intro_format ?? ''}
-          onChange={handleChange}
-          required
-          isSelect
-          selectOptions={formatOptions as string[]}
-        />
-
-        <div className="md:col-span-2">
-          <FormField
-            label="Intro Preferences"
-            name="intro_preferences_text"
-            value={formData.intro_preferences_text ?? ''}
-            onChange={handleChange}
-            isTextArea
-            helpText="Optional notes about how this investor prefers to receive introductions."
-          />
-
-          <div className="mt-2 flex flex-wrap gap-2">
-            {introPreferenceOptions.map(option => (
-              <button
-                key={option}
-                type="button"
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    intro_preferences_text: option,
-                  })
-                }
-                className={`px-3 py-1 rounded-full text-black text-xs bg-blue-600 hover:bg-blue-700 transition ${
-                  formData.intro_preferences_text === option
-                    ? 'ring-2 ring-blue-900 shadow-lg'
-                    : ''
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+        <div>
+          <label className={labelClasses}>Investor Name*</label>
+          <input name="name" value={formData.name} onChange={handleChange} required className={inputClasses} placeholder="Investor name" />
         </div>
+        <div>
+          <label className={labelClasses}>Email Address*</label>
+          <input name="email" type="email" value={formData.email} onChange={handleChange} required className={inputClasses} placeholder="investor@example.com" />
+        </div>
+      </div>
 
-        <div className="md:col-span-2">
-          <FormField
-            label="Email"
-            name="email"
-            required
-            value={formData.email}
-            onChange={handleChange}
-          />
+      {/* Preferred Format Select */}
+      <div className="relative">
+        <label className={labelClasses}>Preferred Format*</label>
+        <div className="relative">
+          <select 
+            name="preferred_intro_format" 
+            value={formData.preferred_intro_format} 
+            onChange={handleChange} 
+            required 
+            className={inputClasses}
+          >
+            <option value="" disabled>Select a format</option>
+            <option value="3-bullet-lines">3-Bullet Lines</option>
+            <option value="email">Email</option>
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+        </div>
+      </div>
 
-          <FormField
-            label="Tags (Press Enter to add)"
-            name="tagInput"
+      {/* Intro Preferences Textarea */}
+      <div>
+        <label className={labelClasses}>Intro Preferences</label>
+        <textarea 
+          name="intro_preferences_text" 
+          value={formData.intro_preferences_text} 
+          onChange={handleChange} 
+          rows={4} 
+          className={inputClasses} 
+          placeholder="Optional notes about intro preferences..."
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          {introPreferenceOptions.map(option => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setFormData({ ...formData, intro_preferences_text: option })}
+              className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all border ${
+                formData.intro_preferences_text === option 
+                ? 'bg-indigo-600 border-indigo-500 text-white' 
+                : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20'
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Dynamic Tags Field */}
+      <div>
+        <label className={labelClasses}>Tags</label>
+        <div className="relative flex items-center">
+          <input
             value={tagInput}
-            onChange={e => setTagInput(e.target.value)}
-            onKeyDown={addTag}
-            helpText="e.g., Early Stage, B2B, Fintech"
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={handleTagKeyDown}
+            className={inputClasses}
+            placeholder="e.g., Tech"
           />
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            {formData.tags.map(tag => (
-              <span
-                key={tag}
-                onClick={() => removeTag(tag)}
-                className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-500 text-black cursor-pointer hover:bg-red-500 transition"
-              >
-                {tag} <span className="ml-1 font-bold">x</span>
-              </span>
-            ))}
-          </div>
+          {tagInput.trim().length > 0 && (
+            <button
+              type="button"
+              onClick={addTag}
+              className="absolute right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-md transition-all animate-in fade-in zoom-in duration-200"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          )}
         </div>
+        <div className="flex flex-wrap gap-2 mt-3 min-h-8">
+          {formData.tags.map((tag) => (
+            <span 
+              key={tag}
+              className="flex items-center gap-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-semibold animate-in fade-in zoom-in duration-200"
+            >
+              {tag}
+              <button type="button" onClick={() => removeTag(tag)} className="hover:text-white transition-colors">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
 
-        <FormField
-          label="Notes (Optional)"
-          name="notes"
-          value={formData.notes ?? ''}
-          onChange={handleChange}
-          isTextArea
-          helpText="Internal notes about the investor, their team, or past investments."
+      {/* Notes Area */}
+      <div>
+        <label className={labelClasses}>Notes (Optional)</label>
+        <textarea 
+          name="notes" 
+          value={formData.notes} 
+          onChange={handleChange} 
+          rows={3} 
+          className={inputClasses} 
+          placeholder="Internal notes about the investor..."
         />
       </div>
 
-      <div className="pt-4 flex justify-between items-center space-x-4">
+      {/* Form Actions */}
+      <div className="flex items-center gap-4 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
-          disabled={loading}
-          className="px-6 py-3 border border-gray-300 text-black rounded-lg hover:bg-gray-50 font-medium"
+          className="flex-1 px-6 py-3 border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 transition-colors font-semibold"
         >
           Cancel
         </button>
-
-        <button
-          data-testid="submit-investor"
-          type="submit"
+        <button 
+          type="submit" 
           disabled={loading || disabled}
-          className="w-full ml-4 bg-blue-700 text-white text-lg font-semibold py-3 rounded-lg shadow-xl hover:bg-blue-800 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="flex-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex justify-center items-center gap-2"
         >
-          {loading ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Processing...
-            </>
-          ) : submitLabel ? (
-            submitLabel
-          ) : isEdit ? (
-            'Update Investor'
-          ) : (
-            'Create Investor'
-          )}
+          {loading && <Loader2 className="animate-spin h-5 w-5" />}
+          {submitLabel || (isEdit ? 'Update Investor' : 'Save Changes')}
         </button>
       </div>
     </form>
   );
-};
-
-export default InvestorForm;
+}

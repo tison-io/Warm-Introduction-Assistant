@@ -3,8 +3,6 @@
 import { Startup } from "../../types/startup";
 import { Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useToast } from "../Toast";
 
 interface Props {
     startup: Startup;
@@ -12,23 +10,11 @@ interface Props {
     onDelete?: () => void;
 }
 
-export default function StartupCard({ startup, refreshList, onDelete }: Props) {
+export default function StartupCard({ startup, onDelete }: Props) {
     const router = useRouter();
-    const { showToast } = useToast();
 
-    const handleDelete = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        try {
-            if (onDelete) {
-                onDelete();
-            } else {
-                // fallback if no onDelete passed
-                throw new Error("Delete handler not provided");
-            }
-        } catch (err) {
-            console.error(err);
-            showToast("Failed to delete startup.", "error");
-        }
+    const handleCardClick = () => {
+        router.push(`/startups/${startup._id}`);
     };
 
     const handleEdit = (e: React.MouseEvent) => {
@@ -36,36 +22,53 @@ export default function StartupCard({ startup, refreshList, onDelete }: Props) {
         router.push(`/startups/${startup._id}/edit`);
     };
 
+    const handleDelete = (e: React.MouseEvent) => {
+        e.stopPropagation(); 
+        if (onDelete) onDelete();
+    };
+
     return (
-        <div data-testid="startup-card" className="bg-white rounded-xl shadow-lg p-6 relative hover:cursor-pointer">
-            <div className="absolute top-4 right-4 flex space-x-2 z-10">
-                <Link href={`/startups/${startup._id}`} className="text-blue-600 hover:text-blue-700 hover:underline">
-                    View Details
-                </Link>
+        <div 
+            onClick={handleCardClick}
+            className="group bg-[#0f1120]/50 border border-gray-800 rounded-xl p-6 relative hover:bg-[#161930] hover:border-gray-700 transition-all cursor-pointer shadow-xl"
+        >
+            {/* Action Buttons */}
+            <div className="absolute top-6 right-6 flex items-center space-x-4">
                 <button
-                    data-testid="edit-startup-btn"
-                    aria-label="Edit"
                     onClick={handleEdit}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-indigo-400 transition-colors flex items-center gap-1 text-sm font-medium"
                 >
-                    <Pencil className="w-5 h-5" />
+                    <Pencil className="w-4 h-4" />
+                    <span>Edit</span>
                 </button>
 
                 <button
-                    data-testid="delete-startup-btn"
-                    aria-label="Delete"
                     onClick={handleDelete}
-                    className="text-red-400 hover:text-red-600"
+                    className="p-2 bg-red-900/20 text-red-500 rounded-md hover:bg-red-900/40 transition-colors"
                 >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4" />
                 </button>
             </div>
 
-            <div className="pr-16">
-                    <h2 className="text-xl font-bold text-gray-900 mb-1">{startup.name}</h2>
-                    <p className="text-gray-700 text-sm truncate">
-                        {startup.blurb}
-                    </p>
+            {/* Content */}
+            <div className="pr-24">
+                <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
+                    {startup.name}
+                </h2>
+                <p className="text-gray-400 text-base leading-relaxed line-clamp-2">
+                    {startup.blurb}
+                </p>
+                
+                {/* Visual Tags (if you want them here too) */}
+                {startup.tags && startup.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-4">
+                        {startup.tags.slice(0, 3).map((tag, i) => (
+                            <span key={i} className="text-[10px] uppercase tracking-wider bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

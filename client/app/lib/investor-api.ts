@@ -16,10 +16,11 @@ const getAuthHeaders = () => {
 };
 
 // Fetch all investors
-export async function getInvestors(workspaceId?: string, searchQuery?: string): Promise<Investor[]> {
+export async function getInvestors(searchQuery?: string, workspaceId?: string): Promise<Investor[]> {
   const url = new URL(`${API_BASE_URL}/investors`);
+  
   if (workspaceId) {
-    url.searchParams.append('workspaceId', workspaceId)
+    url.searchParams.append('workspaceId', workspaceId);
   }
   
   if (searchQuery) {
@@ -28,7 +29,6 @@ export async function getInvestors(workspaceId?: string, searchQuery?: string): 
 
   const response = await fetch(url.toString(), {
     headers: getAuthHeaders(),
-    next: { tags: ['investors'] },
   });
 
   if (!response.ok) {
@@ -40,11 +40,13 @@ export async function getInvestors(workspaceId?: string, searchQuery?: string): 
 }
 
 // Create a new investor
-export async function createInvestor(data: CreateInvestorDto): Promise<Investor> {
+export async function createInvestor(data: CreateInvestorDto, workspaceId?: string): Promise<Investor> {
+  const payload = workspaceId? { ...data, workspaceId } : data;
+  
   const response = await fetch(`${API_BASE_URL}/investors`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -57,17 +59,12 @@ export async function createInvestor(data: CreateInvestorDto): Promise<Investor>
 
 // Update an existing investor
 export async function updateInvestor(id: string, data: UpdateInvestorDto): Promise<Investor> {
+  
   const response = await fetch(`${API_BASE_URL}/investors/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.message || 'Failed to update investor');
-  }
-
   return response.json();
 }
 
@@ -82,6 +79,8 @@ export async function deleteInvestor(id: string): Promise<void> {
     const errorBody = await response.json().catch(() => ({}));
     throw new Error(errorBody.message || 'Failed to delete investor');
   }
+  
+  return;
 }
 
 //Get fundraising velocity data

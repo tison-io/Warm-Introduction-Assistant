@@ -344,6 +344,17 @@ export default function SingleStartupPage() {
                         </a>
                     )}
 
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {startup.tags?.map((tag, index) => (
+                            <span 
+                                key={index}
+                                className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full border border-blue-200"
+                            >
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+
                     <hr />
 
                     <p className="text-sm text-gray-500">

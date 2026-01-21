@@ -24,6 +24,7 @@ export type CreateInvestorDto = {
   preferred_intro_format: IntroFormat;
   intro_preferences_text: string;
   notes?: string;
+  workspaceId?: string;
 };
 
 export interface velocityData {

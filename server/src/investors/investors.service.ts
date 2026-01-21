@@ -71,7 +71,16 @@ export class InvestorsService {
       if(investor.userId.toString() !== userId) throw new ForbiddenException('You are not authorized to update this investor.');
     }
 
-    return await this.investorModel.findByIdAndUpdate(id, updateInvestorDto, { new: true });
+    const updatedData = { ...updateInvestorDto };
+    if (updatedData.workspaceId) {
+      updatedData.workspaceId = new Types.ObjectId(updatedData.workspaceId) as any;
+    }
+    
+    return await this.investorModel.findByIdAndUpdate(
+      id, 
+      updatedData, 
+      { new: true }
+    );
   }
 
   async remove(id: string, userId: string) {
@@ -82,6 +91,8 @@ export class InvestorsService {
     if(investor.userId.toString() !== userId) {
       throw new ForbiddenException('You are not authorized to delete this investor.');
     }
+
+    return await this.investorModel.findByIdAndDelete(id);
   }
 
   async getFundraisingVelocity(userId: string, workspaceId?: string) {
@@ -143,6 +154,7 @@ export class InvestorsService {
 
     if (targetTags.length === 0) return [];
 
+    const tagRegexes = targetTags.map(tag => new RegExp(`^${tag}$`, 'i'));
 
     const exclusionCriteria: any = {};
     if (workspaceId) exclusionCriteria.workspaceId = new Types.ObjectId(workspaceId);
@@ -154,7 +166,7 @@ export class InvestorsService {
 
     return this.investorModel.find({
       name: { $nin: existingInPipeline },
-      tags: { $in: targetTags },          
+      tags: { $in: tagRegexes},          
       $or: [
         { userId: new Types.ObjectId(userId) }, // My personal investors 
         { visibility: 'public' }               // Global public investors
