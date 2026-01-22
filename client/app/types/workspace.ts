@@ -7,3 +7,13 @@ export interface WorkspaceMember {
     isOnline: boolean;
     lastActive: string;
 }
+
+export interface Workspace {
+    _id: string;
+    name: string;
+    slug: string;
+    ownerId: string;
+    members: WorkspaceMember[];
+    blurb: string;
+    createdAt: string;
+}

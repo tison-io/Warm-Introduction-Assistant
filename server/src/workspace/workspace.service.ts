@@ -241,7 +241,7 @@ export class WorkspacesService {
     const workspaces = await this.workspaceModel.find({
       'members.memberId': new Types.ObjectId(founderId)
     })
-    .select('name slug ownerId members')
+    .select('name slug ownerId members blurb')
     .sort({ createdAt: -1 });
 
     return workspaces;
