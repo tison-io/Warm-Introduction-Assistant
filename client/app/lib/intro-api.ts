@@ -1,5 +1,3 @@
-// lib/intro-api.ts
-
 import { ExecutionRateResponse, IntroQueue, OutcomeLog, StatusUpdatePayload } from '../types/intro';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
@@ -44,6 +42,36 @@ export async function fetchIntrosByFounder(workspaceId?: string): Promise<IntroQ
     }
     
     return response.json();
+}
+
+export async function updateIntroContent(
+    introId: string,
+    payload: { investorEmail?: string; generatedIntro?: string }
+): Promise<IntroQueue> {
+    const response = await fetch(`${INTRO_ENDPOINT}/${introId}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.message || 'Failed to update intro content.');
+    }
+
+    return response.json();
+}
+
+export async function deleteIntro(introId: string): Promise<void> {
+    const response = await fetch(`${INTRO_ENDPOINT}/${introId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        throw new Error(errorBody.message || 'Failed to delete introduction.');
+    }
 }
 
 export async function updateIntroStatus(introId: string, payload: StatusUpdatePayload): Promise<IntroQueue> {

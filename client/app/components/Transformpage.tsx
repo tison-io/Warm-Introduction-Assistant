@@ -1,216 +1,194 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Copy, Loader2 } from 'lucide-react';
-import { QueueIntroDto } from '../types/transform'; 
-import { queueIntroApi } from '../lib/transform-api'; 
+import { ArrowLeft, Copy, Check, Loader2, Sparkles } from 'lucide-react';
+import { transformIntroApi, queueIntroApi } from '../lib/transform-api';
+import { TransformIntroDto, QueueIntroDto } from '../types/transform';
 import { useToast } from '../components/Toast';
-
-interface TransformResultData {
-    startupId: string;
-    startupName: string;
-    investorId: string;
-    investorName: string;
-    investorEmail: string;
-    founderId: string;
-    preferredIntroFormat: string;
-    introPreferencesText: string;
-    generatedIntro: string;
-}
-
-// Safely parse query params
-function parseQueryData(params: URLSearchParams): TransformResultData | null {
-    const requiredKeys = [
-        'startupId', 
-        'startupName', 
-        'investorId', 
-        'investorName',
-        'investorEmail', 
-        'founderId', 
-        'preferredIntroFormat', 
-        'generatedIntro'
-    ];
-    
-    const data: Partial<TransformResultData> = {};
-    for (const key of requiredKeys) {
-        const value = params.get(key);
-        if (!value) {
-            console.error(`Missing value for key: ${key}`);
-            return null;
-        } 
-        data[key as keyof TransformResultData] = value;
-    }
-    
-    data.introPreferencesText = params.get('introPreferencesText') || '';
-    return data as TransformResultData;
-}
+import { startupSnapshot } from 'v8';
 
 export default function GeneratedIntroPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { showToast } = useToast();
+    const hasTriggeredRef = useRef(false);
 
-    const [data, setData] = useState<TransformResultData | null>(null);
-    const [editedIntro, setEditedIntro] = useState('');
+    // Simplified State
+    const [isApiLoading, setIsApiLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    const [copyStatus, setCopyStatus] = useState<'Copy' | 'Copied!' | 'Failed'>('Copy');
+    const [isCopied, setIsCopied] = useState(false);
+    const [displayedIntro, setDisplayedIntro] = useState('');
+
+    const details = {
+        startupId: searchParams.get('startupId') || '',
+        startupName: searchParams.get('startupName') || '',
+        startupBlurb: searchParams.get('startupBlurb') || '',
+        investorId: searchParams.get('investorId') || '',
+        investorName: searchParams.get('investorName') || '',
+        investorEmail: searchParams.get('investorEmail') || '',
+        founderId: searchParams.get('founderId') || '',
+        format: searchParams.get('preferredIntroFormat') || '',
+        prefText: searchParams.get('introPreferencesText') || '',
+        workspaceId: searchParams.get('workspaceId') || '',
+    };
 
     useEffect(() => {
-        const parsedData = parseQueryData(searchParams);
-        if (!parsedData) {
-            showToast('Missing data. Please start the transformation process again.', 'error');
-            router.push('/intro-wizard');
-            return;
-        }
-        setData(parsedData);
+        // Prevent double API calls in development mode
+        if (hasTriggeredRef.current) return;
 
-        let formattedIntro = parsedData.generatedIntro.replace(/\\n/g, '\n').replace(/\\t/g, '\t').trim();
-        if (formattedIntro.startsWith('"') && formattedIntro.endsWith('"')) {
-            formattedIntro = formattedIntro.slice(1, -1).trim();
-        }
-        setEditedIntro(formattedIntro);
-    }, [searchParams, router, showToast]);
+        const triggerTransform = async () => {
+            if (!details.startupId) return;
+            hasTriggeredRef.current = true;
+
+            const dto: TransformIntroDto = {
+                startup_id: details.startupId,
+                startup_name: details.startupName,
+                startup_pitch_link: '', 
+                blurb: details.startupBlurb,
+                investor_id: details.investorId,
+                investor_name: details.investorName,
+                investor_email: details.investorEmail,
+                founder_id: details.founderId,
+                investor_preference: details.format as any,
+                intro_preferences_text: details.prefText,
+            };
+
+            try {
+                const res = await transformIntroApi(dto);
+                // Clean the text and display it immediately
+                const cleanText = res.transformed_intro.replace(/\\n/g, '\n').trim();
+                setDisplayedIntro(cleanText);
+                setIsApiLoading(false);
+            } catch (err: any) {
+                showToast(`Failed: ${err.message}`, 'error');
+                router.back();
+            }
+        };
+
+        triggerTransform();
+    }, []); // Empty dependency array because we use hasTriggeredRef
 
     const handleCopy = async () => {
-        if (!editedIntro) return;
         try {
-            await navigator.clipboard.writeText(editedIntro);
-            setCopyStatus('Copied!');
-            showToast('Intro copied to clipboard!', 'success');
+            await navigator.clipboard.writeText(displayedIntro);
+            setIsCopied(true);
+            showToast('Copied to clipboard', 'success');
+            setTimeout(() => setIsCopied(false), 2000);
         } catch (err) {
-            console.error(err);
-            setCopyStatus('Failed');
-            showToast('Failed to copy intro.', 'error');
+            showToast('Failed to copy', 'error');
         }
-        setTimeout(() => setCopyStatus('Copy'), 2000);
     };
 
     const handleSave = async () => {
-        if (!data || !editedIntro.trim()) {
-            showToast('Cannot save an empty introduction.', 'error');
-            return;
-        }
-
+        if (isApiLoading || isSaving) return;
+        
         setIsSaving(true);
-        const queueDto: QueueIntroDto = {
-            startupId: data.startupId,
-            startupName: data.startupName,
-            investorId: data.investorId,
-            investorName: data.investorName,
-            investorEmail: data.investorEmail,
-            founderId: data.founderId,
-            preferredIntroFormat: data.preferredIntroFormat,
-            introPreferencesText: data.introPreferencesText,
-            generatedIntro: editedIntro,
-        };
-
         try {
-            await queueIntroApi(queueDto);
-            showToast(`Intro for ${data.investorName} successfully saved to the queue!`, 'success');
-            router.push('/intro-queue');
+            await queueIntroApi({
+                ...details,
+                preferredIntroFormat: details.format,
+                introPreferencesText: details.prefText,
+                generatedIntro: displayedIntro,
+                workspaceId: details.workspaceId || undefined 
+            } as QueueIntroDto);
+            showToast('Saved to queue!', 'success');
+
+            if (details.workspaceId) {
+                router.push(`/workspace/${details.workspaceId}/intro-queue`);
+            } else {
+                router.push('/intro-queue');
+            }
         } catch (error: any) {
-            console.error('Error saving intro:', error);
-            showToast(`Error saving intro: ${error.message || 'Unknown error.'}`, 'error');
+            showToast('Save failed', 'error');
         } finally {
             setIsSaving(false);
         }
     };
 
-    if (!data) return <p className="p-6 text-gray-300">Loading intro details...</p>;
-
-    const introType = data.preferredIntroFormat === '3-bullet-lines'
-        ? '3-Bullet Point Summary'
-        : data.preferredIntroFormat === 'email'
-        ? 'Full Email Draft'
-        : `Unspecified Format (${data.preferredIntroFormat})`;
-
-    const investorDisplayName = data.investorName || 'Investor';
-
     return (
-        <div
-            data-testid="page-generated-intro"
-            className="min-h-screen bg-cover bg-center pt-12 pb-12"
-            style={{ backgroundImage: "url('/background-img.jpg')" }}
-        >
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-                <button 
-                    onClick={() => router.back()} 
-                    className="flex items-center space-x-2 text-gray-300 hover:text-white transition duration-150"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span>Back to Startup</span>
+        <div className="min-h-screen bg-[#0a0b1e] text-white pt-12 pb-12">
+            <div className="max-w-6xl mx-auto px-6">
+                <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors">
+                    <ArrowLeft className="w-4 h-4" /> Back to Startup
                 </button>
 
-                <div className="bg-white rounded-xl shadow-2xl p-8 space-y-6">
-                    <h1 className="text-3xl font-bold text-gray-900">Generated Intro Drafts</h1>
-                    <p className="text-gray-700">
-                        Review and customize your investor introductions before saving to your queue.
-                    </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                     
-                    <div className="border border-gray-200 rounded-xl p-6 shadow-md">
-                        <h2
-                            data-testid="review-investor-name"
-                            className="text-xl font-semibold text-gray-900 flex items-center gap-3"
-                        >
-                            {investorDisplayName}
-
-                            <span
-                                className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded cursor-pointer"
-                                title={data.investorEmail}
-                            >
-                                {data.investorEmail.length > 18
-                                    ? data.investorEmail.substring(0, 18) + "..."
-                                    : data.investorEmail
-                                }
-                            </span>
-                        </h2>
-                        <p data-testid="review-intro-format" className="text-sm text-gray-500 mb-4">Preferred Intro Format: {introType}</p>
+                    {/* LEFT CONTAINER: Input Details (Scrollable) */}
+                    <div className="bg-[#111327] border border-gray-800 rounded-2xl p-8 space-y-6 shadow-xl h-[450px] flex flex-col">
+                        <div className="flex items-center gap-2 text-indigo-400 font-semibold mb-2">
+                            <Sparkles className="w-5 h-5" />
+                            <span>Input Details</span>
+                        </div>
                         
-                        <textarea
-                            data-testid="review-intro-textarea"
-                            value={editedIntro}
-                            onChange={(e) => setEditedIntro(e.target.value)}
-                            rows={10}
-                            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 font-mono text-sm resize-y"
-                            placeholder="Your generated introduction draft goes here. You can edit it!"
-                        />
+                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+                            <div>
+                                <label className="text-xs text-gray-500 uppercase tracking-wider font-bold">Investor Details</label>
+                                <p className="text-lg font-medium text-white">{details.investorName}</p>
+                                <p className="text-sm text-indigo-300">{details.investorEmail}</p>
+                            </div>
 
-                        <div className="flex space-x-3 mt-4">
+                            <div>
+                                <label className="text-xs text-gray-500 uppercase tracking-wider font-bold">Startup Details</label>
+                                <p className='text-lg font-medium text-white mb-2'>{details.startupName}</p>
+                                
+                                <div className="text-gray-300 text-sm leading-relaxed bg-[#0a0b1e]/30 p-4 rounded-lg border border-gray-800/50 h-32 overflow-y-auto overflow-x-hidden custom-scrollbar whitespace-pre-wrap wrap-break-word">
+                                    {details.startupBlurb}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RIGHT CONTAINER: AI Preview */}
+                    <div className="bg-[#111327] border border-gray-800 rounded-2xl p-8 h-[600px] flex flex-col shadow-xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex items-center gap-2 text-indigo-400 font-semibold">
+                                <Sparkles className="w-5 h-5" />
+                                <span>AI Preview</span>
+                            </div>
+                            
+                            {!isApiLoading && (
+                                <button 
+                                    onClick={handleCopy}
+                                    className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white"
+                                >
+                                    {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="flex-1 bg-[#0a0b1e]/50 border border-gray-800 rounded-xl relative overflow-hidden flex flex-col">
+                            {isApiLoading ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                                    <div className="w-12 h-12 bg-indigo-600/20 rounded-xl flex items-center justify-center mb-4">
+                                        <Sparkles className="w-6 h-6 text-indigo-500 animate-pulse" />
+                                    </div>
+                                    <p className="text-gray-400">Connecting to AI engine...</p>
+                                    <p className="text-xs text-gray-600 mt-2">Personalizing your intro email...</p>
+                                </div>
+                            ) : (
+                                <textarea
+                                    value={displayedIntro}
+                                    onChange={(e) => setDisplayedIntro(e.target.value)}
+                                    className="flex-1 w-full p-6 bg-transparent font-mono text-sm leading-relaxed text-gray-200 resize-none outline-none custom-scrollbar"
+                                    placeholder="AI draft will appear here..."
+                                />
+                            )}
+                        </div>
+
+                        <div className="mt-6">
                             <button
-                                data-testid="review-copy-btn"
-                                onClick={handleCopy}
-                                className={`flex items-center space-x-1 transition duration-200 ${
-                                    copyStatus === 'Copied!' 
-                                        ? 'text-green-600 font-bold' 
-                                        : 'text-gray-600 hover:text-gray-800'
-                                }`}
-                                disabled={!editedIntro}
+                                onClick={handleSave}
+                                disabled={isApiLoading || isSaving}
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2"
                             >
-                                <Copy className="w-4 h-4" />
-                                <span className="text-sm">{copyStatus}</span> 
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : ""}
+                                {isApiLoading ? 'Drafting...' : 'Save to Queue'}
                             </button>
                         </div>
                     </div>
-                    
-                    <div className="flex justify-end space-x-4 pt-6 border-t border-gray-100">
-                        <button
-                            data-testid="review-back-btn"
-                            onClick={() => router.back()}
-                            className="px-6 py-3 cursor-pointer border border-gray-300 rounded-md font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 transition duration-150"
-                        >
-                            Back
-                        </button>
-                        <button
-                            data-testid="review-save-btn"
-                            onClick={handleSave}
-                            disabled={isSaving || !editedIntro.trim()}
-                            className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-150 disabled:opacity-50"
-                        >
-                            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                            <span>{isSaving ? 'Saving to Queue...' : 'Save'}</span>
-                        </button>
-                    </div>
+
                 </div>
             </div>
         </div>

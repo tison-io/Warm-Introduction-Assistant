@@ -33,4 +33,5 @@ export interface QueueIntroDto {
     preferredIntroFormat: string;
     introPreferencesText?: string;
     generatedIntro: string;
+    workspaceId?: string;
 }

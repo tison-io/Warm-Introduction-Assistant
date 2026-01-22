@@ -235,7 +235,7 @@ export default function SingleStartupPage() {
         }
     };
 
-    const handleTransform = async (investor: Investor) => {
+    const handleTransform = (investor: Investor) => {
         if (!startup) return;
 
         const founderId = getFounderId();
@@ -244,44 +244,21 @@ export default function SingleStartupPage() {
             return;
         }
 
-        const dto: TransformIntroDto = {
-            startup_id: startup._id,
-            startup_name: startup.name,
-            startup_pitch_link: startup.pitchLink || '',
-            blurb: startup.blurb,
-            investor_id: investor._id,
-            investor_name: investor.name,
-            investor_email: investor.email,
-            founder_id: founderId,
-            investor_preference: investor.preferred_intro_format as IntroFormat,
-            intro_preferences_text: investor.intro_preferences_text,
-        };
+        const query = new URLSearchParams({
+            startupId: startup._id,
+            startupName: startup.name,
+            startupBlurb: startup.blurb,
+            investorId: investor._id,
+            investorName: investor.name,
+            investorEmail: investor.email,
+            founderId: founderId,
+            preferredIntroFormat: investor.preferred_intro_format || '',
+            introPreferencesText: investor.intro_preferences_text || '',
+        }).toString();
 
         setIsDropdownOpen(false);
-        setIsTransforming(true);
-
-        try {
-            const res: TransformIntroResponse = await transformIntroApi(dto);
-
-            const query = new URLSearchParams({
-                startupId: dto.startup_id,
-                startupName: dto.startup_name,
-                investorId: dto.investor_id,
-                investorName: dto.investor_name,
-                investorEmail: dto.investor_email,
-                founderId: dto.founder_id,
-                preferredIntroFormat: dto.investor_preference,
-                introPreferencesText: dto.intro_preferences_text,
-                generatedIntro: res.transformed_intro,
-            }).toString();
-
-            showToast(`Intro generated for ${investor.name}`, 'success');
-            router.push(`/transform?${query}`);
-        } catch (err: any) {
-            showToast(`Transformation failed: ${err.message || 'Unknown error'}`, 'error');
-        } finally {
-            setIsTransforming(false);
-        }
+        router.push(`/transform?${query}`);
+        setIsTransforming(false);
     };
 
     if (!startup) {

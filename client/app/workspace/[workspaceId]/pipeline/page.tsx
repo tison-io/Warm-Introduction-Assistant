@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getInvestors, getRecommendations, deleteInvestor } from "../../../lib/investor-api";
 import { Investor } from "../../../types/investor";
+import { fetchWorkspaceDetails } from "@/app/lib/workspace-api";
+import { Workspace } from "@/app/types/workspace";
 import { Search, Sparkles, Trash2, Wand2, MoreVertical, Send, X, UserPlus, ArrowRight, Edit2, Plus } from "lucide-react";
 import { useToast } from "../../../components/Toast";
 
@@ -17,6 +19,7 @@ export default function PipelinePage({ params }: { params: Promise<{ workspaceId
 
   const [investors, setInvestors] = useState<Investor[]>([]);
   const [recommendations, setRecommendations] = useState<Investor[]>([]);
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -24,13 +27,15 @@ export default function PipelinePage({ params }: { params: Promise<{ workspaceId
   const loadData = async () => {
     try {
       setLoading(true);
-      const [pipelineData, recommendationData] = await Promise.all([
+      const [pipelineData, recommendationData, workspaceData] = await Promise.all([
         getInvestors(undefined, workspaceId),
-        getRecommendations(workspaceId)
+        getRecommendations(workspaceId),
+        fetchWorkspaceDetails(workspaceId)
       ]);
       
       setInvestors(pipelineData);
       setRecommendations(recommendationData);
+      setWorkspace(workspaceData);
     } catch (err) {
       console.error("Failed to load pipeline data:", err);
     } finally {
@@ -133,7 +138,7 @@ export default function PipelinePage({ params }: { params: Promise<{ workspaceId
               dotColor="#7C59FF"
             >
               {columns.recommendations.map(inv => (
-                <InvestorCard key={inv._id} investor={inv} type="recommendation" workspaceId={workspaceId} onRefresh={loadData} />
+                <InvestorCard key={inv._id} investor={inv} type="recommendation" workspaceId={workspaceId} workspace={workspace} onRefresh={loadData} />
               ))}
             </PipelineColumn>
 
@@ -144,7 +149,7 @@ export default function PipelinePage({ params }: { params: Promise<{ workspaceId
               dotColor="#E5E7EB"
             >
               {columns.notContacted.map(inv => (
-                <InvestorCard key={inv._id} investor={inv} type="pipeline" workspaceId={workspaceId} onRefresh={loadData} />
+                <InvestorCard key={inv._id} investor={inv} type="pipeline" workspaceId={workspaceId} workspace={workspace} onRefresh={loadData} />
               ))}
             </PipelineColumn>
 
@@ -155,7 +160,7 @@ export default function PipelinePage({ params }: { params: Promise<{ workspaceId
               dotColor="#10B981"
             >
               {columns.contacted.map(inv => (
-                <InvestorCard key={inv._id} investor={inv} type="pipeline" workspaceId={workspaceId} onRefresh={loadData} />
+                <InvestorCard key={inv._id} investor={inv} type="pipeline" workspaceId={workspaceId} workspace={workspace} onRefresh={loadData} />
               ))}
             </PipelineColumn>
           </div>
@@ -183,7 +188,7 @@ export default function PipelinePage({ params }: { params: Promise<{ workspaceId
               {searchResults.length > 0 ? (
                 searchResults.map(inv => (
                   <div key={inv._id} className="w-full">
-                    <InvestorCard investor={inv} type="pipeline" workspaceId={workspaceId} onRefresh={loadData} />
+                    <InvestorCard investor={inv} type="pipeline" workspaceId={workspaceId} workspace={workspace} onRefresh={loadData} />
                   </div>
                 ))
               ) : (
@@ -225,12 +230,14 @@ function PipelineColumn({ title, icon, count, dotColor, children }: { title: str
 function InvestorCard({ 
   investor, 
   type, 
-  workspaceId, 
+  workspaceId,
+  workspace, 
   onRefresh 
 }: { 
   investor: Investor, 
   type: 'recommendation' | 'pipeline', 
   workspaceId: string,
+  workspace: Workspace | null,
   onRefresh: () => void 
 }) {
   const router = useRouter();
@@ -239,6 +246,23 @@ function InvestorCard({
 
   const initials = investor.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
+  const handleStartIntro = () => {
+    if (!workspace) return;
+    
+    const query = new URLSearchParams({
+      startupId: workspace._id,
+      startupName: workspace.name,
+      startupBlurb: workspace.blurb || '',
+      investorId: investor._id,
+      investorName: investor.name,
+      investorEmail: investor.email,
+      workspaceId: workspaceId,
+      preferredIntroFormat: 'email' 
+    });
+
+    router.push(`/transform?${query}`);
+  };
+  
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm(`Are you sure you want to delete ${investor.name}?`)) return;
@@ -298,8 +322,8 @@ function InvestorCard({
                 )}
                 
                 <button 
-                  disabled
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-600 cursor-not-allowed"
+                  onClick={handleStartIntro}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-indigo-600 hover:text-white transition-colors"
                 >
                   <Wand2 size={14} /> Transform (AI)
                 </button>

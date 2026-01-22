@@ -19,7 +19,7 @@ export class WorkspacesController {
   @Post('accept-invite')
   @UseGuards(JwtAuthGuard)
   async acceptInvite(@Body('token') token: string, @Req() req) {
-      return await this.workspacesService.acceptInvitation(token, req.user);
+    return await this.workspacesService.acceptInvitation(token, req.user);
   }
 
   @Get('my-workspaces')
