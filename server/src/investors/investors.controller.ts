@@ -3,6 +3,7 @@ import { InvestorsService } from './investors.service';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AccessGuard } from 'src/guards/access.guard';
 
 interface AuthenticatedRequest {
   user: {
@@ -12,7 +13,7 @@ interface AuthenticatedRequest {
 }
 
 @Controller('investors')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AccessGuard)
 export class InvestorsController {
   constructor(private readonly investorsService: InvestorsService) {}
 

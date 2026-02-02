@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import Stripe from 'stripe';
 import { Founder, FounderDocument } from '../founder/entities/founder.entity';
+import { Invoice, InvoiceDocument } from './entities/invoice.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -10,6 +11,7 @@ export class PaymentsService {
 
     constructor(
         @InjectModel(Founder.name) private founderModel: Model<FounderDocument>,
+        @InjectModel(Invoice.name) private invoiceModel: Model<InvoiceDocument>,
     ) {
         const apiKey = process.env.STRIPE_SECRET_KEY;
         if (!apiKey) {
@@ -32,18 +34,19 @@ export class PaymentsService {
                     price_data: {
                         currency: 'usd',
                         product_data: {
-                            name: 'Pro Tier - Warm Intro Assistant',
+                            name: 'Lifetime Access - Warm Intro Assistant',
+                            description: 'One-time payment for permanent access',
                         },
-                        unit_amount: 2000, // $20.00
+                        unit_amount: 4900, // $49.00
                     },
                     quantity: 1,
                 },
             ],
             mode: 'payment',
-
+            customer_email: founder.email,
             metadata: { founderId: founderId },
-            success_url: `${process.env.FRONTEND_URL}/payment/success`,
-            cancel_url: `${process.env.FRONTEND_URL}/payment/cancel`,
+            success_url: `${process.env.FRONTEND_URL}/payments/success`,
+            cancel_url: `${process.env.FRONTEND_URL}/pricing`,
         });
 
         return { url:session.url };
@@ -70,17 +73,35 @@ export class PaymentsService {
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object as Stripe.Checkout.Session;
             const founderId = session.metadata?.founderId;
-    
+            
+            //Update tier
             if (founderId) {
                 const updatedFounder = await this.founderModel.findByIdAndUpdate(
                     founderId, 
-                    { tier: 'pro' },
+                    { tier: 'lifetime' },
                     { new: true }
             );
-            console.log(`Success! Founder ${updatedFounder?.name} is now PRO.`);
+            //Extract Payment info for invoice
+            const invoiceData = {
+                founderId: new Types.ObjectId(founderId),
+                stripeSessionId: session.id,
+                amount: session.amount_total,
+                currency: session.currency,
+                status: 'paid',
+                receiptUrl: session.payment_intent,
+            };
+            await this.invoiceModel.create(invoiceData);
+
+            console.log(`Success! Founder ${updatedFounder?.name} has gained Lifetime access.`);
         } else {
             console.error('No founderId found in session metadata');
         }
     }
+    }
+
+    async getInvoices(founderId: string) {
+        return await this.invoiceModel.find({ 
+            founderId: new Types.ObjectId(founderId) 
+        }).sort({ createdAt: -1 });
     }
 }

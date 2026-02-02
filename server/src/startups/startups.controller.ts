@@ -3,9 +3,10 @@ import { StartupsService } from './startups.service';
 import { CreateStartupDto } from './dto/create-startup.dto';
 import { UpdateStartupDto } from './dto/update-startup.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AccessGuard } from 'src/guards/access.guard';
 
 @Controller('startups')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AccessGuard)
 export class StartupsController {
   constructor(private readonly startupsService: StartupsService) {}
 

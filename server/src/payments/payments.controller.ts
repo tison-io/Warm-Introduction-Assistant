@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Headers, Req, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Headers, Req, BadRequestException, UseGuards, Get } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
 import { PaymentsService } from './payments.service';
@@ -17,12 +17,20 @@ export class PaymentsController {
   @Post('webhook')
   async webhook(
     @Headers('stripe-signature') signature: string,
-    @Req() req: RawBodyRequest<Request>,
+    @Req() req: any,
   ) {
-    if (!req.rawBody) {
+    const rawBody = req.rawBody;
+
+    if (!rawBody) {
       throw new BadRequestException('Missing rawBody. Check main.ts configuration.');
     }
 
     return this.paymentsService.handleWebhook(signature, req.rawBody);
+  }
+
+  @Get('invoices')
+  @UseGuards(JwtAuthGuard)
+  async getInvoices(@Req() req) {
+    return this.paymentsService.getInvoices(req.user.userId);
   }
 }
