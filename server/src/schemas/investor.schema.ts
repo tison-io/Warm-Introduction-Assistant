@@ -8,6 +8,9 @@ export class Investor {
   @Prop({ type: Types.ObjectId, ref: 'Founder', required: true })
   userId: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Workspace', default: null})
+  workspaceId: Types.ObjectId;
+
   @Prop({ required: true })
   name: string;
 
@@ -25,6 +28,12 @@ export class Investor {
 
   @Prop()
   notes?: string;
+
+  @Prop({ type: String, enum: ['not-contacted', 'contacted'], default:'not-contacted' })
+  status: 'not-contacted' | 'contacted';
+
+  @Prop({ type: Date, default: null})
+  contactedAt: Date;
 }
 
 export const InvestorSchema = SchemaFactory.createForClass(Investor);

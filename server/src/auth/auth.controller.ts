@@ -26,7 +26,7 @@ export class AuthController {
         const tokenPayload = this.authService.generateJwt(founder);
         const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
         
-        const callbackUrl = (req.query.state as string) || '/dashboard';
+const callbackUrl = (req.query.state as string) || '/dashboard';
 
         // Set the JWT as an HTTP-only cookie
         res.cookie('jwt', tokenPayload.token, {
@@ -38,6 +38,7 @@ export class AuthController {
         // Redirect the user back to the Next.js frontend
         return res.redirect(
             `${frontendUrl}/login/success?token=${tokenPayload.token}&callbackUrl=${encodeURIComponent(callbackUrl)}`
+        );
         );
     }
 }

@@ -1,33 +1,50 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Reminder } from '../schemas/reminder.schema';
 import { IntroQueue } from '../transform/entities/intro-queue.schema';
+import { WorkspacesService } from 'src/workspace/workspace.service';
 
 @Injectable()
 export class ReminderService {
   private readonly logger = new Logger(ReminderService.name);
 
   constructor(
-    @InjectModel(Reminder.name) private reminderModel: Model<Reminder>,
-    @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueue>,
+      @InjectModel(Reminder.name) private reminderModel: Model<Reminder>,
+      @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueue>,
+      private readonly workspaceService: WorkspacesService,
   ) {}
 
-  async findAllByUser(founderId: string) {
-    const now = new Date();
-    return this.reminderModel
-      .find({ 
-        founderId: new Types.ObjectId(founderId), 
-        date: { $lte: now }, 
-        status: 'sent',
-      })
-      .sort({ createdAt: 1 })
-      .populate({
-        path: 'introId', 
-        select: 'startupName investorName startupId investorId generatedIntro followUpDueDate',
-      })
-      .exec();
+  async findAllByUser(userId: string, workspaceId?: string) {
+      const now = new Date();
+      let query: any;
+
+      if (workspaceId) {
+            await this.workspaceService.getMembers(workspaceId, userId);
+            query = {
+                  workspaceId: new Types.ObjectId(workspaceId),
+                  date: { $lte: now },
+                  status: 'sent',
+            };
+      } else {
+            query = {
+                 founderId: new Types.ObjectId(userId),
+                 workspaceId: null,
+                 date: { $lte: now },
+                 status: 'sent' 
+            };
+      }
+
+      return this.reminderModel
+            .find(query)
+            .sort({ createdAt: -1 })
+            .populate({
+                  path: 'introId',
+                  select: 'startupName investorName startupId investorId generatedIntro followUpDueDate',
+            })
+            .exec();
+
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -54,69 +71,55 @@ export class ReminderService {
     });
   }
 
-  async createReminder(ownerId: string, introId: string, date: Date) {
-    const reminder = new this.reminderModel({
-      founderId: new Types.ObjectId(ownerId),
-      introId: new Types.ObjectId(introId),
-      date,
-      status: 'queued'
-    });
-    return reminder.save();
-  }
+       async createReminder(ownerId: string, introId: string, date: Date,workspaceId?: string) {
+            const reminder = new this.reminderModel({
+                  founderId: new Types.ObjectId(ownerId),
+                  introId: new Types.ObjectId(introId),
+                  workspaceId: workspaceId ? new Types.ObjectId(workspaceId) : null,
+                  date,
+                  status: 'queued'
+            });
+            return reminder.save();
+       }
 
-  async deleteReminder(reminderId: string, founderId: string) {
-    const result = await this.reminderModel.findOneAndDelete({
-      _id: new Types.ObjectId(reminderId),
-      founderId: new Types.ObjectId(founderId),
-    }).exec();
+      async deleteReminder(reminderId: string, userId: string) {
+            const reminder = await this.reminderModel.findById(reminderId);
+            if (!reminder) {
+                  throw new NotFoundException('Reminder not found.');
+            }
 
-  if (!result) {
-   throw new NotFoundException('Reminder not found or unauthorized.');
-  }
+            if (reminder.workspaceId) {
+                  await this.workspaceService.getMembers(reminder.workspaceId.toString(), userId);
+            } else if (reminder.founderId.toString() !== userId) {
+                  throw new ForbiddenException('You cant delete this reminder.');
+            }
 
-  this.logger.log(`Deleted reminder ${reminderId} for founder ${founderId}`);
-    return { success: true };
-  }
+            await this.reminderModel.findByIdAndDelete(reminderId);
+            return { success: true };
+      }
 
-  async markReminderAndIntroCompleted(reminderId: string, founderId: string) {
-    
-    const founderObjectId = new Types.ObjectId(founderId);
+      async markReminderAndIntroCompleted(reminderId: string, userId: string) {
+            const reminder = await this.reminderModel.findById(reminderId);
+            if (!reminder) {
+                  throw new NotFoundException('Reminder not found.');
+            }
+            //Workspace access check
+            if (reminder.workspaceId) {
+                  await this.workspaceService.getMembers(reminder.workspaceId.toString(), userId);
+            } else if (reminder.founderId.toString() !== userId) {
+                  throw new ForbiddenException('Unauthorized action.');
+            }
 
-    const reminder = await this.reminderModel.findOne({
-        _id: new Types.ObjectId(reminderId),
-        founderId: founderObjectId,
-    }).exec();
+            const intro = await this.introQueueModel.findById(reminder.introId);
+            if (!intro) {
+                  throw new NotFoundException('Linked intro not found.');
+            }
 
-    if (!reminder) {
-        throw new NotFoundException('Reminder not found or unauthorized.');
-    }
-    
-    const intro = await this.introQueueModel.findOne({
-        _id: reminder.introId,
-        founderId: founderObjectId,
-    });
-    
-    if (!intro) {
-        throw new NotFoundException('Linked Intro not found.');
-    }
-    
-    if (intro.status === 'completed' && reminder.status === 'completed') {
-      this.logger.warn(`Intro ${intro._id} was already completed.`);
-      return { success: true };
-    }
-    
-    if (intro.status !== 'completed') {
-        intro.status = 'completed';
-        intro.followUpDueDate = null; 
-        await intro.save();
-    }
+            intro.status = 'completed';
+            intro.followUpDueDate = null;
+            reminder.status = 'completed';
 
-    if (reminder.status !== 'completed') {
-        reminder.status = 'completed';
-        await reminder.save();
-    }
-    
-    this.logger.log(`Completed intro ${intro._id} and reminder ${reminder._id}`);
-    return { success: true };
-  }
+            await Promise.all([intro.save(), reminder.save()]);
+            return { success: true };
+      }
 }

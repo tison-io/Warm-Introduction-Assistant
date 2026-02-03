@@ -14,6 +14,9 @@ export class Reminder extends Document {
 
   @Prop({ enum: ['queued', 'sent', 'completed'], default: 'queued' })
   status: 'queued' | 'sent' | 'completed';
+
+  @Prop({ type: Types.ObjectId, ref: 'Workspace', default: null })
+  workspaceId: Types.ObjectId;
 }
 
 export const ReminderSchema = SchemaFactory.createForClass(Reminder);

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { IntroQueue, IntroStatus, StatusUpdatePayload } from '../types/intro';
 import { fetchIntrosByFounder, updateIntroStatus, sendIntroRequest } from '../lib/intro-api';
-import { ChevronUp, ChevronDown, Plus, Loader2, Mail } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Loader2, Mail, MoreHorizontal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../components/Toast';
 
@@ -12,27 +12,16 @@ interface StatusBadgeProps {
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
-  let style = 'bg-gray-400';
-  let text = 'Queued';
-
-  switch (status) {
-    case 'queued':
-      style = 'bg-blue-400';
-      text = 'Queued';
-      break;
-    case 'sent':
-      style = 'bg-green-500';
-      text = 'Sent';
-      break;
-    case 'completed':
-      style = 'bg-purple-500';
-      text = 'Completed';
-      break;
-  }
+  const styles: Record<string, string> = {
+    queued: 'bg-blue-500/20 text-blue-400 border border-blue-500/50',
+    sent: 'bg-green-500/20 text-green-400 border border-green-500/50',
+    completed: 'bg-purple-500/20 text-purple-400 border border-purple-500/50',
+    investor_approval_requested: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50',
+  };
 
   return (
-    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full text-white ${style}`}>
-      {text}
+    <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded ${styles[status] || styles.queued}`}>
+      {status.replace('_', ' ')}
     </span>
   );
 };
@@ -70,10 +59,9 @@ export default function IntroQueuePage() {
       const data = await fetchIntrosByFounder();
       setIntros(data);
     } catch (err: any) {
-      console.error(err);
       showToast(err.message || 'Failed to load intro queue', 'error');
     } finally {
-      setTimeout(() => setLoading(false), 800);
+      setLoading(false);
     }
   };
 
@@ -83,7 +71,6 @@ export default function IntroQueuePage() {
       await sendIntroRequest(introId);
       showToast("Email consent request has been sent to investor", "success");
     } catch (err: any) {
-      console.error(err);
       showToast(err.message || "Failed to send intro request.", "error");
     } finally {
       setIsSendingEmail(false);
@@ -126,12 +113,8 @@ export default function IntroQueuePage() {
       setExpandedId(null);
       setHasDateChanged(false);
       setHasStatusChanged(false);
-      showToast(
-        `Status updated to ${newStatus}. ${newStatus === 'sent' ? `Follow-up scheduled for ${new Date(followUpDate).toLocaleDateString()}.` : ''}`,
-        'success'
-      );
+      showToast(`Status updated to ${newStatus}`, 'success');
     } catch (err: any) {
-      console.error(err);
       showToast(err.message || 'Failed to update intro status', 'error');
     } finally {
       setIsUpdatingStatus(false);
@@ -139,93 +122,84 @@ export default function IntroQueuePage() {
   };
 
   const expandedIntro = useMemo(() => intros.find(i => i._id === expandedId), [intros, expandedId]);
-  const introCount = intros.length;
 
   return (
-    <div data-testid="page-intro-queue" className="min-h-screen bg-cover bg-center p-6 md:p-8" style={{ backgroundImage: "url('/background-img.jpg')" }}>
+    <div className="min-h-screen bg-[#05070A] text-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
-
-        {/* Header */}
-        <div className="flex justify-between items-end mb-6">
+        
+        {/* Header Section */}
+        <div className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl md:text-4xl font-semibold text-white">Intro Queue</h1>
-            <p className="text-base md:text-xl text-gray-300">
-              You have <span className='font-bold'>{introCount}</span> introductions queued
-            </p>
+            <h1 className="text-2xl font-bold text-white">Introduction Queue</h1>
+            <p className="text-sm text-gray-500 mt-1">Manage and track your warm introduction requests</p>
           </div>
           <button
-            data-testid="new-intro-btn"
             onClick={() => router.push('/intro-wizard')}
-            className="flex items-center space-x-1 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-xl hover:bg-blue-700 transition duration-150"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg"
           >
-            <Plus className="w-4 h-4" />
-            <span>New Intro</span>
+            <Plus size={16} /> New Intro
           </button>
         </div>
 
-        {/* Intro List */}
-        <div data-testid="intro-list-container" className="bg-white text-black rounded-lg shadow-2xl overflow-hidden">
-          {loading ? (
-            <div data-testid="queue-loading-spinner" className="flex items-center justify-center px-4 py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
-            </div>
-          ) : intros.length === 0 ? (
-            <div data-testid="queue-empty-message" className="p-6 text-center text-gray-500">
-              You have no intro queues at the moment.
-            </div>
-          ) : (
-            <ul data-testid="intro-queue-list">
-              {intros.map((intro) => {
+        {/* Main List Card */}
+        <div className="bg-[#0A0C10] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+          
+          {/* Table Header Styling */}
+          <div className="grid grid-cols-5 px-6 py-3 text-[11px] uppercase tracking-wider font-bold text-gray-500 border-b border-gray-800 bg-[#0D0F14]">
+            <div>Startup</div>
+            <div>Investor</div>
+            <div>Status</div>
+            <div>Created</div>
+            <div className="text-right">Actions</div>
+          </div>
+
+          <div className="divide-y divide-gray-800">
+            {loading ? (
+              <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-indigo-500" /></div>
+            ) : intros.length === 0 ? (
+              <div className="p-12 text-center text-gray-500 text-sm italic">You have no intro queues at the moment.</div>
+            ) : (
+              intros.map((intro) => {
                 const isExpanded = intro._id === expandedId;
-                const createdAtDate = new Date(intro.createdAt).toLocaleDateString();
                 return (
-                  <li data-testid={`intro-row-${intro._id}`} key={intro._id} className="border-b border-gray-200 last:border-b-0">
+                  <div key={intro._id} className="group">
                     <div
-                      data-testid={`intro-toggle-btn-${intro._id}`}
-                      className="flex items-center px-4 py-2 cursor-pointer transition duration-150 hover:bg-gray-50"
                       onClick={() => handleToggleExpand(intro)}
+                      className="grid grid-cols-5 px-6 py-4 items-center cursor-pointer hover:bg-[#11141A] transition"
                     >
-                      <div className="w-8">
-                        {isExpanded ? (
-                          <ChevronUp className="h-4 w-4 text-gray-900" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-gray-800" />
-                        )}
-                      </div>
-                      <div className="flex-1 grid grid-cols-4 gap-2 text-sm font-medium">
-                        <p data-testid={`intro-startup-name-${intro._id}`} className="truncate font-semibold">{intro.startupName}</p>
-                        <p data-testid={`intro-investor-name-${intro._id}`} className="truncate">{intro.investorName}</p>
-                        <p data-testid={`intro-created-at-${intro._id}`} className="truncate">{createdAtDate}</p>
-                        <StatusBadge status={intro.status} />
+                      <div className="text-sm font-semibold text-white truncate">{intro.startupName}</div>
+                      <div className="text-sm text-gray-400 truncate">{intro.investorName}</div>
+                      <div><StatusBadge status={intro.status} /></div>
+                      <div className="text-sm text-gray-500">{new Date(intro.createdAt).toLocaleDateString()}</div>
+                      <div className="flex justify-end">
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} className="text-gray-600 group-hover:text-white" />}
                       </div>
                     </div>
 
                     {isExpanded && expandedIntro && (
-                      <div data-testid={`intro-details-panel-${intro._id}`} className="p-4 border-t border-gray-200 bg-gray-50 space-y-4">
-                        {/* Draft intro content */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Generated Intro</label>
-                          <textarea
-                            data-testid="details-draft-textarea"
-                            className="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm"
-                            rows={4}
-                            value={draftContent}
-                            onChange={(e) => setDraftContent(e.target.value)}
-                          />
-                        </div>
+                      <div className="px-6 pb-6 pt-2 bg-[#0D0F14] border-t border-gray-800 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Generated Intro Field */}
+                          <div className="col-span-2">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Generated Intro</label>
+                            <textarea
+                              className="w-full bg-[#161920] border border-gray-700 rounded-lg p-3 text-sm text-gray-300 focus:border-indigo-500 outline-none custom-scrollbar"
+                              rows={4}
+                              value={draftContent}
+                              onChange={(e) => setDraftContent(e.target.value)}
+                            />
+                          </div>
 
-                        {/* Status selector */}
-                        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
+                          {/* Status and Follow up */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700">Status</label>
+                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Status</label>
                             <select
-                              data-testid="details-status-select"
                               value={newStatus}
                               onChange={(e) => {
                                 setNewStatus(e.target.value as IntroStatus);
                                 setHasStatusChanged(true);
                               }}
-                              className="mt-1 border border-gray-300 rounded-md p-2 text-sm"
+                              className="w-full bg-[#161920] border border-gray-800 rounded p-2 text-sm text-gray-300"
                             >
                               <option value="queued">Queued</option>
                               <option value="sent">Sent</option>
@@ -234,70 +208,68 @@ export default function IntroQueuePage() {
                           </div>
 
                           {newStatus === 'sent' && (
-                            <div data-testid="details-followup-container">
-                              <label className="block text-sm font-medium text-gray-700">Set a Follow-up Date for your Sent Intro</label>
+                            <div>
+                              <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Follow-up Date</label>
                               <input
-                                data-testid="details-followup-date-input"
                                 type="date"
                                 value={followUpDate}
                                 onChange={(e) => {
                                   setFollowUpDate(e.target.value);
                                   setHasDateChanged(true);
                                 }}
-                                className="mt-1 border border-gray-300 rounded-md p-2 text-sm"
+                                className="w-full bg-[#161920] border border-gray-800 rounded p-2 text-sm text-gray-300"
                               />
                             </div>
                           )}
+
+                          {/* Investor Email (Read Only style) */}
+                          <div className={newStatus !== 'sent' ? 'col-span-1' : 'col-span-2'}>
+                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Investor Email</label>
+                            <div className="w-full bg-[#11141A] border border-gray-800 rounded p-2 text-sm text-gray-500">
+                              {expandedIntro.investorEmail}
+                            </div>
+                          </div>
+
+                          {/* Notes */}
+                          <div className="col-span-2">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Internal Notes</label>
+                            <textarea
+                              className="w-full bg-[#161920] border border-gray-700 rounded p-2 text-sm text-gray-300"
+                              rows={2}
+                              value={noteContent}
+                              onChange={(e) => setNoteContent(e.target.value)}
+                            />
+                          </div>
                         </div>
 
-                        {/* Investor Email */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Investor Email</label>
-                          <p className="mt-1 border border-gray-300 rounded-md p-2 text-sm bg-gray-100">{expandedIntro.investorEmail}</p>
-                        </div>
-
-                        {/* Notes */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Notes</label>
-                          <textarea
-                            data-testid="details-notes-textarea"
-                            className="mt-1 w-full border border-gray-300 rounded-md p-2 text-sm"
-                            rows={2}
-                            value={noteContent}
-                            onChange={(e) => setNoteContent(e.target.value)}
-                          />
-                        </div>
-
-                        {/* Action Buttons Row */}
-                        <div className="flex justify-end space-x-3">
-                          <button
-                            disabled={isSendingEmail}
-                            onClick={() => handleSendIntro(intro._id)}
-                            className={`px-4 py-2 text-white rounded-md transition flex items-center space-x-2 
-                              ${(isSendingEmail) ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
-                          >
-                            {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                            <span>{isSendingEmail ? 'Sending' : 'Send Intro'}</span>
-                          </button>
-
+                        {/* Actions */}
+                        <div className="flex justify-end gap-3 pt-2">
                           {(hasStatusChanged || hasDateChanged) && (
                             <button
                               disabled={isUpdatingStatus}
                               onClick={() => handleUpdateStatus(intro._id)}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center space-x-2"
+                              className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 flex items-center gap-2"
                             >
-                              {isUpdatingStatus && <Loader2 className="w-4 h-4 animate-spin" />}
-                              <span>{isUpdatingStatus ? 'Saving...' : 'Save Changes'}</span>
+                              {isUpdatingStatus && <Loader2 size={14} className="animate-spin" />}
+                              Save Changes
                             </button>
                           )}
+                          <button
+                            disabled={isSendingEmail}
+                            onClick={() => handleSendIntro(intro._id)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition"
+                          >
+                            {isSendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                            {isSendingEmail ? 'Sending...' : 'Send Intro'}
+                          </button>
                         </div>
                       </div>
                     )}
-                  </li>
+                  </div>
                 );
-              })}
-            </ul>
-          )}
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -34,6 +34,21 @@ export class Founder {
 
   @Prop()
   updatedAt: Date;
+
+  @Prop({ type: String, enum: ['trial', 'lifetime'], default: 'trial' })
+  tier: string;
+
+  @Prop({ default: Date.now })
+  trialStartDate: Date;
+
+  @Prop({ required: false })
+  stripeCustomerId?: string;
+
+  @Prop({ default: false })
+  isOnline: boolean;
+
+  @Prop({ default: Date.now })
+  lastActive: Date;
 }
 
 export const FounderSchema = SchemaFactory.createForClass(Founder);

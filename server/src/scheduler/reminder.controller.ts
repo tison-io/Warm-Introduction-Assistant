@@ -1,27 +1,25 @@
-import { Controller, Delete, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { ReminderService } from './reminder.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AccessGuard } from 'src/guards/access.guard';
 
 @Controller('reminders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AccessGuard)
 export class ReminderController {
     constructor(private readonly reminderService: ReminderService) {}
 
     @Get()
-    getAllReminders(@Req() req) {
-        const founderId = req.user.userId;
-        return this.reminderService.findAllByUser(founderId);
+    getAllReminders(@Req() req, @Query('workspaceId') workspaceId?: string) {
+        return this.reminderService.findAllByUser(req.user.userId, workspaceId);
     }
 
     @Patch(':id/complete')
-    async markAsDone(@Param('id') id: string, @Req() req) {
-        const founderId = req.user.userId;
-        return this.reminderService.markReminderAndIntroCompleted(id, founderId);
-    }
+    async markAsDone(@Param('id') id: string, @Req() req) {
+        return this.reminderService.markReminderAndIntroCompleted(id, req.user.userId);
+    }
 
     @Delete(':id')
     async deleteReminder(@Param('id') reminderId: string, @Req() req) {
-        const founderId = req.user.userId;
-        await this.reminderService.deleteReminder(reminderId, founderId);
+        return this.reminderService.deleteReminder(reminderId, req.user.userId);
     }
 }

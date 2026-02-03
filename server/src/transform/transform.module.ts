@@ -5,14 +5,32 @@ import { TransformService } from './transform.service';
 import { TransformController } from './transform.controller';
 import { SchedulerModule } from 'src/scheduler/scheduler.module';
 import { MailModule } from 'src/mail/mail.module';
+import { InvestorsModule } from 'src/investors/investors.module';
+import { WorkspaceModule } from 'src/workspace/workspace.module';
+import { Investor, InvestorSchema } from 'src/schemas/investor.schema';
+import { InvestorsService } from 'src/investors/investors.service';
+import { IntroOutcomeLogSchema } from './entities/intro-logs.schema';
+import { Founder, FounderSchema } from 'src/founder/entities/founder.entity';
+import { StartupsModule } from 'src/startups/startups.module';
+import { FounderModule } from 'src/founder/founder.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: IntroQueue.name, schema: IntroQueueSchema }]),
+    MongooseModule.forFeature([
+      { name: IntroQueue.name, schema: IntroQueueSchema },
+      { name: Investor.name, schema: InvestorSchema },
+      { name: 'IntroOutcomeLog', schema: IntroOutcomeLogSchema },
+      { name: Founder.name, schema: FounderSchema }
+    ]),
     SchedulerModule,
     MailModule,
+    InvestorsModule,
+    WorkspaceModule,
+    InvestorsModule,
+    StartupsModule,
+    FounderModule,
   ],
   controllers: [TransformController],
-  providers: [TransformService],
+  providers: [TransformService, InvestorsService],
 })
 export class TransformModule {}

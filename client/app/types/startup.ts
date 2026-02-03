@@ -3,6 +3,7 @@ export interface Startup {
   name: string;
   blurb: string;
   pitchLink: string;
+  tags: string[];
   founderId: string;
   createdAt: string;
   updatedAt: string;
@@ -12,6 +13,7 @@ export interface CreateStartupDto {
   name: string;
   blurb: string;
   pitchLink: string;
+  tags: string[];
 }
 
 export interface UpdateStartupDto {

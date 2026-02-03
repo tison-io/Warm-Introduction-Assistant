@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsArray } from 'class-validator';
 
 export class CreateStartupDto {
     @IsString()
@@ -9,4 +9,8 @@ export class CreateStartupDto {
 
     @IsString()
     pitchLink:string;
+
+    @IsArray()
+    @IsString({ each: true })
+    tags: string[];
 }

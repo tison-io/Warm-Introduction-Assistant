@@ -14,6 +14,9 @@ export class Startup {
     @Prop()
     pitchLink: string;
 
+    @Prop({ type: [String], default: [] }) // Re-added the tags field
+    tags: string[];
+
     @Prop({ type: Types.ObjectId, ref:'Founder', required:true })
     founderId:Types.ObjectId;
 }

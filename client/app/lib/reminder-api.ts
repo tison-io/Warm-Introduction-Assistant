@@ -14,8 +14,13 @@ const getAuthHeaders = () => {
     };
 };
 
-export async function fetchReminders(): Promise<Reminder[]> {
-    const response = await fetch(`${API_BASE_URL}/reminders`, {
+export async function fetchReminders(workspaceId?: string): Promise<Reminder[]> {
+    const url = new URL(`${API_BASE_URL}/reminders`);
+    if (workspaceId) {
+        url.searchParams.append('workspaceId', workspaceId)
+    };
+
+    const response = await fetch(url.toString(), {
         headers: getAuthHeaders(),
     });
 

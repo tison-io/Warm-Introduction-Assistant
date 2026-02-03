@@ -32,7 +32,15 @@ export default function LoginPage() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       window.dispatchEvent(new Event(AUTH_EVENT));
-      router.push('/dashboard');
+      const searchParams = new URLSearchParams(window.location.search);
+      const callbackUrl = searchParams.get('callbackUrl');
+
+      if (callbackUrl) {
+        // Redirect to accept invite page
+        router.push(callbackUrl);
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');
     } finally {
@@ -42,7 +50,10 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     setLoading(true);
-    initiateGoogleLogin();
+    const searchParams = new URLSearchParams(window.location.search);
+    const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+
+    initiateGoogleLogin(callbackUrl);
   };
 
   return (

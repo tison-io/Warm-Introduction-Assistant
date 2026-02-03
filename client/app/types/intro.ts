@@ -1,6 +1,6 @@
 // types/intro.ts
 
-export type IntroStatus = 'queued' | 'sent' | 'completed';
+export type IntroStatus = 'queued' | 'sent' | 'completed' | 'investor_approval_requested' | 'investor_approved';
 
 export interface IntroQueue {
     _id: string;
@@ -9,7 +9,10 @@ export interface IntroQueue {
     investorId: string;
     investorName: string;
     investorEmail: string;
-    founderId: string;
+    founderId: {
+        _id: string;
+        name: string;
+    }
     preferredIntroFormat: string;
     introPreferencesText?: string;
     generatedIntro: string;
@@ -25,4 +28,18 @@ export interface IntroQueue {
 export interface StatusUpdatePayload {
     status: IntroStatus;
     followUpDueDate?: Date;
+}
+
+export interface ExecutionRateResponse {
+    executionRate: number;
+}
+
+export interface OutcomeLog {
+    _id:string;
+    userId: string;
+    workspaceId?: string | null;
+    investorName: string;
+    outcome:string;
+    notes: string;
+    createdAt: string;
 }

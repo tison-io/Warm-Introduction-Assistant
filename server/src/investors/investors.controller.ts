@@ -3,6 +3,7 @@ import { InvestorsService } from './investors.service';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AccessGuard } from 'src/guards/access.guard';
 
 interface AuthenticatedRequest {
   user: {
@@ -12,7 +13,7 @@ interface AuthenticatedRequest {
 }
 
 @Controller('investors')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, AccessGuard)
 export class InvestorsController {
   constructor(private readonly investorsService: InvestorsService) {}
 
@@ -22,8 +23,29 @@ export class InvestorsController {
   }
 
   @Get()
-  async getInvestors(@Query('search') search: string, @Req() req: AuthenticatedRequest) {
-    return this.investorsService.findAll(req.user.userId, search);
+  async getInvestors(@Query('search') search: string, @Query('workspaceId') workspaceId: string, @Req() req: AuthenticatedRequest) {
+    return this.investorsService.findAll(req.user.userId, workspaceId, search);
+  }
+
+  @Get('analytics/velocity') 
+  async getVelocity(
+    @Query('workspaceId') workspaceId: string, 
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.investorsService.getFundraisingVelocity(req.user.userId, workspaceId);
+  }
+
+  @Get('recommendations')
+  async getRecommendations(
+    @Query('workspaceId') workspaceId: string, 
+    @Query('startupId') startupId: string,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.investorsService.getRecommendations(
+      req.user.userId, 
+      workspaceId, 
+      startupId
+    );
   }
 
   @Get(':id')

@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import InvestorForm from '../../../components/investors/InvestorForm';
 import { getInvestors } from '../../../lib/investor-api';
 import { Investor } from '../../../types/investor';
+import { Loader2 } from 'lucide-react';
 
 const EditInvestorPage = () => {
   const router = useRouter();
@@ -40,10 +41,12 @@ const EditInvestorPage = () => {
   if (loading) {
     return (
       <div
-        className="min-h-screen bg-cover bg-center flex items-center justify-center"
-        style={{ backgroundImage: "url('/background-img.jpg')" }}
+        className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950"
       >
-        <p className="text-white text-xl">Loading investor...</p>
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 text-blue-400 animate-spin" />
+          <p className="text-white text-xl font-medium">Loading investor details...</p>
+        </div>
       </div>
     );
   }
@@ -51,8 +54,7 @@ const EditInvestorPage = () => {
   if (error || !investor) {
     return (
       <div
-        className="min-h-screen bg-cover bg-center flex items-center justify-center"
-        style={{ backgroundImage: "url('/background-img.jpg')" }}
+        className="min-h-screen bg-cover bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 pt-20 pb-12"
       >
         <div className="bg-red-900/50 backdrop-blur-md rounded-xl p-6 text-white max-w-md text-center">
           <h1 className="text-3xl font-bold mb-4">Error</h1>
@@ -70,15 +72,10 @@ const EditInvestorPage = () => {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: "url('/background-img.jpg')" }}
+      className="min-h-screen bg-cover bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 pt-20 pb-12"
     >
       <div className="max-w-4xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
-        <div data-testid="page-investor-edit" className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-2xl text-white">
-          <h1 className="text-4xl font-light mb-2">Edit Investor</h1>
-          <p className="text-white/70 mb-6">
-            Editing details for <strong>{investor.name}</strong>
-          </p>
+        <div data-testid="page-investor-edit">
           <InvestorForm initialData={investor} isEdit={true} />
         </div>
       </div>

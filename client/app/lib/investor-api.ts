@@ -1,4 +1,4 @@
-import { Investor, CreateInvestorDto, UpdateInvestorDto } from '../types/investor';
+import { Investor, CreateInvestorDto, UpdateInvestorDto, velocityData } from '../types/investor';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 
@@ -16,15 +16,19 @@ const getAuthHeaders = () => {
 };
 
 // Fetch all investors
-export async function getInvestors(searchQuery?: string): Promise<Investor[]> {
+export async function getInvestors(searchQuery?: string, workspaceId?: string): Promise<Investor[]> {
   const url = new URL(`${API_BASE_URL}/investors`);
+  
+  if (workspaceId) {
+    url.searchParams.append('workspaceId', workspaceId);
+  }
+  
   if (searchQuery) {
     url.searchParams.append('search', searchQuery);
   }
 
   const response = await fetch(url.toString(), {
     headers: getAuthHeaders(),
-    next: { tags: ['investors'] },
   });
 
   if (!response.ok) {
@@ -36,11 +40,13 @@ export async function getInvestors(searchQuery?: string): Promise<Investor[]> {
 }
 
 // Create a new investor
-export async function createInvestor(data: CreateInvestorDto): Promise<Investor> {
+export async function createInvestor(data: CreateInvestorDto, workspaceId?: string): Promise<Investor> {
+  const payload = workspaceId? { ...data, workspaceId } : data;
+  
   const response = await fetch(`${API_BASE_URL}/investors`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -53,17 +59,12 @@ export async function createInvestor(data: CreateInvestorDto): Promise<Investor>
 
 // Update an existing investor
 export async function updateInvestor(id: string, data: UpdateInvestorDto): Promise<Investor> {
+  
   const response = await fetch(`${API_BASE_URL}/investors/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.message || 'Failed to update investor');
-  }
-
   return response.json();
 }
 
@@ -78,4 +79,39 @@ export async function deleteInvestor(id: string): Promise<void> {
     const errorBody = await response.json().catch(() => ({}));
     throw new Error(errorBody.message || 'Failed to delete investor');
   }
+  
+  return;
+}
+
+//Get fundraising velocity data
+export const fetchFundraisingVelocity = async (workspaceId?: string): Promise<velocityData[]> => {
+  const url = workspaceId 
+    ? `${API_BASE_URL}/investors/analytics/velocity?workspaceId=${workspaceId}`
+    : `${API_BASE_URL}/investors/analytics/velocity`;
+    
+  const response = await fetch(url, {
+    headers: getAuthHeaders(),
+  });
+  
+  if (!response.ok) throw new Error('Failed to fetch velocity data');
+  return response.json(); 
+};
+
+// Fetch recommendations based on Workspace or Startup tags
+export async function getRecommendations(workspaceId?: string, startupId?: string): Promise<Investor[]> {
+  const url = new URL(`${API_BASE_URL}/investors/recommendations`);
+  
+  if (workspaceId) url.searchParams.append('workspaceId', workspaceId);
+  if (startupId) url.searchParams.append('startupId', startupId);
+
+  const response = await fetch(url.toString(), {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.message || 'Failed to fetch recommendations');
+  }
+
+  return response.json();
 }

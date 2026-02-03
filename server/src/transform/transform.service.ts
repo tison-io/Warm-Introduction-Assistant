@@ -1,24 +1,48 @@
 // src/transform/transform.service.ts (Updated to handle Types.ObjectId and denormalized fields)
 
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose'; // <-- Import Types here
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
 import { ReminderService } from '../scheduler/reminder.service';
 import { MailService } from 'src/mail/mail.service';
+import { Investor, InvestorDocument } from 'src/schemas/investor.schema';
+import { WorkspacesService } from 'src/workspace/workspace.service';
+import { IntroOutcomeLogDocument } from './entities/intro-logs.schema';
+import { Founder, FounderDocument } from 'src/founder/entities/founder.entity';
 
 
 @Injectable()
 export class TransformService {
   constructor(
     @InjectModel(IntroQueue.name) private introQueueModel: Model<IntroQueueDocument>,
+    @InjectModel('IntroOutcomeLog') private auditLogModel: Model<IntroOutcomeLogDocument>,
+    @InjectModel(Investor.name) private investorModel: Model<InvestorDocument>,
+    @InjectModel(Founder.name) private founderModel: Model<FounderDocument>,
     private readonly reminderService: ReminderService,
+    private readonly workspaceService: WorkspacesService,
     private readonly mailService: MailService,
   ) {}
 
   // GenAI Transform engine
-  async transformIntro(dto: TransformIntroDto) {
+  async transformIntro(dto: TransformIntroDto, userId: string) {
+    const founder = await this.founderModel.findById(userId);
+    if (!founder) throw new NotFoundException('Founder not found');
+
+    //Tier-based restriction
+    if (founder.tier === 'free') {
+      const transformationCount = await this.introQueueModel.countDocuments({
+        founderId: new Types.ObjectId(userId)
+      });
+
+      if (transformationCount >= 5) {
+        throw new ForbiddenException(
+          'You have reached the limit of 5 transformation for the free tier. Please upgrade to continue using this service.'
+        );
+      }
+    }
+
     console.log("Received Transform Intro Payload:", dto);
 
     if (!dto.blurb) {
@@ -52,7 +76,8 @@ export class TransformService {
           blurb: dto.blurb,
           investor_preference: dto.investor_preference
         },
-        transformed_intro: transformed
+        transformed_intro: transformed,
+        usage: founder.tier === 'free' ? 'limited' : 'unlimited'
       };
 
     } catch (error) {
@@ -66,54 +91,70 @@ export class TransformService {
     }
   }
 
-  // GetIntrosByFounder
-  async getIntrosByFounder(founderId: string) {
-    const intros = await this.introQueueModel
-      .find({ founderId: new Types.ObjectId(founderId) })
-      .sort({ createdAt: -1 }) 
-      .exec();
+  // GetIntros
+  async getIntros(userId: string, workspaceId?: string) {
+    let query:any;
 
-    return intros;
+    if(workspaceId) {
+      //Workspace- check membership first
+      await this.workspaceService.getMembers(workspaceId, userId);
+      query = { workspaceId: new Types.ObjectId(workspaceId) };
+    } else {
+      //Personal- check founderId
+      query = { founderId:new Types.ObjectId(userId), workspaceId: null };
+    }
+
+    return this.introQueueModel
+      .find(query)
+      .populate('founderId', 'name')
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
-  // QueueIntro
-  async queueIntro(data: {
-    startupId: string;
-    startupName: string;
-    investorId: string;
-    investorName: string;
-    investorEmail: string;
-    founderId: string;
-    preferredIntroFormat: string;
-    introPreferencesText?: string;
-    generatedIntro: string;
-    followUpDueDate?: Date;
-  }) {
-    // Prevent followUpDueDate input since status will be first queued
-    if (data.followUpDueDate) {
-      throw new BadRequestException(
-        "Cannot set follow-up date when creating a queued intro. Set it only when marking as sent."
-      );
+  //Queue Intro
+  async queueIntro(data: any, userId: string) {
+    const workspaceId = data.workspaceId ? new Types.ObjectId(data.workspaceId) : null;
+
+    if (workspaceId) {
+      await this.workspaceService.getMembers(data.workspaceId, userId);
     }
-    
+
     const createData = {
-      startupId: new Types.ObjectId(data.startupId),
-      startupName: data.startupName,
-      investorId: new Types.ObjectId(data.investorId),
-      investorName: data.investorName,
-      investorEmail: data.investorEmail,
-      founderId: new Types.ObjectId(data.founderId),
-      preferredIntroFormat: data.preferredIntroFormat,
-      introPreferencesText: data.introPreferencesText,
-      generatedIntro: data.generatedIntro,
+      ...data,
+      founderId: new Types.ObjectId(userId),
+      workspaceId,
       status: 'queued' as const,
-      reminderSent: false,
-      followUpCount: 0,
     };
 
-    const introRecord = await this.introQueueModel.create(createData);
+    return await this.introQueueModel.create(createData);
+  }
 
-    return introRecord;
+  // 3. Permission Helper
+  private async validateAccess(introId: string, userId: string, action: 'view' | 'modify') {
+    const intro = await this.introQueueModel.findById(introId);
+    if (!intro) throw new NotFoundException('Intro not found');
+
+    if (intro.workspaceId) {
+      // Check if user is in the workspace
+      await this.workspaceService.getMembers(intro.workspaceId.toString(), userId);
+      
+      //Only creator can modify/send/delete
+      if (action === 'modify' && intro.founderId.toString() !== userId) {
+        throw new ForbiddenException('Only the person who generated this intro can send or delete it.');
+      }
+    } else {
+      // Personal pipeline check
+      if (intro.founderId.toString() !== userId) {
+        throw new ForbiddenException('Access denied to this personal intro.');
+      }
+    }
+    return intro;
+  }
+
+  //Delete intro
+  async remove(introId:string, userId:string) {
+    const intro = await this.validateAccess(introId, userId, 'modify');
+    return await this.introQueueModel.findByIdAndDelete(introId);
   }
 
   async requestInvestorConsent(introId: string) {
@@ -166,6 +207,9 @@ export class TransformService {
     intro.status = 'investor_approved';
     await intro.save();
 
+    //Trigger logging
+    await this.captureLog(intro, 'investor_approved_consent', `Investor ${intro.investorName} approved consent mail.`);
+
     // Send actual generated intro
     await this.sendGeneratedIntroEmail({
       investorEmail: intro.investorEmail,
@@ -177,6 +221,15 @@ export class TransformService {
     intro.status = 'sent';
     intro.sentDate = new Date();
     await intro.save();
+
+    //Trigger logging
+    await this.captureLog(intro, 'intro_mail_delivered', `Intro mail to ${intro.startupName} has been sent to investor ${intro.investorName}.`);
+
+    //Update investor status to 'contacted'
+    await this.investorModel.findByIdAndUpdate(intro.investorId, {
+      status: 'contacted',
+      contactedAt: new Date(),
+    });
 
     return {
       success: true,
@@ -241,48 +294,130 @@ export class TransformService {
     }
   }
 
-  // UpdateIntroStatus
   async updateIntroStatus(
-    introId: string, 
+    introId: string,
+    userId: string, 
     status: 'queued' | 'sent' | 'completed', 
     followUpDueDate?: Date
   ) {
-    const intro = await this.introQueueModel.findById(introId);
-    if (!intro) {
-      throw new NotFoundException('Intro not found');
-    } 
+    //Checks workspace membership and intro ownership
+    const intro = await this.validateAccess(introId, userId, 'modify');
 
+    //Validation of status transitions and follow-up date
     if (status === 'sent' && !followUpDueDate) {
-        throw new BadRequestException('A follow-up date is required when status is "sent".');
+      throw new BadRequestException('A follow-up date is required when status is "sent".');
     }
 
     if (followUpDueDate && status !== 'sent') {
       throw new BadRequestException('Follow-up date can only be set when status is "sent".');
     }
-    
-    if (status === 'queued' && intro.status !== 'queued') {
-         throw new BadRequestException('Cannot set status back to "queued".');
-    }
 
+    //State Update
     intro.status = status;
 
     if (status === 'sent') {
       intro.sentDate = new Date();
     
-      if(followUpDueDate) {
+      if (followUpDueDate) {
         intro.followUpDueDate = followUpDueDate;
 
         await this.reminderService.createReminder(
-          intro.founderId.toString(), // Convert ObjectId to string for external service call
+          intro.founderId.toString(), 
           intro._id.toString(),
-          followUpDueDate
-        )
+          followUpDueDate,
+          intro.workspaceId?.toString()
+        );
       }
     } else if (status === 'completed') {
-        intro.followUpDueDate = null;
+      intro.followUpDueDate = null;
     }
     
     await intro.save();
     return intro;
+  }
+
+  async updateIntro( introId: string, userId: string, updateData: {investorEmail?: string; generatedIntro?: string }) {
+    const intro = await this.validateAccess(introId, userId, 'modify');
+    //If email, update both intro and investor record
+    if(updateData.investorEmail) {
+      await this.investorModel.findByIdAndUpdate(
+        intro.investorId,
+        { email: updateData.investorEmail.toLowerCase().trim() },
+        {new: true}
+      );
+      intro.investorEmail = updateData.investorEmail.toLowerCase().trim();   
+    }
+
+    if (updateData.generatedIntro !== undefined) {
+      intro.generatedIntro = updateData.generatedIntro;
+    }
+
+    return await intro.save();
+  }
+
+  async getOutcomeLogs(userId: string, workspaceId?: string) {
+    let query: any;
+
+    if (workspaceId) {
+      await this.workspaceService.getMembers(workspaceId, userId);
+      query = { workspaceId: new Types.ObjectId(workspaceId) };
+    } else {
+      query = {userId: new Types.ObjectId(userId), workspaceId: null };
+    }
+
+    return this.auditLogModel.find(query).sort({ createdAt:-1 }).exec();
+  }
+
+  // Internal helper: Capture event for logging
+  private async captureLog(intro: any, outcome: string, notes?: string) {
+    return await this.auditLogModel.create({
+      introId: intro._id,
+      userId: intro.founderId,
+      workspaceId: intro.workspaceId,
+      investorName: intro.investorName,
+      outcome: outcome,
+      notes: notes || `Event triggered: ${outcome}`,
+    });
+  }
+
+  async getExecutionRate(userId: string, workspaceId?: string): Promise<number> {
+    let matchQuery: any;
+
+    if (workspaceId) {
+      await this.workspaceService.getMembers(workspaceId, userId);
+      matchQuery = { workspaceId: new Types.ObjectId(workspaceId) };
+    } else {
+      matchQuery = { founderId: new Types.ObjectId(userId), workspaceId: null };
+    }
+
+    const stats = await this.introQueueModel.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          sent: {
+            $sum: { 
+              $cond: [{ $in: ['$status', ['sent', 'completed', 'investor_approved']] }, 1, 0] 
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          rate: {
+            $cond: [
+              { $eq: ['$total', 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ['$sent', '$total'] }, 100] }, 0] }
+            ]
+          }
+        }
+      }
+    ]);
+
+    //default to 0 if no stats
+    return stats.length > 0 ? stats[0].rate : 0;
   }
 }
