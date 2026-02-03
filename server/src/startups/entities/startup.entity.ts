@@ -8,13 +8,22 @@ export class Startup {
     @Prop({ required:true })
     name:string;
 
+    @Prop({ required: true, unique: true }) //For public urls
+    slug: string;
+
+    @Prop({ required: true })
+    founderName: string;
+
+    @Prop({ required: true })
+    founderEmail: string;
+
     @Prop({ required:true })
     blurb:string;
 
     @Prop()
     pitchLink: string;
 
-    @Prop({ type: [String], default: [] }) // Re-added the tags field
+    @Prop({ type: [String], default: [] })
     tags: string[];
 
     @Prop({ type: Types.ObjectId, ref:'Founder', required:true })

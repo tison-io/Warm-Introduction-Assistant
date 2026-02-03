@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateStartupDto } from './dto/create-startup.dto';
@@ -12,7 +12,9 @@ export class StartupsService {
     private startupModel: Model<StartupDocument>,
   ) {}
 
+  //Public
   async create(dto: CreateStartupDto, founderId:string) {
+
     const startup = new this.startupModel({
       ...dto,
       founderId,
@@ -21,7 +23,7 @@ export class StartupsService {
     return startup.save();
   }
 
-  async findAllByFounder(founderId: string) {
+  async findMyRequests(founderId: string) {
     const startups = await this.startupModel.find({ founderId }).sort({ createdAt: -1 });
     return startups;
   }
