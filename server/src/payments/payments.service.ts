@@ -21,6 +21,7 @@ export class PaymentsService {
         this.stripe = new Stripe(apiKey);
     }
 
+    //Generate the stripe hosted payment page
     async createCheckoutSession(founderId: string) {
         const founder = await this.founderModel.findById(founderId);
         if (!founder) {
