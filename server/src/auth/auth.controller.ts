@@ -1,7 +1,7 @@
 import { Controller, Post, Body, Get, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import type { Response, Request } from 'express'; // Added 'type' here
+import type { Response, Request } from 'express'; 
 import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
@@ -20,7 +20,7 @@ export class AuthController {
     // 2. Google OAuth Callback
     @Get('google/callback')
     @UseGuards(AuthGuard('google'))
-    async googleAuthRedirect(@Req() req: any, @Res() res: any) { // Changed types to any here for decorator metadata
+    async googleAuthRedirect(@Req() req: any, @Res() res: any) {
         const founder = req.user; 
 
         const tokenPayload = this.authService.generateJwt(founder);
@@ -35,7 +35,7 @@ export class AuthController {
             maxAge: 86400000, // 1 day 
         });
 
-        // Redirect back to Next.js
+        // Redirect the user back to the Next.js frontend
         return res.redirect(
             `${frontendUrl}/login/success?token=${tokenPayload.token}&callbackUrl=${encodeURIComponent(callbackUrl)}`
         );
