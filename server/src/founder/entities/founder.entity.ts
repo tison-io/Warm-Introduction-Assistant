@@ -35,8 +35,11 @@ export class Founder {
   @Prop()
   updatedAt: Date;
 
-  @Prop({ type: String, enum: ['free', 'pro'], default: 'free' })
+  @Prop({ type: String, enum: ['trial', 'lifetime'], default: 'trial' })
   tier: string;
+
+  @Prop({ default: Date.now })
+  trialStartDate: Date;
 
   @Prop({ required: false })
   stripeCustomerId?: string;

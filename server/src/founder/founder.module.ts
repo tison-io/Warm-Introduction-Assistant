@@ -7,6 +7,7 @@ import { JwtStrategy } from 'src/guards/jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MailService } from '../mail/mail.service';
+import { AccessGuard } from 'src/guards/access.guard';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MailService } from '../mail/mail.service';
     ]),
   ],
   controllers: [FounderController],
-  providers: [FounderService, JwtStrategy, MailService],
+  providers: [FounderService, JwtStrategy, MailService, AccessGuard],
+  exports: [MongooseModule, AccessGuard]
 })
 export class FounderModule {}
