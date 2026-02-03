@@ -1,136 +1,120 @@
 'use client';
 
-import { useState, KeyboardEvent } from "react";
-import { CreateStartupDto, Startup } from "../../types/startup";
-import { useToast } from "../Toast";
-import { Loader2, Plus, X } from "lucide-react";
+import { useState } from "react";
+import { CreateStartupDto, VALID_TAGS } from "../../types/startup";
+import { Loader2, Check } from "lucide-react";
 
 interface Props {
-    initialData?: Startup;
+    founderId: string;
     onSubmit: (data: CreateStartupDto) => Promise<void>;
     submitLabel: string;
 }
 
-export default function StartupForm({ initialData, onSubmit, submitLabel }: Props) {
-    const { showToast } = useToast();
+export default function StartupForm({ founderId, onSubmit, submitLabel }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const [formData, setFormData] = useState({
-        name: initialData?.name || "",
-        blurb: initialData?.blurb || "",
-        pitchLink: initialData?.pitchLink || "",
-    });
+    // Initial state for easy resetting
+    const initialFormState = {
+        name: "",
+        founderName: "",
+        founderEmail: "",
+        blurb: "",
+        pitchLink: "",
+    };
 
-    const [tags, setTags] = useState<string[]>(initialData?.tags || []);
-    const [tagInput, setTagInput] = useState("");
+    const [formData, setFormData] = useState(initialFormState);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+    const toggleTag = (tag: string) => {
+        setSelectedTags(prev => {
+            if (prev.includes(tag)) return prev.filter(t => t !== tag);
+            if (prev.length >= 6) return prev;
+            return [...prev, tag];
+        });
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const addTag = () => {
-        const trimmed = tagInput.trim();
-        if (trimmed && !tags.includes(trimmed)) {
-            setTags([...tags, trimmed]);
-            setTagInput("");
-        }
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            e.preventDefault(); 
-            addTag();
-        }
-    };
-
-    const removeTag = (tagToRemove: string) => {
-        setTags(tags.filter(t => t !== tagToRemove));
     };
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await onSubmit({ ...formData, tags: tags });
-            showToast("Startup saved successfully!", "success");
-        } catch (err) {
-            console.error(err);
-            showToast("Failed to save startup.", "error");
+            await onSubmit({ 
+                ...formData, 
+                tags: selectedTags, 
+                founderId 
+            });
+            
+            // --- CLEAR FORM ON SUCCESS ---
+            setFormData(initialFormState);
+            setSelectedTags([]);
+            // -----------------------------
+            
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    const inputClasses = "w-full p-3 bg-[#161930] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-gray-500";
-    const labelClasses = "block text-sm font-medium text-gray-400 mb-1";
+    const inputClasses = "w-full p-3 bg-[#1c212c] border border-gray-800 text-white rounded-xl focus:ring-2 focus:ring-[#f97316] focus:border-transparent outline-none transition-all placeholder-gray-500";
+    const labelClasses = "block text-sm font-semibold text-gray-400 mb-2";
 
     return (
-        <form 
-            onSubmit={handleSubmit} 
-            className="space-y-6 bg-[#0f1120]/80 p-8 rounded-2xl border border-gray-800 shadow-2xl"
-        >
-            <div>
-                <label className={labelClasses}>Startup Name*</label>
-                <input name="name" value={formData.name} onChange={handleChange} required className={inputClasses} placeholder="Your Startup Name" />
-            </div>
-
-            <div>
-                <label className={labelClasses}>Blurb*</label>
-                <textarea name="blurb" value={formData.blurb} onChange={handleChange} required rows={3} className={inputClasses} placeholder="What does your startup do?" />
-            </div>
-
-            <div>
-                <label className={labelClasses}>Pitch Link*</label>
-                <input name="pitchLink" value={formData.pitchLink} onChange={handleChange} required className={inputClasses} placeholder="https://your-pitch/..." />
-            </div>
-
-            {/* Tags Field with Conditional Plus Button */}
-            <div>
-                <label className={labelClasses}>Industry Tags</label>
-                <div className="relative flex items-center">
-                    <input
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className={inputClasses}
-                        placeholder="Add a tag (e.g. Tech)"
-                    />
-                    
-                    {/* Conditional Plus Button: only shows if tagInput has text */}
-                    {tagInput.trim().length > 0 && (
-                        <button
-                            type="button"
-                            onClick={addTag}
-                            className="absolute right-2 bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded-md transition-all animate-in fade-in zoom-in duration-200"
-                        >
-                            <Plus className="w-5 h-5" />
-                        </button>
-                    )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className={labelClasses}>Startup Name</label>
+                    <input name="name" value={formData.name} onChange={handleChange} required className={inputClasses} placeholder="e.g. EcoTrack" />
                 </div>
+                <div>
+                    <label className={labelClasses}>Founder Name</label>
+                    <input name="founderName" value={formData.founderName} onChange={handleChange} required className={inputClasses} placeholder="Your full name" />
+                </div>
+            </div>
 
-                <div className="flex flex-wrap gap-2 mt-3 min-h-8">
-                    {tags.map((tag) => (
-                        <span 
+            <div>
+                <label className={labelClasses}>Email Address</label>
+                <input name="founderEmail" type="email" value={formData.founderEmail} onChange={handleChange} required className={inputClasses} placeholder="founder@company.com" />
+            </div>
+
+            <div>
+                <label className={labelClasses}>Startup Blurb</label>
+                <textarea name="blurb" value={formData.blurb} onChange={handleChange} required rows={4} className={inputClasses} placeholder="Describe your product..." />
+            </div>
+
+            <div>
+                <label className={labelClasses}>Pitch Deck URL</label>
+                <input name="pitchLink" type="url" value={formData.pitchLink} onChange={handleChange} required className={inputClasses} placeholder="Link to deck" />
+            </div>
+
+            <div>
+                <label className={labelClasses}>Industries</label>
+                <div className="flex flex-wrap gap-2">
+                    {VALID_TAGS.map((tag) => (
+                        <button
                             key={tag}
-                            className="flex items-center gap-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-sm animate-in fade-in zoom-in duration-200"
+                            type="button"
+                            onClick={() => toggleTag(tag)}
+                            className={`px-4 py-2 rounded-full text-xs font-bold border transition-all flex items-center gap-2 ${
+                                selectedTags.includes(tag)
+                                    ? "bg-[#f97316] border-[#f97316] text-white"
+                                    : "bg-[#1c212c] border-gray-800 text-gray-400 hover:border-[#f97316]"
+                            }`}
                         >
+                            {selectedTags.includes(tag) && <Check className="w-3 h-3" />}
                             {tag}
-                            <button type="button" onClick={() => removeTag(tag)} className="hover:text-white transition-colors">
-                                <X className="w-3 h-3" />
-                            </button>
-                        </span>
+                        </button>
                     ))}
-                    {tags.length === 0 && <span className="text-gray-600 text-xs italic">No tags added yet.</span>}
                 </div>
             </div>
 
             <button 
                 type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/20 transition-all flex justify-center items-center gap-2"
+                disabled={isSubmitting || selectedTags.length < 3}
+                className="w-full bg-[#f97316] hover:bg-[#ea580c] disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
             >
-                {isSubmitting && <Loader2 className="animate-spin h-5 w-5" />}
-                {submitLabel}
+                {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : submitLabel}
             </button>
         </form>
     );

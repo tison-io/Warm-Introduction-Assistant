@@ -13,18 +13,15 @@ function getToken() {
 export async function createStartup(data: CreateStartupDto): Promise<Startup> {
   const res = await fetch(BASE_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getToken()}`,
-    },
-    body: JSON.stringify(data),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
   });
 
-  if (!res.ok) throw new Error("Failed to create startup");
+  if (!res.ok) throw new Error("Failed to submit the details");
   return res.json();
 }
 
-export async function getMyStartups(): Promise<Startup[]> {
+export async function getMyRequests(): Promise<Startup[]> {
   const res = await fetch(BASE_URL, {
     headers: {
       Authorization: `Bearer ${getToken()}`,

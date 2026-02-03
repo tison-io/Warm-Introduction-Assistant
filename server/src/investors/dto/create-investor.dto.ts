@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsArray, IsOptional, IsEmail } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, IsOptional, IsEmail, ArrayMinSize, ArrayMaxSize, IsIn } from 'class-validator';
+import { VALID_TAGS } from 'src/startups/dto/create-startup.dto';
 
 export class CreateInvestorDto {
   @IsString()
@@ -15,6 +16,12 @@ export class CreateInvestorDto {
 
   @IsArray()
   @IsString({ each: true })
+  @ArrayMinSize(2, { message: 'Select at least 2 investor tags' })
+  @ArrayMaxSize(5, { message: 'You can select a maximum of 5 tags' })
+  @IsIn(VALID_TAGS, { 
+    each: true, 
+    message: (args) => `Invalid tag: ${args.value}. Choose from: ${VALID_TAGS.join(', ')}` 
+  })
   tags!: string[];
 
   @IsString()

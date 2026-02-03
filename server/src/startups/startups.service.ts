@@ -13,11 +13,10 @@ export class StartupsService {
   ) {}
 
   //Public
-  async create(dto: CreateStartupDto, founderId:string) {
+  async create(dto: CreateStartupDto) {
 
     const startup = new this.startupModel({
       ...dto,
-      founderId,
     });
 
     return startup.save();

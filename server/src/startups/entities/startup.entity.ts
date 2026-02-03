@@ -8,9 +8,6 @@ export class Startup {
     @Prop({ required:true })
     name:string;
 
-    @Prop({ required: true, unique: true }) //For public urls
-    slug: string;
-
     @Prop({ required: true })
     founderName: string;
 

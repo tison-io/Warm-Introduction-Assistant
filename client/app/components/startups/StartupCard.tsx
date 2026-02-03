@@ -1,75 +1,82 @@
 'use client';
 
+import { useState } from "react";
 import { Startup } from "../../types/startup";
-import { Pencil, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { FileText, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props {
-    startup: Startup;
-    refreshList: () => void;
-    onDelete?: () => void;
+  startup: Startup;
 }
 
-export default function StartupCard({ startup, onDelete }: Props) {
-    const router = useRouter();
+export default function StartupCard({ startup }: Props) {
+  const [isExpanded, setIsExpanded] = useState(false);
 
-    const handleCardClick = () => {
-        router.push(`/startups/${startup._id}`);
-    };
+  const initials = startup.founderName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
 
-    const handleEdit = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        router.push(`/startups/${startup._id}/edit`);
-    };
-
-    const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation(); 
-        if (onDelete) onDelete();
-    };
-
-    return (
-        <div 
-            onClick={handleCardClick}
-            className="group bg-[#0f1120]/50 border border-gray-800 rounded-xl p-6 relative hover:bg-[#161930] hover:border-gray-700 transition-all cursor-pointer shadow-xl"
-        >
-            {/* Action Buttons */}
-            <div className="absolute top-6 right-6 flex items-center space-x-4">
-                <button
-                    onClick={handleEdit}
-                    className="text-gray-400 hover:text-indigo-400 transition-colors flex items-center gap-1 text-sm font-medium"
-                >
-                    <Pencil className="w-4 h-4" />
-                    <span>Edit</span>
-                </button>
-
-                <button
-                    onClick={handleDelete}
-                    className="p-2 bg-red-900/20 text-red-500 rounded-md hover:bg-red-900/40 transition-colors"
-                >
-                    <Trash2 className="w-4 h-4" />
-                </button>
-            </div>
-
-            {/* Content */}
-            <div className="pr-24">
-                <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
-                    {startup.name}
-                </h2>
-                <p className="text-gray-400 text-base leading-relaxed line-clamp-2">
-                    {startup.blurb}
-                </p>
-                
-                {/* Visual Tags (if you want them here too) */}
-                {startup.tags && startup.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-4">
-                        {startup.tags.slice(0, 3).map((tag, i) => (
-                            <span key={i} className="text-[10px] uppercase tracking-wider bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
-                )}
-            </div>
+  return (
+    <div className="bg-[#11141b] rounded-2xl p-6 shadow-xl border border-gray-800/50 flex flex-col md:flex-row gap-6 transition-all hover:border-gray-700/50 group">
+      
+      {/* Left Section: Founder Info */}
+      <div className="flex flex-row md:flex-col items-center md:items-start gap-4 md:w-48 shrink-0">
+        <div className="w-14 h-14 bg-[#1c212c] border border-gray-800 rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0 group-hover:border-orange-500/30 transition-colors">
+          {initials}
         </div>
-    );
+        <div className="overflow-hidden">
+          <h3 className="font-bold text-white truncate">{startup.founderName}</h3>
+          <p className="text-xs text-gray-500 truncate">{startup.founderEmail}</p>
+        </div>
+      </div>
+
+      {/* Middle Section: Startup Details */}
+      <div className="grow flex flex-col">
+        <h4 className="text-[#f97316] font-bold text-sm mb-1 uppercase tracking-wider">
+          {startup.name}
+        </h4>
+        
+        <div className="relative">
+          <p className={`text-gray-400 text-sm leading-relaxed ${!isExpanded ? 'line-clamp-2' : ''}`}>
+            {startup.blurb}
+          </p>
+          {startup.blurb.length > 120 && (
+            <button 
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-indigo-400 text-xs font-semibold mt-2 flex items-center gap-1 hover:text-indigo-300 transition-colors"
+            >
+              {isExpanded ? (
+                <>Show Less <ChevronUp className="w-3 h-3" /></>
+              ) : (
+                <>Read More <ChevronDown className="w-3 h-3" /></>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Pitch Deck Link */}
+        <div className="mt-4 pt-4 border-t border-gray-800/60">
+          <a 
+            href={startup.pitchLink} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-medium transition-colors"
+          >
+            <FileText className="w-4 h-4 text-orange-500/70" />
+            <span>View Pitch Deck</span>
+          </a>
+        </div>
+      </div>
+
+      {/* Right Section: Action Button */}
+      <div className="flex items-center md:pl-6 md:border-l border-gray-800/60 shrink-0">
+        <button 
+          className="w-full md:w-auto px-8 bg-[#f97316] hover:bg-[#ea580c] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-950/20 active:scale-[0.98]"
+        >
+          Make Intro <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
 }
