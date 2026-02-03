@@ -20,7 +20,7 @@ export class AuthController {
     // 2. Google OAuth Callback
     @Get('google/callback')
     @UseGuards(AuthGuard('google'))
-    async googleAuthRedirect(@Req() req: any, @Res() res: any) {
+    async googleAuthRedirect(@Req() req: any, @Res() res: Response) {
         const founder = req.user; 
 
         const tokenPayload = this.authService.generateJwt(founder);
