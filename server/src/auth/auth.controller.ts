@@ -1,42 +1,20 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import type { Request, Response } from 'express';
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ConfigService } from '@nestjs/config';
-import { FounderDocument } from 'src/founder/entities/founder.entity';
 
-@Controller('auth')
+@Controller('auth') // or 'founder' depending on your route setup
 export class AuthController {
-    constructor(
-        private authService: AuthService,
-        private configService: ConfigService,
-    ) {}
+    constructor(private readonly authService: AuthService) {}
 
-    //Initiate Google OAuth flow
-    @Get('google')
-    @UseGuards(AuthGuard('google'))
-    async googleAuth(@Req() req) {
-        // Passport redirects to Google for authentication
+    // Endpoint for your Next.js Forgot Password page
+    @Post('forgot-password')
+    async forgotPassword(@Body('email') email: string) {
+        return this.authService.forgotPassword(email);
     }
 
-    //Google redirects here after successful sign-in
-    @Get('google/callback')
-    @UseGuards(AuthGuard('google'))
-    async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-        const founder = req.user as FounderDocument;
-
-        const tokenPayload = this.authService.generateJwt(founder);
-
-        const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-        
-        // Set as an HTTP-only cookie with the JWT
-        res.cookie('jwt', tokenPayload.token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 86400000, //1 day 
-        });
-
-        // Redirect the user back to the Next.Js frontend
-        return res.redirect(`${frontendUrl}/login/success?token=${tokenPayload.token}`);
+    // Example of a login route that uses generateJwt
+    @Post('login')
+    async login(@Body() loginDto: any) {
+        // ... login logic ...
+        // return this.authService.generateJwt(user);
     }
 }

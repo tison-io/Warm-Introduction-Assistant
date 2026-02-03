@@ -7,6 +7,7 @@ import { Founder, FounderSchema } from '../founder/entities/founder.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './google.strategy';
+import { MailModule } from '../mail/mail.module'; // 1. ADD THIS IMPORT
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { GoogleStrategy } from './google.strategy';
       }),
     }),
     ConfigModule,
+    MailModule, // 2. ADD THIS TO THE IMPORTS ARRAY
   ],
   controllers: [AuthController],
   providers: [

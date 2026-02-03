@@ -12,7 +12,7 @@ describe('MailService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn().mockReturnValue('test-value'), // mock config keys used in MailService
+            get: jest.fn().mockReturnValue('fake-api-key'),
           },
         },
       ],
