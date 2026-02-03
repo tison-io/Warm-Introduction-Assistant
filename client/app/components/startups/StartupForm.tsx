@@ -13,7 +13,6 @@ interface Props {
 export default function StartupForm({ founderId, onSubmit, submitLabel }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Initial state for easy resetting
     const initialFormState = {
         name: "",
         founderName: "",
@@ -47,17 +46,17 @@ export default function StartupForm({ founderId, onSubmit, submitLabel }: Props)
                 founderId 
             });
             
-            // --- CLEAR FORM ON SUCCESS ---
+            // Clear form on success
             setFormData(initialFormState);
             setSelectedTags([]);
-            // -----------------------------
             
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    const inputClasses = "w-full p-3 bg-[#1c212c] border border-gray-800 text-white rounded-xl focus:ring-2 focus:ring-[#f97316] focus:border-transparent outline-none transition-all placeholder-gray-500";
+    // focus:ring updated to blue-500
+    const inputClasses = "w-full p-3 bg-[#1c212c] border border-gray-800 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-500";
     const labelClasses = "block text-sm font-semibold text-gray-400 mb-2";
 
     return (
@@ -89,7 +88,7 @@ export default function StartupForm({ founderId, onSubmit, submitLabel }: Props)
             </div>
 
             <div>
-                <label className={labelClasses}>Industries</label>
+                <label className={labelClasses}>Industries of target invetors (Select 3-6)</label>
                 <div className="flex flex-wrap gap-2">
                     {VALID_TAGS.map((tag) => (
                         <button
@@ -98,8 +97,8 @@ export default function StartupForm({ founderId, onSubmit, submitLabel }: Props)
                             onClick={() => toggleTag(tag)}
                             className={`px-4 py-2 rounded-full text-xs font-bold border transition-all flex items-center gap-2 ${
                                 selectedTags.includes(tag)
-                                    ? "bg-[#f97316] border-[#f97316] text-white"
-                                    : "bg-[#1c212c] border-gray-800 text-gray-400 hover:border-[#f97316]"
+                                    ? "bg-blue-600/20 border-blue-500 text-blue-400"
+                                    : "bg-[#1c212c] border-gray-800 text-gray-400 hover:border-blue-500/50"
                             }`}
                         >
                             {selectedTags.includes(tag) && <Check className="w-3 h-3" />}
@@ -108,11 +107,10 @@ export default function StartupForm({ founderId, onSubmit, submitLabel }: Props)
                     ))}
                 </div>
             </div>
-
             <button 
                 type="submit" 
                 disabled={isSubmitting || selectedTags.length < 3}
-                className="w-full bg-[#f97316] hover:bg-[#ea580c] disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
+                className="w-full bg-linear-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/20 flex items-center justify-center group disabled:from-gray-800 disabled:to-gray-800 disabled:text-gray-600 disabled:shadow-none"
             >
                 {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : submitLabel}
             </button>
