@@ -3,32 +3,33 @@ import { TransformService } from './transform.service';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { SendIntroDto } from './dto/send-intro.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AccessGuard } from 'src/guards/access.guard';
 
 @Controller('intros')
 export class TransformController {
   constructor(private readonly transformService: TransformService) {}
 
   @Post('transform')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async transformIntro(@Body() dto: TransformIntroDto, @Req() req: any) {
     return this.transformService.transformIntro(dto, req.user.userId);
   }
 
   @Get('my-queue')
-  @UseGuards(JwtAuthGuard) 
+  @UseGuards(JwtAuthGuard, AccessGuard) 
   async getMyIntros(@Req() req: any, @Query('workspaceId') workspaceId?:string) {
     const founderId = req.user.userId; 
     return this.transformService.getIntros(req.user.userId, workspaceId);
   }
 
   @Post('queue')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async queue(@Body() data: any, @Req() req: any) {
     return this.transformService.queueIntro(data, req.user.userId);
   }
 
   @Post('send-intro')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async sendIntroEmail(@Body() dto: SendIntroDto) {
     return this.transformService.sendGeneratedIntroEmail({
       investorEmail: dto.investorEmail,
@@ -38,7 +39,7 @@ export class TransformController {
   }
 
   @Get('outcomes/history')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async getHistory(
     @Req() req: any,
     @Query('workspaceId') workspaceId?: string
@@ -47,14 +48,14 @@ export class TransformController {
   }
 
   @Get('metrics/execution-rate')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async getRate(@Req() req: any, @Query('workspaceId') workspaceId?: string) {
     const rate = await this.transformService.getExecutionRate(req.user.userId, workspaceId);
     return { executionRate: rate }; // Output example: { "executionRate": 75 }
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async updateIntro(
     @Param('id') id: string,
     @Req() req: any,
@@ -64,13 +65,13 @@ export class TransformController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async remove(@Param('id') id: string, @Req() req: any) {
     return this.transformService.remove(id, req.user.userId);
   }
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async updateStatus(
     @Param('id') id: string,
     @Req() req: any,
@@ -86,7 +87,7 @@ export class TransformController {
 
   //Request investor consent ---
   @Post(':id/request-consent')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AccessGuard)
   async requestConsent(@Param('id') id: string) {
     return this.transformService.requestInvestorConsent(id);
   }
