@@ -16,7 +16,7 @@ export default function ForgotPasswordPage() {
     setMessage("");
 
     try {
-      // Ensure your .env has NEXT_PUBLIC_API_URL pointing to your NestJS server
+      // Ensure your .env has NEXT_PUBLIC_FOUNDER_API_URL pointing to your NestJS server
       const response = await fetch(`${process.env.NEXT_PUBLIC_FOUNDER_API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,6 +31,7 @@ export default function ForgotPasswordPage() {
         setError(data.message || "Unable to process request. Please try again.");
       }
     } catch (err) {
+      console.error("Forgot password error:", err);
       setError("Network error. Please check your connection.");
     } finally {
       setLoading(false);
@@ -39,7 +40,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="fp-bg">
-      <button className="fp-back" onClick={() => router.back()}>
+      <button className="fp-back" type="button" onClick={() => router.back()}>
         <span>←</span> Back
       </button>
 
@@ -74,7 +75,7 @@ export default function ForgotPasswordPage() {
       <style jsx>{`
         .fp-bg {
           min-height: 100vh;
-          background: url("/backeground.jpg") center/cover;
+          background: url("/background.jpg") center/cover;
           display: flex;
           align-items: center;
           justify-content: center;
