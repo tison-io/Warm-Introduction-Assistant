@@ -23,7 +23,7 @@ const InvestorListPage = () => {
   const fetchInvestorsData = useCallback(async (searchQuery: string, page: number) => {
     setLoading(true);
     try {
-      const data = await getInvestors(searchQuery, undefined, page, 10); 
+      const data = await getInvestors(searchQuery, undefined, page, 5); 
       setInvestors(data.investors);
       setTotalPages(data.meta.lastPage);
       setTotalItems(data.meta.total);
@@ -102,7 +102,7 @@ const InvestorListPage = () => {
                 investors.map((investor, index) => (
                   <tr key={investor._id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-5 text-sm text-gray-400">
-                      {(currentPage - 1) * 10 + (index + 1)}
+                      {(currentPage - 1) * 5 + (index + 1)}
                     </td>
                     <td className="px-6 py-5 text-sm font-medium text-white">{investor.name}</td>
                     <td className="px-6 py-5 text-sm">
@@ -132,7 +132,16 @@ const InvestorListPage = () => {
           {/* Pagination UI */}
           <div className="px-6 py-4 bg-gray-900/30 border-t border-gray-800 flex items-center justify-between">
             <p className="text-sm text-gray-400">
-              Showing <span className="text-white font-medium">{Math.min(currentPage * 10, totalItems)}</span> of <span className="text-white font-medium">{totalItems}</span> investors
+              Showing { }
+              <span className="text-white font-medium">
+                {investors.length > 0 ? (currentPage - 1) * 5 + 1 : 0}
+              </span> 
+              { } to { }
+              <span className="text-white font-medium">
+                {Math.min(currentPage * 5, totalItems)}
+              </span> 
+              { } of { }
+              <span className="text-white font-medium">{totalItems}</span> investors
             </p>
             
             <div className="flex items-center space-x-2">
