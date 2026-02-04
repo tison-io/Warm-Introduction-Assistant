@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Copy, Check, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Loader2, Sparkles, User, Mail, Tag, Link as LinkIcon } from 'lucide-react';
 import { transformIntroApi, queueIntroApi } from '../lib/transform-api';
 import { TransformIntroDto, QueueIntroDto } from '../types/transform';
 import { useToast } from '../components/Toast';
-import { startupSnapshot } from 'v8';
 
 export default function GeneratedIntroPage() {
     const router = useRouter();
@@ -14,7 +13,6 @@ export default function GeneratedIntroPage() {
     const { showToast } = useToast();
     const hasTriggeredRef = useRef(false);
 
-    // Simplified State
     const [isApiLoading, setIsApiLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
@@ -24,17 +22,21 @@ export default function GeneratedIntroPage() {
         startupId: searchParams.get('startupId') || '',
         startupName: searchParams.get('startupName') || '',
         startupBlurb: searchParams.get('startupBlurb') || '',
+        startupTags: searchParams.get('startupTags') || '',
+        pitchLink: searchParams.get('pitchLink') || '',
+        founderId: searchParams.get('founderId') || '',
+        founderName: searchParams.get('founderName') || '',
+        founderEmail: searchParams.get('founderEmail') || '',
         investorId: searchParams.get('investorId') || '',
         investorName: searchParams.get('investorName') || '',
         investorEmail: searchParams.get('investorEmail') || '',
-        founderId: searchParams.get('founderId') || '',
+        investorTags: searchParams.get('investorTags') || '',
         format: searchParams.get('preferredIntroFormat') || '',
         prefText: searchParams.get('introPreferencesText') || '',
         workspaceId: searchParams.get('workspaceId') || '',
     };
 
     useEffect(() => {
-        // Prevent double API calls in development mode
         if (hasTriggeredRef.current) return;
 
         const triggerTransform = async () => {
@@ -44,7 +46,7 @@ export default function GeneratedIntroPage() {
             const dto: TransformIntroDto = {
                 startup_id: details.startupId,
                 startup_name: details.startupName,
-                startup_pitch_link: '', 
+                startup_pitch_link: details.pitchLink, 
                 blurb: details.startupBlurb,
                 investor_id: details.investorId,
                 investor_name: details.investorName,
@@ -56,7 +58,6 @@ export default function GeneratedIntroPage() {
 
             try {
                 const res = await transformIntroApi(dto);
-                // Clean the text and display it immediately
                 const cleanText = res.transformed_intro.replace(/\\n/g, '\n').trim();
                 setDisplayedIntro(cleanText);
                 setIsApiLoading(false);
@@ -67,7 +68,7 @@ export default function GeneratedIntroPage() {
         };
 
         triggerTransform();
-    }, []); // Empty dependency array because we use hasTriggeredRef
+    }, []);
 
     const handleCopy = async () => {
         try {
@@ -82,7 +83,6 @@ export default function GeneratedIntroPage() {
 
     const handleSave = async () => {
         if (isApiLoading || isSaving) return;
-        
         setIsSaving(true);
         try {
             await queueIntroApi({
@@ -93,12 +93,7 @@ export default function GeneratedIntroPage() {
                 workspaceId: details.workspaceId || undefined 
             } as QueueIntroDto);
             showToast('Saved to queue!', 'success');
-
-            if (details.workspaceId) {
-                router.push(`/workspace/${details.workspaceId}/intro-queue`);
-            } else {
-                router.push('/intro-queue');
-            }
+            router.push(details.workspaceId ? `/workspace/${details.workspaceId}/intro-queue` : '/intro-queue');
         } catch (error: any) {
             showToast('Save failed', 'error');
         } finally {
@@ -110,31 +105,59 @@ export default function GeneratedIntroPage() {
         <div className="min-h-screen bg-[#0a0b1e] text-white pt-12 pb-12">
             <div className="max-w-6xl mx-auto px-6">
                 <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors">
-                    <ArrowLeft className="w-4 h-4" /> Back to Startup
+                    <ArrowLeft className="w-4 h-4" /> Back to Review
                 </button>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                     
-                    {/* LEFT CONTAINER: Input Details (Scrollable) */}
-                    <div className="bg-[#111327] border border-gray-800 rounded-2xl p-8 space-y-6 shadow-xl h-[450px] flex flex-col">
+                    {/* LEFT CONTAINER: Input Details */}
+                    <div className="bg-[#111327] border border-gray-800 rounded-2xl p-8 space-y-6 shadow-xl h-[600px] flex flex-col">
                         <div className="flex items-center gap-2 text-indigo-400 font-semibold mb-2">
                             <Sparkles className="w-5 h-5" />
-                            <span>Input Details</span>
+                            <span>Match Context</span>
                         </div>
                         
                         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
-                            <div>
-                                <label className="text-xs text-gray-500 uppercase tracking-wider font-bold">Investor Details</label>
-                                <p className="text-lg font-medium text-white">{details.investorName}</p>
-                                <p className="text-sm text-indigo-300">{details.investorEmail}</p>
+                            {/* Founder & Startup Header */}
+                            <div className="p-4 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+                                <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">From: {details.founderName}</label>
+                                <p className="text-lg font-bold text-white leading-tight">{details.startupName}</p>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {details.startupTags.split(',').map((tag, i) => (
+                                        <span key={i} className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20 uppercase">{tag}</span>
+                                    ))}
+                                </div>
                             </div>
 
+                            {/* Investor Target */}
                             <div>
-                                <label className="text-xs text-gray-500 uppercase tracking-wider font-bold">Startup Details</label>
-                                <p className='text-lg font-medium text-white mb-2'>{details.startupName}</p>
-                                
-                                <div className="text-gray-300 text-sm leading-relaxed bg-[#0a0b1e]/30 p-4 rounded-lg border border-gray-800/50 h-32 overflow-y-auto overflow-x-hidden custom-scrollbar whitespace-pre-wrap wrap-break-word">
-                                    {details.startupBlurb}
+                                <label className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-2">Recipient</label>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                                        <User className="w-5 h-5 text-purple-400" />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-white">{details.investorName}</p>
+                                        <p className="text-xs text-gray-400">{details.investorEmail}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Pitch Link */}
+                            {details.pitchLink && (
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-1">Attached Deck</label>
+                                    <div className="flex items-center gap-2 text-indigo-400 text-sm italic underline truncate">
+                                        <LinkIcon size={14} /> {details.pitchLink}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Startup Blurb */}
+                            <div>
+                                <label className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-2">Reference Blurb</label>
+                                <div className="text-gray-400 text-xs leading-relaxed bg-[#0a0b1e]/30 p-4 rounded-lg border border-gray-800/50 italic">
+                                    "{details.startupBlurb}"
                                 </div>
                             </div>
                         </div>
@@ -145,14 +168,11 @@ export default function GeneratedIntroPage() {
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center gap-2 text-indigo-400 font-semibold">
                                 <Sparkles className="w-5 h-5" />
-                                <span>AI Preview</span>
+                                <span>AI Generated Draft</span>
                             </div>
                             
                             {!isApiLoading && (
-                                <button 
-                                    onClick={handleCopy}
-                                    className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white"
-                                >
+                                <button onClick={handleCopy} className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white">
                                     {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                                 </button>
                             )}
@@ -161,11 +181,11 @@ export default function GeneratedIntroPage() {
                         <div className="flex-1 bg-[#0a0b1e]/50 border border-gray-800 rounded-xl relative overflow-hidden flex flex-col">
                             {isApiLoading ? (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-                                    <div className="w-12 h-12 bg-indigo-600/20 rounded-xl flex items-center justify-center mb-4">
-                                        <Sparkles className="w-6 h-6 text-indigo-500 animate-pulse" />
+                                    <div className="w-12 h-12 bg-indigo-600/20 rounded-xl flex items-center justify-center mb-4 border border-indigo-500/30">
+                                        <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
                                     </div>
-                                    <p className="text-gray-400">Connecting to AI engine...</p>
-                                    <p className="text-xs text-gray-600 mt-2">Personalizing your intro email...</p>
+                                    <p className="text-gray-300 font-medium">Drafting customized intro...</p>
+                                    <p className="text-xs text-gray-500 mt-2 max-w-[200px]">Our AI is aligning your blurb with {details.investorName}'s preferences.</p>
                                 </div>
                             ) : (
                                 <textarea
@@ -181,14 +201,13 @@ export default function GeneratedIntroPage() {
                             <button
                                 onClick={handleSave}
                                 disabled={isApiLoading || isSaving}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2"
+                                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/10"
                             >
-                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : ""}
-                                {isApiLoading ? 'Drafting...' : 'Save to Queue'}
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                {isApiLoading ? 'Processing...' : 'Save & Close'}
                             </button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
