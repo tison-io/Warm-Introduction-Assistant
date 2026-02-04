@@ -49,26 +49,38 @@ export class MailService {
     });
   }
 
-  // --- Resend: Password Reset ---
-  async sendPasswordResetEmail(email: string, resetToken: string) {
-    const fromEmail = this.configService.get<string>('RESEND_FROM_EMAIL');
+  // --- Brevo: Password Reset ---
+  async sendPasswordResetEmail(targetEmail: string, token: string) {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
-    if (!fromEmail) throw new Error('Missing RESEND_FROM_EMAIL');
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
-    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 
-    return this.resend.emails.send({
-      from: `Warm Introduction Assistant <${fromEmail}>`,
-      to: [email],
-      subject: 'Password Reset Request',
-      html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #0347D2;">Password Reset Request</h2>
-        <p>You requested a password reset for your Warm Introduction Assistant account.</p>
-        <p><a href="${resetUrl}" style="background-color: #0347D2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Reset Password</a></p>
-        <p>Or copy and paste this link in your browser: ${resetUrl}</p>
-        <p style="color: #666; font-size: 14px;">This link will expire in 1 hour. If you didn't request this reset, ignore this email.</p>
-      </div>`,
-    });
+    sendSmtpEmail.subject = "Reset Your Password - Warm Intro";
+    sendSmtpEmail.htmlContent = `
+      <html>
+        <body style="font-family: Arial, sans-serif;">
+          <h2>Password Reset Request</h2>
+          <p>You requested to reset your password for your Warm Intro account.</p>
+          <p>Click the link below to set a new password:</p>
+          <p><a href="${resetLink}" style="color: #0347D2; font-weight: bold;">Reset Password</a></p>
+          <p>If you did not request this, please ignore this email.</p>
+        </body>
+      </html>`;
+    
+    sendSmtpEmail.sender = { 
+      name: this.brevoFromName, 
+      email: this.brevoFromEmail 
+    };
+    sendSmtpEmail.to = [{ email: targetEmail }];
+
+    try {
+      const result = await this.brevoApi.sendTransacEmail(sendSmtpEmail);
+      return result;
+    } catch (error) {
+      console.error('Brevo Password Reset Error:', error.response?.body || error.message);
+      throw new BadRequestException("Failed to send password reset email via Brevo.");
+    }
   }
 
   // --- Brevo: Intro Emails ---
