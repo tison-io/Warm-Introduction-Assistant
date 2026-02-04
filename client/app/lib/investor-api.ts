@@ -1,10 +1,9 @@
-import { Investor, CreateInvestorDto, UpdateInvestorDto, velocityData } from '../types/investor';
+import { Investor, CreateInvestorDto, UpdateInvestorDto, velocityData, PaginatedInvestors } from '../types/investor';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 
-// Dynamically get token from localStorage
 const getAuthHeaders = () => {
-  const authToken = localStorage.getItem('token'); // JWT from login
+  const authToken = localStorage.getItem('token');
   if (!authToken) {
     throw new Error('No authentication token found. Please login.');
   }
@@ -16,7 +15,7 @@ const getAuthHeaders = () => {
 };
 
 // Fetch all investors
-export async function getInvestors(searchQuery?: string, workspaceId?: string): Promise<Investor[]> {
+export async function getInvestors(searchQuery?: string, workspaceId?: string, page: number = 1, limit: number = 5): Promise<PaginatedInvestors> {
   const url = new URL(`${API_BASE_URL}/investors`);
   
   if (workspaceId) {
@@ -26,6 +25,9 @@ export async function getInvestors(searchQuery?: string, workspaceId?: string): 
   if (searchQuery) {
     url.searchParams.append('search', searchQuery);
   }
+
+  url.searchParams.append('page', page.toString());
+  url.searchParams.append('limit', limit.toString());
 
   const response = await fetch(url.toString(), {
     headers: getAuthHeaders(),
@@ -111,6 +113,19 @@ export async function getRecommendations(workspaceId?: string, startupId?: strin
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
     throw new Error(errorBody.message || 'Failed to fetch recommendations');
+  }
+
+  return response.json();
+}
+
+export async function getInvestorById(id: string): Promise<Investor> {
+  const response = await fetch(`${API_BASE_URL}/investors/${id}`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(errorBody.message || 'Failed to fetch investor details');
   }
 
   return response.json();

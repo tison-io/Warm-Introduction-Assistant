@@ -23,8 +23,17 @@ export class InvestorsController {
   }
 
   @Get()
-  async getInvestors(@Query('search') search: string, @Query('workspaceId') workspaceId: string, @Req() req: AuthenticatedRequest) {
-    return this.investorsService.findAll(req.user.userId, workspaceId, search);
+  async getInvestors(@Query('search') search: string, @Query('workspaceId') workspaceId: string, @Query('page') page: string, @Query('limit') limit: string, @Req() req: AuthenticatedRequest) {
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 5;
+
+    return this.investorsService.findAll(
+      req.user.userId,
+      workspaceId,
+      search,
+      pageNum,
+      limitNum
+    )
   }
 
   @Get('analytics/velocity') 

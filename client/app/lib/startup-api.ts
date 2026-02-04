@@ -21,8 +21,13 @@ export async function createStartup(data: CreateStartupDto): Promise<Startup> {
   return res.json();
 }
 
-export async function getMyRequests(): Promise<Startup[]> {
-  const res = await fetch(BASE_URL, {
+export async function getMyRequests(page: number = 1, limit: number = 5, search: string = ""): Promise<{ startups: Startup[], meta: { total: number, page: number, lastPage: number } }> {
+  const url = new URL(BASE_URL);
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("limit", limit.toString());
+  if (search) url.searchParams.append("search", search);
+
+  const res = await fetch(url.toString(), {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },

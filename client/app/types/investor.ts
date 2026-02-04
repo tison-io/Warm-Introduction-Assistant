@@ -17,6 +17,15 @@ export type Investor = {
     updatedAt: string; 
 };
 
+export interface PaginatedInvestors {
+  investors: Investor[],
+  meta: {
+    total: number;
+    page: number;
+    lastPage: number;
+  };
+}
+
 export type CreateInvestorDto = {
   name: string;
   email: string;

@@ -6,22 +6,22 @@ import StartupForm from "../../components/startups/StartupForm";
 import { createStartup } from "../../lib/startup-api";
 import { CreateStartupDto } from "../../types/startup";
 import { useToast } from "../../components/Toast";
-import { Check } from "lucide-react";
+import { Check, Send } from "lucide-react";
 
 function SuccessModal({ onClose }: { onClose: () => void }) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-[#11141b] border border-gray-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-300">
-                <div className="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in duration-300">
+                <div className="w-20 h-20 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
                     <Check className="w-10 h-10" />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">Submission Received!</h2>
-                <p className="text-gray-400 mb-8 leading-relaxed">
+                <p className="text-blue-100/60 mb-8 leading-relaxed">
                     Thanks for filling the form. Your startup profile has been sent to the community owner for review.
                 </p>
                 <button 
                     onClick={onClose}
-                    className="w-full bg-[#f97316] hover:bg-[#ea580c] text-white font-bold py-4 rounded-2xl transition-all shadow-lg"
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20"
                 >
                     Dismiss
                 </button>
@@ -46,20 +46,23 @@ export default function NewStartupPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0b0e14] pt-16 pb-20 px-4">
+        <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 pt-16 pb-20 px-4">
             {showSuccess && <SuccessModal onClose={() => setShowSuccess(false)} />}
             
             <div className="max-w-2xl mx-auto">
                 <div className="text-center mb-10">
+                    <div className="inline-flex p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-4">
+                        <Send className="w-6 h-6 text-blue-400" />
+                    </div>
                     <h1 className="text-4xl font-extrabold text-white tracking-tight">
                         Submit Your Startup
                     </h1>
-                    <p className="text-gray-400 mt-3 text-lg">
+                    <p className="text-blue-200/60 mt-3 text-lg">
                         Provide your details below to get started.
                     </p>
                 </div>
 
-                <div className="bg-[#11141b] p-8 md:p-10 rounded-3xl shadow-2xl border border-gray-800">
+                <div className="bg-white/5 p-8 md:p-10 rounded-3xl shadow-2xl border border-white/10 backdrop-blur-sm">
                     <StartupForm 
                         founderId={founderId} 
                         submitLabel="Submit Request" 

@@ -26,36 +26,56 @@ export class InvestorsService {
     return investor.save();
   }
 
-  async findAll(userId: string, workspaceId?: string, search?: string) {
-    let query: any;
-
-    const userObjectId = new Types.ObjectId(userId);
+  async findAll(userId: string, workspaceId?: string, search?: string, page: number = 1, limit: number = 5) {
+    let query: any = {};
 
     if (workspaceId) {
       await this.workspaceService.getMembers(workspaceId, userId);
-      query = { 
-        workspaceId: new Types.ObjectId(workspaceId) 
-      };
+      query.workspaceId = new Types.ObjectId(workspaceId);
     } else {
-      // Personal Pipeline
-      query = { 
-        userId: userObjectId,
-        workspaceId: { $in: [null, undefined] } 
-      };
+      // Personal Pipeline: Look for null OR missing workspaceId
+      query.userId = userId;
+      query.workspaceId = { $in: [null, undefined] }; 
     }
 
-    if(search) {
-      query.name = {$regex: search, $options: 'i'};
+    if (search) {
+      query.name = { $regex: search, $options: 'i' };
     }
 
-    return this.investorModel.find(query).sort({ createdAt: -1 }).exec();
+    const skip = (page - 1) * limit;
+
+    const [investors, total] = await Promise.all([
+      this.investorModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.investorModel.countDocuments(query).exec(),
+    ]);
+
+    return {
+      investors,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string, userId: string) {
-    const investor = await this.investorModel.findOne({ _id: id, userId }).exec();
-    if (!investor) {
-      throw new NotFoundException('Investor not found');
+    const investor = await this.investorModel.findById(id).exec();
+    
+    if (!investor) throw new NotFoundException('Investor not found');
+
+    // Check access
+    if (investor.workspaceId) {
+      await this.workspaceService.getMembers(investor.workspaceId.toString(), userId);
+    } else if (investor.userId.toString() !== userId) {
+      throw new ForbiddenException('Access denied');
     }
+
     return investor;
   }
 

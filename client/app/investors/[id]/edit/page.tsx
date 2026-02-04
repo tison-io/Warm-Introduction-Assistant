@@ -4,14 +4,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import InvestorForm from '../../../components/investors/InvestorForm';
-import { getInvestors } from '../../../lib/investor-api';
+import { getInvestorById } from '../../../lib/investor-api'; // Use the specific fetcher
 import { Investor } from '../../../types/investor';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 const EditInvestorPage = () => {
   const router = useRouter();
-  const params = useParams(); // Next.js App Router hook
-  const id = params?.id;
+  const params = useParams();
+  const id = params?.id as string;
 
   const [investor, setInvestor] = useState<Investor | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,15 +21,14 @@ const EditInvestorPage = () => {
     if (!id) return;
 
     const fetchInvestor = async () => {
-      setLoading(true);
       try {
-        const allInvestors = await getInvestors();
-        const found = allInvestors.find(inv => inv._id === id);
-        if (!found) throw new Error('Investor not found');
-        setInvestor(found);
+        setLoading(true);
+        // Fetch only the specific investor needed
+        const data = await getInvestorById(id);
+        setInvestor(data);
       } catch (err: any) {
         console.error(err);
-        setError(err.message || 'Failed to load investor');
+        setError(err.message || 'Failed to load investor details');
       } finally {
         setLoading(false);
       }
@@ -40,12 +39,10 @@ const EditInvestorPage = () => {
 
   if (loading) {
     return (
-      <div
-        className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950"
-      >
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0b1e]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 text-blue-400 animate-spin" />
-          <p className="text-white text-xl font-medium">Loading investor details...</p>
+          <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+          <p className="text-slate-400 font-medium">Retrieving investor profile...</p>
         </div>
       </div>
     );
@@ -53,17 +50,16 @@ const EditInvestorPage = () => {
 
   if (error || !investor) {
     return (
-      <div
-        className="min-h-screen bg-cover bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 pt-20 pb-12"
-      >
-        <div className="bg-red-900/50 backdrop-blur-md rounded-xl p-6 text-white max-w-md text-center">
-          <h1 className="text-3xl font-bold mb-4">Error</h1>
-          <p>{error || `Could not find investor with ID: ${id}`}</p>
+      <div className="min-h-screen bg-[#0a0b1e] flex items-center justify-center p-4">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 max-w-md w-full text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-white mb-2">Load Failed</h1>
+          <p className="text-slate-400 mb-6">{error || 'The investor record could not be found.'}</p>
           <button
             onClick={() => router.push('/investors')}
-            className="mt-4 px-6 py-3 bg-blue-500 rounded-lg hover:bg-blue-600 transition duration-150"
+            className="w-full px-6 py-3 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition duration-150 font-semibold"
           >
-            Back to Investors
+            Back to Pipeline
           </button>
         </div>
       </div>
@@ -71,10 +67,16 @@ const EditInvestorPage = () => {
   }
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 pt-20 pb-12"
-    >
-      <div className="max-w-4xl mx-auto pt-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#0a0b1e] pt-12 pb-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+            <button 
+                onClick={() => router.back()}
+                className="text-slate-500 hover:text-white text-sm transition"
+            >
+                ← Back
+            </button>
+        </div>
         <div data-testid="page-investor-edit">
           <InvestorForm initialData={investor} isEdit={true} />
         </div>

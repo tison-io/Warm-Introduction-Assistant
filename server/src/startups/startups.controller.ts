@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query } from '@nestjs/common';
 import { StartupsService } from './startups.service';
 import { CreateStartupDto } from './dto/create-startup.dto';
 import { UpdateStartupDto } from './dto/update-startup.dto';
@@ -16,8 +16,8 @@ export class StartupsController {
 
   @UseGuards(JwtAuthGuard, AccessGuard)
   @Get()
-  findMyStartups(@Req() req: any) {
-    return this.startupsService.findMyRequests(req.user.userId);
+  findMyStartups(@Req() req: any, @Query('page') page: string = '1', @Query('limit') limit: string = '5', @Query('search') search?: string) {
+    return this.startupsService.findMyRequests(req.user.userId, parseInt(page), parseInt(limit), search);
   }
 
   @UseGuards(JwtAuthGuard, AccessGuard)

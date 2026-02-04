@@ -22,9 +22,36 @@ export class StartupsService {
     return startup.save();
   }
 
-  async findMyRequests(founderId: string) {
-    const startups = await this.startupModel.find({ founderId }).sort({ createdAt: -1 });
-    return startups;
+  async findMyRequests(founderId: string, page: number = 1, limit: number = 5, search?: string) {
+    const skip = (page -1) * limit;
+    
+    const query: any = { founderId };
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { founderName: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [startups, total] = await Promise.all([
+      this.startupModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.startupModel.countDocuments(query),
+    ]);
+
+    return {
+      startups,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string, founderId:string) {
