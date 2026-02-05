@@ -7,6 +7,7 @@ import { LoginDto } from './dto/login.dto';
 import { UpdateFounderDto } from './dto/update-founder.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdatePasswordDto } from './dto/update-password-dto';
 
 @Controller('founder')
 export class FounderController {
@@ -32,6 +33,12 @@ export class FounderController {
   @Patch('profile')
   updateProfile(@Req() req: any, @Body() updateDto: UpdateFounderDto) {
     return this.founderService.updateProfile(req.user.userId, updateDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('password')
+  async updatePassword(@Req() req: any, @Body() updatePasswordDto: UpdatePasswordDto) {
+    return this.founderService.updatePassword(req.user.userId, updatePasswordDto);
   }
 
   @Post('forgot-password')

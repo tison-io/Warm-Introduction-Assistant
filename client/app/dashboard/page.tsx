@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { usePresence } from '../hooks/usePresence';
-import { Users, CheckCircle2, Clock, Bell, Check, Activity, ChevronRight, Plus } from 'lucide-react';
+import { Users, CheckCircle2, Clock, Bell, Check, Activity, ChevronRight, Plus, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { fetchReminders, markReminderCompleted } from '../lib/reminder-api';
 import { getInvestors } from '../lib/investor-api';
 import { fetchIntrosByFounder, fetchExecutionRate, fetchOutcomeLogs } from '../lib/intro-api';
 import { getMyRequests } from '../lib/startup-api';
+import { getTrialStatus } from '../lib/founder-api';
 import { IntroQueue, OutcomeLog } from '../types/intro';
 import { Reminder } from '../types/reminder';
 import { Startup } from '../types/startup';
+import { TrialStatus } from '../types/founder';
 import { useToast } from '../components/Toast';
 
 const isToday = (someDate: Date): boolean => {
@@ -54,6 +56,7 @@ export default function DashboardPage() {
     });
     
     const [founder, setFounder] = useState<{ _id?: string; name: string; email: string; tier: string; } | null>(null);
+    const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
 
     const loadDashboardData = async () => {
         try {
@@ -65,6 +68,9 @@ export default function DashboardPage() {
                 fetchOutcomeLogs(),
                 getMyRequests(1, 10)
             ]);
+
+            const status = await getTrialStatus();
+            setTrialStatus(status);
 
             const introsData = introsResponse.data || [];
             const investorsData = investorsResponse.investors || [];
@@ -159,6 +165,37 @@ export default function DashboardPage() {
                     <StatCard title="Requests" value={data.recentRequests?.length || 0} icon={<Activity className="text-blue-400" />} iconBg="bg-blue-500/20" />
                     <StatCard title="Reminders" value={data.remindersDue} icon={<Bell className="text-cyan-400" />} iconBg="bg-cyan-500/20" />
                 </div>
+
+                {trialStatus?.tier === 'trial' && (
+                    <div className="relative overflow-hidden bg-slate-900 border border-blue-500/30 rounded-2xl p-6 shadow-[0_0_20px_rgba(37,99,235,0.1)]">
+                        
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                            <div className="flex items-center gap-4 text-center md:text-left">
+                                <div className="p-3 bg-blue-500/10 rounded-full border border-blue-500/20 hidden sm:block">
+                                    <Clock size={24} className="text-blue-400" />
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-bold text-white flex items-center gap-2 justify-center md:justify-start">
+                                        <span className={`text-xs px-2 py-0.5 rounded-full ${trialStatus.daysRemaining <= 2 ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                                            {trialStatus.daysRemaining} days left
+                                        </span>
+                                    </h4>
+                                    <p className="text-slate-400 text-sm mt-1">
+                                        You are currently on a free trial. Upgrade to Pro for unlimited AI intros and community access.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <Link 
+                                href="/pricing"
+                                className="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                            >
+                                <Sparkles size={18} />
+                                Upgrade to Pro
+                            </Link>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <section className="bg-gray-900 border border-slate-800 rounded-2xl p-6 h-[350px] flex flex-col">

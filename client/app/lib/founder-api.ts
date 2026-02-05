@@ -188,3 +188,28 @@ export async function getTrialStatus(): Promise<TrialStatus> {
     if (!res.ok) throw new Error("Failed to fetch trial status");
     return res.json();
 }
+
+export async function updateFounderPassword(data: any): Promise<{ message: string }> {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found.");
+
+        const res = await fetch(`${BASE_URL}/founder/password`, {
+            method: "PATCH",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || "Failed to update password");
+        }
+
+        return res.json();
+    } catch (error: any) {
+        throw new Error(error.message || "Network error.");
+    }
+}

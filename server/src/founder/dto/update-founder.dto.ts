@@ -11,10 +11,5 @@ export class UpdateFounderDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(6)
-  password?: string;
-
-  @IsOptional()
-  @IsString()
   phone?: string;
 }
