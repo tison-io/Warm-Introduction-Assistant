@@ -2,34 +2,32 @@
 
 import React, { useEffect, useState } from 'react';
 import { createCheckoutSession } from '../lib/payments-api';
+import { CheckCircle2, Rocket, ShieldCheck, Zap } from 'lucide-react';
 
-const PricingPage = ({ founderId }: { founderId: string }) => {
+const PricingPage = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<{ id: string } | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-
     if (storedUser) {
-        try {
-            setUser(JSON.parse(storedUser));
-        } catch (e) {
-            console.error('Failed to parse user from storage', e);
-        }
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Failed to parse user from storage', e);
+      }
     }
   }, []);
 
   const handlePurchase = async () => {
     if (!user?.id) {
-        alert('Please login to continue');
-        return;
+      alert('Please login to continue');
+      return;
     }
 
     setLoading(true);
     try {
-      // 1. Get the URL from your NestJS backend
       const checkoutUrl = await createCheckoutSession(user.id);
-      // 2. Redirect the browser to Stripe
       window.location.href = checkoutUrl;
     } catch (err: any) {
       console.error("Payment Error:", err);
@@ -40,81 +38,119 @@ const PricingPage = ({ founderId }: { founderId: string }) => {
   };
 
   return (
-    <div 
-        className="min-h-screen text-white flex flex-col items-center justify-center p-6" 
-        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)' }}
-    >
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold mb-4">
-          Simple, Transparent <span className="text-purple-500">Pricing</span>
+    <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-white flex flex-col items-center justify-center p-6">
+      {/* Background Decorative Element */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-blue-600/5 blur-[120px] pointer-events-none" />
+
+      <div className="text-center mb-16 relative z-10">
+        <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+          Simple, Transparent <span className="text-blue-500">Pricing</span>
         </h1>
-        <p className="text-gray-400 max-w-lg">
-          From finding the right investors to closing the deal, Warmly has you covered.
+        <p className="text-slate-400 max-w-lg mx-auto text-lg">
+          Reduce time spent on manually managing the intros with Warmly App.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full">
+      <div className="grid md:grid-cols-2 gap-8 max-w-5xl w-full relative z-10">
+        
         {/* Trial Card */}
-        <div className="bg-[#111827]/50 border border-gray-800 rounded-3xl p-8 flex flex-col items-center hover:border-purple-500/50 transition-all">
-          <h3 className="text-xl font-semibold mb-1">7-day Free trial</h3>
-          <p className="text-gray-500 text-sm mb-6">Perfect for getting started</p>
-          <div className="text-4xl font-bold mb-8">$0</div>
+        <div className="bg-gray-900 border border-slate-800 rounded-3xl p-8 flex flex-col hover:border-blue-500/30 transition-all duration-300 group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-slate-800 rounded-lg group-hover:bg-blue-600/10 transition-colors">
+              <Zap size={24} className="text-blue-500" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">7-day Free Trial</h3>
+              <p className="text-slate-500 text-sm">Perfect for getting started</p>
+            </div>
+          </div>
           
-          <ul className="space-y-4 mb-12 w-full text-sm text-gray-300 text-left">
-            <li>✅ 10 AI-generated intros/month</li>
-            <li>✅ Basic investor database</li>
-            <li>✅ Email templates</li>
-            <li>✅ Community support</li>
+          <div className="flex items-baseline gap-1 my-8">
+            <span className="text-5xl font-black">$0</span>
+          </div>
+          
+          <ul className="space-y-4 mb-12 grow">
+            <FeatureItem text="AI intro templates" />
+            <FeatureItem text="Automated mails" />
+            <FeatureItem text="Community support" />
+            <FeatureItem text="Basic Analytics" muted />
           </ul>
 
           <button 
             type="button"
-            onClick={() => window.location.href = '/signup'} // Or your signup flow
-            className="w-full py-3 bg-gray-800 rounded-xl font-semibold hover:bg-gray-700 transition-colors"
+            onClick={() => window.location.href = '/signup'}
+            className="w-full py-4 bg-slate-800 border border-slate-700 rounded-2xl font-bold hover:bg-slate-700 transition-all active:scale-95"
           >
             Get Started
           </button>
         </div>
 
-        {/* The Paid One */}
-        <div className="relative bg-[#111827]/50 border-2 border-purple-600/30 rounded-3xl p-8 flex flex-col items-center shadow-[0_0_40px_rgba(88,28,135,0.2)]">
-          <div className="absolute -top-3 px-4 py-1 bg-blue-600 rounded-full text-xs font-bold uppercase tracking-widest">
-            Pro
+        {/* The Paid One (Pro) */}
+        <div className="relative bg-gray-900 border-2 border-blue-600 rounded-3xl p-8 flex flex-col shadow-[0_0_50px_rgba(37,99,235,0.15)] overflow-hidden">
+          {/* Badge */}
+          <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2 rounded-bl-2xl">
+            Recommended
           </div>
-          <p className="text-gray-500 text-sm mb-1 mt-2">For Serious founders</p>
-          <div className="text-4xl font-bold mb-8">$49</div>
+
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-600/10 rounded-lg">
+              <Rocket size={24} className="text-blue-500" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">Lifetime Access Plan</h3>
+              <p className="text-slate-500 text-sm">Full access for community owners</p>
+            </div>
+          </div>
           
-          <ul className="space-y-4 mb-12 w-full text-sm text-gray-300 text-left">
-            <li>✅ Unlimited AI-generated intros</li>
-            <li>✅ Full investor database</li>
-            <li>✅ Advanced Personalization</li>
-            <li>✅ CRM & Kanban board</li>
-            <li>✅ Analytics dashboard</li>
+          <div className="flex items-baseline gap-1 my-8">
+            <span className="text-5xl font-black text-white">$49</span>
+          </div>
+          
+          <ul className="space-y-4 mb-12 grow">
+            <FeatureItem text="Unlimited AI-generated intros" highlight />
+            <FeatureItem text="Automated Mails" highlight />
+            <FeatureItem text="Smart Follow-up reminders" highlight />
+            <FeatureItem text="Priority community support" highlight />
+            <FeatureItem text="Outcome logs" highlight />
           </ul>
 
           <button 
             disabled={loading}
             onClick={handlePurchase}
-            className="w-full py-3 bg-linear-to-r from-blue-500 to-purple-600 rounded-xl font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
           >
             {loading ? (
               <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Processing...
               </span>
-            ) : 'Purchase'}
+            ) : (
+              <>
+                <ShieldCheck size={20} />
+                <span>Purchase</span>
+              </>
+            )}
           </button>
         </div>
       </div>
-
-      <p className="mt-12 text-gray-500 text-sm">
-        All plans include a 7-day free trial • No credit card required
+      
+      <p className="mt-12 text-slate-500 text-sm">
+        Secure payment processing via Stripe. Cancel anytime.
       </p>
     </div>
   );
 };
+
+function FeatureItem({ text, highlight = false, muted = false }: { text: string; highlight?: boolean; muted?: boolean }) {
+  return (
+    <li className={`flex items-start gap-3 text-sm ${muted ? 'opacity-40' : 'opacity-100'}`}>
+      <CheckCircle2 
+        size={18} 
+        className={`shrink-0 mt-0.5 ${highlight ? 'text-blue-500' : 'text-slate-600'}`} 
+      />
+      <span className={highlight ? 'text-slate-200' : 'text-slate-400'}>{text}</span>
+    </li>
+  );
+}
 
 export default PricingPage;

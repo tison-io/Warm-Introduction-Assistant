@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Founder, FounderDocument } from './entities/founder.entity';
@@ -220,5 +220,29 @@ export class FounderService {
     );
 
     return { message: 'Password has been reset successfully' };
+  }
+
+  async getTrialStatus(userId: string) {
+    const founder = await this.founderModel.findById(userId);
+    if (!founder) throw new NotFoundException('Founder not found');
+
+    if (founder.tier === "lifetime") {
+      return { tier: 'lifetime', expired: false, daysRemaining: 999999 }
+    }
+
+    const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+    const expiryDate = new Date(founder.trialStartDate.getTime() + TRIAL_DURATION_MS);
+    const now = new Date();
+
+    const diffTime = expiryDate.getTime() - now.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    const isExpired = now > expiryDate;
+
+    return {
+      tier: founder.tier,
+      expired: isExpired,
+      daysRemaining: daysRemaining,
+      expiryDate: expiryDate
+    };
   }
 }

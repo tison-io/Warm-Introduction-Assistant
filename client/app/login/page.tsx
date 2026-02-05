@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, EyeOff, Eye, Loader2 } from 'lucide-react';
-import { loginFounder, initiateGoogleLogin } from '../lib/founder-api';
+import { loginFounder, initiateGoogleLogin, getTrialStatus } from '../lib/founder-api';
 import { FounderLoginResponse } from '../types/founder';
 import { AUTH_EVENT } from '../lib/auth-events';
 import Image from 'next/image';
@@ -29,11 +29,18 @@ export default function LoginPage() {
     try {
       const data: FounderLoginResponse = await loginFounder(email, password);
 
-      const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      
+      const status = await getTrialStatus();
+      if (status.expired) {
+        router.push('/trial-expired');
+        return;
+      }
 
+      const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
       localStorage.setItem('auth_expiry', expiryTime.toString());
+
       window.dispatchEvent(new Event(AUTH_EVENT));
       
       const searchParams = new URLSearchParams(window.location.search);

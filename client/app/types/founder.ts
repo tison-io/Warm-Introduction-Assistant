@@ -30,3 +30,10 @@ export type FounderUpdateInput = {
   phone?: string;
   password?: string;
 };
+
+export interface TrialStatus {
+  tier: string;
+  expired: boolean;
+  daysRemaining: number;
+  expiryDate: string;
+}

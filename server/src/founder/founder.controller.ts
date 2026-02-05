@@ -43,4 +43,10 @@ export class FounderController {
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.founderService.resetPassword(resetPasswordDto);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('trial-status')
+  async getTrialStatus(@Req() req: any) {
+    return this.founderService.getTrialStatus(req.user.userId);
+  }
 }

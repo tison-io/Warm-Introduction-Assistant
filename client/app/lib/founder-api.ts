@@ -1,4 +1,4 @@
-import { FounderLoginResponse, FounderResponse, FounderSignupInput, FounderUpdateInput } from "../types/founder";
+import { FounderLoginResponse, FounderResponse, FounderSignupInput, FounderUpdateInput, TrialStatus } from "../types/founder";
 
 const BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 const AUTH_URL = `${BASE_URL}/auth/google`;
@@ -173,4 +173,18 @@ export async function resetPassword(token: string, password: string): Promise<{ 
     } catch (error: any) {
         throw new Error(error.message || "Network error. Please check your connection.");
     }
+}
+
+export async function getTrialStatus(): Promise<TrialStatus> {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BASE_URL}/founder/trial-status`, {
+        method: "GET",
+        headers: { 
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json" 
+        },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch trial status");
+    return res.json();
 }
