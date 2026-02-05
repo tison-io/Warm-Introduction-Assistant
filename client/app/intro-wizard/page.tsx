@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'; // Added useMemo
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, ArrowLeft, Search, X, Copy, Check, Tag, ChevronLeft, ChevronRight, ArrowRight, Filter, UserPlus } from 'lucide-react';
 
@@ -11,14 +11,9 @@ import InvestorCard from '../components/investors/investorCard';
 
 import { getMyRequests, getStartupById } from '@/app/lib/startup-api';
 import { getInvestors, createInvestor } from '@/app/lib/investor-api';
-import { Startup } from '@/app/types/startup';
+import { Startup, VALID_TAGS } from '@/app/types/startup';
 import { Investor } from '@/app/types/investor';
 import { useToast } from '../components/Toast';
-
-export const VALID_TAGS = [
-    'SaaS', 'Fintech', 'AI/ML', 'Healthtech', 'Edtech', 'E-commerce', 
-    'Blockchain', 'B2B', 'B2C', 'Agritech', 'Cybersecurity', 'Web3'
-] as const;
 
 export default function NewIntroWizardPage() {
     return (
