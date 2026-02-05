@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'; // Added useMemo
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, ArrowLeft, Search, X, Copy, Check, Tag, ChevronLeft, ChevronRight, ArrowRight, Filter, UserPlus } from 'lucide-react';
 
@@ -21,6 +21,18 @@ export const VALID_TAGS = [
 ] as const;
 
 export default function NewIntroWizardPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <Loader2 className="animate-spin text-blue-500 w-12 h-12" />
+            </div>
+        }>
+            <IntroWizardContent />
+        </Suspense>
+    );
+}
+
+function IntroWizardContent() {
     const router = useRouter();
     const { showToast } = useToast();
     const searchParams = useSearchParams();

@@ -37,6 +37,7 @@ export default function EditStartupPage() {
                 <StartupForm
                     data-testid="form-startup-edit"
                     initialData={startup}
+                    founderId={startup.founderId}
                     submitLabel="Save Changes"
                     onSubmit={handleSubmit}
                 />

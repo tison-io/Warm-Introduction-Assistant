@@ -31,10 +31,10 @@ export default function WorkspaceDashboard({ workspaceId }: { workspaceId?: stri
             ]);
 
             setStats({ 
-                totalIntros: intros.length, 
-                myInvestors: investors.length, 
+                totalIntros: intros.meta?.total ?? intros.data?.length ?? 0, 
+                myInvestors: investors.meta?.total ?? investors.investors?.length ?? 0, 
                 executionRate: rate,
-                remindersDue: reminderData.length 
+                remindersDue: Array.isArray(reminderData) ? reminderData.length : 0 
             });
             setVelocity(vel);
             setLogs(outLogs);

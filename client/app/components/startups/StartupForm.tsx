@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from "react";
-import { CreateStartupDto, VALID_TAGS } from "../../types/startup";
+import { CreateStartupDto, Startup, VALID_TAGS } from "../../types/startup";
 import { Loader2, Check } from "lucide-react";
 
 interface Props {
     founderId: string;
     onSubmit: (data: CreateStartupDto) => Promise<void>;
     submitLabel: string;
+    initialData?: Startup;
 }
 
-export default function StartupForm({ founderId, onSubmit, submitLabel }: Props) {
+export default function StartupForm({ founderId, onSubmit, submitLabel, initialData, ...props }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const initialFormState = {

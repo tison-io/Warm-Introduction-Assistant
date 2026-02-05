@@ -146,7 +146,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Total Investors" value={data.myInvestors} icon={<Users className="text-indigo-400" />} iconBg="bg-indigo-500/20" />
                     <StatCard title="Intro Success" value={`${data.executionRate}%`} icon={<CheckCircle2 className="text-emerald-400" />} iconBg="bg-emerald-500/20" />
-                    <StatCard title="Requests" value={data.recentRequests.length} icon={<Activity className="text-blue-400" />} iconBg="bg-blue-500/20" />
+                    <StatCard title="Requests" value={data.recentRequests?.length || 0} icon={<Activity className="text-blue-400" />} iconBg="bg-blue-500/20" />
                     <StatCard title="Reminders" value={data.remindersDue} icon={<Bell className="text-cyan-400" />} iconBg="bg-cyan-500/20" />
                 </div>
 

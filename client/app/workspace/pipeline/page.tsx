@@ -29,7 +29,7 @@ export default function HomePage() {
     <div className="flex">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} isMobile={isMobile} />
       
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-[70px]' : 'ml-[240px]'}`}>
+      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-[70px]' : 'ml-60'}`}>
         <div className="min-h-screen" style={{ background: workspaceBackground, color: "rgba(255,255,255,0.92)" }}>
           {/* Top bar */}
           <div
@@ -167,7 +167,7 @@ function InvestorCard({ name, firm, stage, amount, danger }: { name: string; fir
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div
-            className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0"
+            className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold shrink-0"
             style={{
               background: "linear-gradient(135deg, rgba(26,41,74,1), rgba(13,22,33,1))",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)",

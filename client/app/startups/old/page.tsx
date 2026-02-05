@@ -208,8 +208,8 @@ export default function SingleStartupPage() {
             const startupData = await getStartupById(id);
             setStartup(startupData);
 
-            const investorsData = await fetchInvestors();
-            setInvestors(investorsData);
+            const investorsResponse = await fetchInvestors();      
+            setInvestors(investorsResponse.investors || []);
         } catch (err) {
             console.error(err);
             showToast('Failed to load startup details.', 'error');
