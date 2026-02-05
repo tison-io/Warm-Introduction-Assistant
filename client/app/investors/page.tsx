@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useTransition } from 'react';
-import { Search, Trash2, Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Search, Trash2, Plus, Loader2, ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { getInvestors, deleteInvestor } from '../lib/investor-api';
 import { Investor } from '../types/investor';
 import Link from 'next/link';
@@ -12,12 +12,10 @@ const InvestorListPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   
-  // New Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   
-  const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
   const fetchInvestorsData = useCallback(async (searchQuery: string, page: number) => {
@@ -25,8 +23,8 @@ const InvestorListPage = () => {
     try {
       const data = await getInvestors(searchQuery, undefined, page, 5); 
       setInvestors(data.investors);
-      setTotalPages(data.meta.lastPage);
-      setTotalItems(data.meta.total);
+      setTotalPages(data.meta.lastPage || 1);
+      setTotalItems(data.meta.total || 0);
     } catch (error) {
       showToast('Failed to load investors.', 'error');
     } finally {
@@ -36,9 +34,6 @@ const InvestorListPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (currentPage !== 1 && search !== '') {
-        setCurrentPage(1);
-      }
       fetchInvestorsData(search, currentPage);
     }, 300);
     return () => clearTimeout(timer);
@@ -56,69 +51,108 @@ const InvestorListPage = () => {
   };
 
   return (
-    <div className="min-h-screen text-white bg-[#0a0b1e]">
-      <div className="max-w-7xl mx-auto pt-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen text-white bg-linear-to-br from-blue-900 via-slate-900 to-gray-950">
+      <div className="max-w-7xl mx-auto pt-16 px-4 sm:px-6 lg:px-8">
         
-        <div className="relative mb-12">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search Investors"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-[#161930]/60 border border-gray-800 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition"
-          />
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
+            Investor Connections
+          </h1>
+          <p className="text-slate-400 text-lg max-w-2xl">
+            Manage your investor network here.
+          </p>
         </div>
 
-        <div className="flex justify-end mb-8">
-          <Link href="/investors/create">
-            <button className="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-xl transition">
+        {/* Search and Action Bar */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search by name or tags..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-12 pr-4 py-4 bg-slate-900/60 border border-slate-800 text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
+            />
+          </div>
+          <Link href="/investors/create" className="shrink-0">
+            <button className="w-full h-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95">
               <Plus className="w-5 h-5" />
-              <span>New Investor</span>
+              <span>Add Investor</span>
             </button>
           </Link>
         </div>
 
-        <div className="bg-[#0f1120]/50 border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+        {/* Table / List Container */}
+        <div className="bg-slate-900/50 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm">
           <table className="min-w-full">
-            <thead className="border-b border-gray-800 bg-gray-900/50">
+            <thead className="border-b border-slate-800 bg-slate-950/50">
               <tr>
-                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-400">No.</th>
-                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-400">Name</th>
-                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-400">Tags</th>
-                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-400">Preferred Format</th>
-                <th className="px-6 py-5 text-right text-sm font-semibold text-gray-400">Actions</th>
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">No.</th>
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Investor</th>
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Tags</th>
+                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Format</th>
+                <th className="px-6 py-5 text-right text-xs font-bold uppercase tracking-widest text-slate-500">Actions</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-slate-800">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center">
-                    <Loader2 className="h-10 w-10 text-indigo-500 animate-spin mx-auto" />
+                  <td colSpan={5} className="py-32 text-center">
+                    <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
+                    <p className="mt-4 text-slate-500 font-medium">Fetching connections...</p>
+                  </td>
+                </tr>
+              ) : investors.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-32 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="bg-slate-800/50 p-6 rounded-3xl mb-4 border border-slate-700">
+                        <Users className="h-6 w-6 text-slate-500" />
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2">No investors found</h3>
+                      <p className="text-slate-500 max-w-xs mx-auto mb-8">
+                        {search ? `No results for "${search}". Try a different name or tag.` : "You haven't added any investors yet. Start building your network today."}
+                      </p>
+                      {!search && (
+                        <Link href="/investors/create">
+                          <button className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-xl transition-all border border-slate-700">
+                            Add new investor
+                          </button>
+                        </Link>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
                 investors.map((investor, index) => (
-                  <tr key={investor._id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-5 text-sm text-gray-400">
-                      {(currentPage - 1) * 5 + (index + 1)}
+                  <tr key={investor._id} className="hover:bg-blue-500/5 transition-colors group">
+                    <td className="px-6 py-5 text-sm text-slate-500 font-mono">
+                      {String((currentPage - 1) * 5 + (index + 1)).padStart(2, '0')}
                     </td>
-                    <td className="px-6 py-5 text-sm font-medium text-white">{investor.name}</td>
-                    <td className="px-6 py-5 text-sm">
+                    <td className="px-6 py-5">
+                       <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
+                        {investor.name}
+                       </span>
+                    </td>
+                    <td className="px-6 py-5">
                       <div className="flex flex-wrap gap-2">
                         {investor.tags.map((tag, i) => (
-                          <span key={i} className="text-[10px] font-bold px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase">
+                          <span key={i} className="text-[10px] font-black px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-tighter">
                             {tag}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-sm text-gray-300">{investor.preferred_intro_format}</td>
+                    <td className="px-6 py-5 text-sm text-slate-400">{investor.preferred_intro_format}</td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex justify-end items-center space-x-4">
-                        <Link href={`/investors/${investor._id}/edit`} className="text-indigo-400 hover:text-indigo-300 text-sm underline underline-offset-4">Edit</Link>
-                        <button onClick={() => handleDelete(investor._id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors">
+                        <Link href={`/investors/${investor._id}/edit`} className="text-slate-400 hover:text-blue-300 text-xs font-bold uppercase tracking-widest transition-colors">Edit</Link>
+                        <button onClick={() => handleDelete(investor._id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -129,43 +163,36 @@ const InvestorListPage = () => {
             </tbody>
           </table>
 
-          {/* Pagination UI */}
-          <div className="px-6 py-4 bg-gray-900/30 border-t border-gray-800 flex items-center justify-between">
-            <p className="text-sm text-gray-400">
-              Showing { }
-              <span className="text-white font-medium">
-                {investors.length > 0 ? (currentPage - 1) * 5 + 1 : 0}
-              </span> 
-              { } to { }
-              <span className="text-white font-medium">
-                {Math.min(currentPage * 5, totalItems)}
-              </span> 
-              { } of { }
-              <span className="text-white font-medium">{totalItems}</span> investors
-            </p>
-            
-            <div className="flex items-center space-x-2">
-              <button
-                disabled={currentPage === 1 || loading}
-                onClick={() => setCurrentPage(prev => prev - 1)}
-                className="p-2 rounded-lg border border-gray-800 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
+          {/* Pagination UI - Only show if data exists */}
+          {investors.length > 0 && (
+            <div className="px-6 py-6 bg-slate-950/30 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-slate-500">
+                Showing <span className="text-white font-bold">{(currentPage - 1) * 5 + 1}</span> to <span className="text-white font-bold">{Math.min(currentPage * 5, totalItems)}</span> of <span className="text-white font-bold">{totalItems}</span> members
+              </p>
               
-              <div className="flex items-center px-4">
-                <span className="text-sm text-gray-400">Page <span className="text-white">{currentPage}</span> of {totalPages}</span>
-              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  disabled={currentPage === 1 || loading}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="p-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white hover:border-slate-600 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl">
+                  <span className="text-sm font-bold text-blue-500">{currentPage} <span className="text-slate-600 mx-1">/</span> {totalPages}</span>
+                </div>
 
-              <button
-                disabled={currentPage === totalPages || loading}
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                className="p-2 rounded-lg border border-gray-800 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
+                <button
+                  disabled={currentPage === totalPages || loading}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="p-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 hover:text-white hover:border-slate-600 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

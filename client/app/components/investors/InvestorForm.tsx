@@ -97,7 +97,7 @@ export default function InvestorForm({ initialData, workspaceId, isEdit, onSubmi
         <h1 className="text-2xl font-bold text-white mb-2">
           {isEdit ? 'Update Investor Profile' : 'Create New Investor Profile'}
         </h1>
-        <p className="text-gray-400">Enter the details for the investors, including their preferences.</p>
+        <p className="text-gray-400">Enter the details for the investor</p>
       </header>
 
       {/* Name and Email Row */}
