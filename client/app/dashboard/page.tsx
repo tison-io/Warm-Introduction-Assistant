@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePresence } from '../hooks/usePresence';
-import { Users, CheckCircle2, Clock, Bell, Check, Activity, ChevronRight } from 'lucide-react';
+import { Users, CheckCircle2, Clock, Bell, Check, Activity, ChevronRight, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { fetchReminders, markReminderCompleted } from '../lib/reminder-api';
 import { getInvestors } from '../lib/investor-api';
@@ -137,11 +137,21 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-slate-200 p-6 lg:p-10">
             <div className="max-w-7xl mx-auto space-y-8">
-                {founder && (
-                    <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">
-                        Welcome back, <span className="text-blue-500">{founder.name}</span>
-                    </h2>
-                )}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    {founder && (
+                        <h2 className="text-4xl font-bold text-white tracking-tight">
+                            Welcome back, <span className="text-blue-500">{founder.name}</span>
+                        </h2>
+                    )}
+                    
+                    <Link 
+                        href="/intro-wizard"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 shrink-0"
+                    >
+                        <Plus size={20} />
+                        <span>Make Intros</span>
+                    </Link>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard title="Total Investors" value={data.myInvestors} icon={<Users className="text-indigo-400" />} iconBg="bg-indigo-500/20" />
@@ -159,23 +169,38 @@ export default function DashboardPage() {
                             </Link>
                         </div>
                         <div className="space-y-3 overflow-y-auto grow custom-scrollbar">
-                            {data.reminders.filter(r => r.introId?.status !== 'completed').map(reminder => (
-                                <div key={reminder._id} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-800/50 group hover:border-indigo-500/30 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <button 
-                                            onClick={() => handleMarkAsDone(reminder)}
-                                            className="w-5 h-5 rounded-md border-2 border-slate-600 group-hover:border-indigo-500 flex items-center justify-center"
-                                        >
-                                            <Check size={14} className="text-indigo-500 scale-0 group-hover:scale-100 transition-transform" />
-                                        </button>
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-medium text-slate-200 truncate">{reminder.introId?.investorName}</p>
-                                            <p className="text-[11px] text-slate-500">Follow up due</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-[10px] font-bold text-slate-500">{new Date(reminder.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                            {(() => {
+                            const activeReminders = data.reminders.filter(r => r.introId?.status !== 'completed');
+
+                            if (activeReminders.length === 0) {
+                                return (
+                                <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                                    <div className="flex flex-col items-center justify-center h-full text-slate-500 italic text-sm">You have no reminders at the moment.</div>
                                 </div>
-                            ))}
+                                );
+                            }
+
+                            // 3. Otherwise, map through the reminders
+                            return activeReminders.map(reminder => (
+                                <div key={reminder._id} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-800/50 group hover:border-indigo-500/30 transition-all">
+                                <div className="flex items-center gap-4">
+                                    <button 
+                                    onClick={() => handleMarkAsDone(reminder)}
+                                    className="w-5 h-5 rounded-md border-2 border-slate-600 group-hover:border-indigo-500 flex items-center justify-center"
+                                    >
+                                    <Check size={14} className="text-indigo-500 scale-0 group-hover:scale-100 transition-transform" />
+                                    </button>
+                                    <div className="min-w-0">
+                                    <p className="text-sm font-medium text-slate-200 truncate">{reminder.introId?.investorName}</p>
+                                    <p className="text-[11px] text-slate-500">Follow up due</p>
+                                    </div>
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-500">
+                                    {new Date(reminder.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                </span>
+                                </div>
+                            ));
+                            })()}
                         </div>
                     </section>
 
