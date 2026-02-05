@@ -125,3 +125,52 @@ export async function updateFounderProfile(data: FounderUpdateInput): Promise<Fo
         throw new Error(error.message || "Network error. Please check your internet connection.");
     }
 }
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+    try {
+        const res = await fetch(`${BASE_URL}/founder/forgot-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+        });
+
+        if (!res.ok) {
+            let errorMessage = "Failed to send reset link";
+            try {
+                const error = await res.json();
+                errorMessage = error.message || error.error || errorMessage;
+            } catch {
+                errorMessage = `Server error: ${res.status}`;
+            }
+            throw new Error(errorMessage);
+        }
+
+        return res.json();
+    } catch (error: any) {
+        throw new Error(error.message || "Network error. Please check your connection.");
+    }
+}
+export async function resetPassword(token: string, password: string): Promise<{ message: string }> {
+    try {
+        const res = await fetch(`${BASE_URL}/founder/reset-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token, password }),
+        });
+
+        if (!res.ok) {
+            let errorMessage = "Failed to reset password";
+            try {
+                const error = await res.json();
+                errorMessage = error.message || error.error || errorMessage;
+            } catch {
+                errorMessage = `Server error: ${res.status}`;
+            }
+            throw new Error(errorMessage);
+        }
+
+        return res.json();
+    } catch (error: any) {
+        throw new Error(error.message || "Network error. Please check your connection.");
+    }
+}

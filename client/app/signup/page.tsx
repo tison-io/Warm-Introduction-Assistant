@@ -30,186 +30,177 @@ export default function SignupPage() {
     setIsVisible(true);
   }, []);
 
-  const handlePhoneChange = (value: string, country: any) => {
-    const dialCode = country.dialCode;
-    const localPart = value.slice(dialCode.length);
-    let cleanValue = value;
-    if (localPart.startsWith("0")) {
-      cleanValue = dialCode + localPart.substring(1);
-    }
-    setForm({ ...form, phone: cleanValue });
+  const handlePhoneChange = (value: string) => {
+    setForm({ ...form, phone: value });
   };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    if (!form.name.trim()) { showToast("Please enter your name", "error"); setLoading(false); return; }
-    if (!form.email.trim()) { showToast("Please enter your email", "error"); setLoading(false); return; }
-    if (!form.phone.trim()) { showToast("Please enter your phone number", "error"); setLoading(false); return; }
-    if (form.password.length < 6) { showToast("Password must be at least 6 characters", "error"); setLoading(false); return; }
-    if (form.password !== form.confirmPassword) { showToast("Passwords do not match", "error"); setLoading(false); return; }
+    if (form.password.length < 8) {
+      showToast("password must be at least 8 characters", "error");
+      setLoading(false);
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      showToast("passwords do not match", "error");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const fullPhone = `+${form.phone}`;
       const result = await signupFounder({
         name: form.name,
         email: form.email,
         password: form.password,
-        phone: fullPhone,
+        phone: `+${form.phone}`,
       });
 
-      showToast(`Account created for ${result.name}. Redirecting to login.`, "success");
+      showToast(`account created for ${result.name}`, "success");
       setTimeout(() => router.push("/login"), 2000);
     } catch (err: any) {
-      showToast(err.message || "Network error.", "error");
+      showToast(err.message || "signup failed", "error");
     } finally {
       setLoading(false);
     }
   }
 
-  const handleGoogleLogin = () => {
-    setLoading(true);
-    initiateGoogleLogin();
-  };
-
   return (
-    <div className="relative min-h-screen w-full bg-linear-to-br from-blue-900 via-slate-800 to-gray-900 flex items-center justify-center font-sans p-4">
-      
-      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
-        <button
-          onClick={() => router.push("/")}
-          className="flex items-center text-white hover:opacity-80 transition-opacity"
-        >
-          <ArrowLeft className="w-6 h-6 sm:w-8 sm:h-8" />
+    <div className="min-h-screen flex items-center justify-center p-6 auth-page-container relative overflow-hidden">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .auth-page-container {
+          background-color: #070911;
+          background-image: linear-gradient(135deg, #2A4D8F 0%, #0F2438 30%, #070910 70%, #070911 100%);
+          background-attachment: fixed;
+        }
+        /* Custom styling for the Phone Library to match your design */
+        .dark-phone-input .react-tel-input .form-control {
+          width: 100% !important;
+          height: 44px !important;
+          background: white !important;
+          color: #0f172a !important;
+          border: none !important;
+          border-radius: 4px !important;
+          font-size: 14px !important;
+        }
+        .dark-phone-input .react-tel-input .flag-dropdown {
+          background: white !important;
+          border: none !important;
+          border-right: 1px solid #e2e8f0 !important;
+          border-radius: 4px 0 0 4px !important;
+        }
+      `}} />
+
+      <div className="absolute top-8 left-8 z-50">
+        <button onClick={() => router.push("/")} className="flex items-center gap-2 text-white/40 hover:text-white transition-all group">
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium uppercase tracking-widest">Back</span>
         </button>
       </div>
 
       <div
-        className={`bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700 p-6 sm:p-10 max-w-md w-full flex flex-col items-center transition-all duration-1000 overflow-y-auto max-h-[95vh] sm:max-h-none ${
+        className={`relative w-full max-w-[420px] rounded-none shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 transform transition-all duration-1000 ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
         }`}
+        style={{ 
+          background: "linear-gradient(to bottom, #101625 0%, #101625 50%, #273E75 100%)",
+          backdropFilter: "blur(40px)" 
+        }}
       >
-        <div className="mb-6 flex flex-col items-center text-center">
-          <Image src="/logo.png" width={50} height={40} alt="Warmly Logo" className="mb-2" />
-          <h2 className="text-xl sm:text-2xl font-semibold text-white">Create account</h2>
-          <p className="text-gray-400 text-xs sm:text-sm">warm Introduction Assistant</p>
+        <div className="px-10 py-12 flex flex-col items-center">
+          <div className="flex flex-col items-center mb-8 text-center">
+            <Image src="/logo.png" alt="Warmly" width={100} height={40} className="mb-6 opacity-90" />
+            <h1 className="text-white text-3xl font-semibold tracking-tight">Create your account</h1>
+            <p className="text-slate-400 text-sm mt-1 lowercase">start your 7-day free trial today</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="w-full space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Full Name</label>
+              <input
+                type="text"
+                className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                value={form.name}
+                placeholder="john doe"
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Email</label>
+              <input
+                type="email"
+                className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                value={form.email}
+                placeholder="email@example.com"
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Phone</label>
+              <div className="dark-phone-input">
+                <PhoneInput
+                  country={"ke"}
+                  value={form.phone}
+                  onChange={handlePhoneChange}
+                  inputProps={{ required: true }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Create Password</label>
+              <div className="relative">
+                <input
+                  type={showPass ? "text" : "password"}
+                  className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                  value={form.password}
+                  placeholder="••••••••"
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  required
+                />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-500 lowercase ml-1">must be atleast 8 characters</p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Confirm Password</label>
+              <div className="relative">
+                <input
+                  type={showConf ? "text" : "password"}
+                  className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                  value={form.confirmPassword}
+                  placeholder="••••••••"
+                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                  required
+                />
+                <button type="button" onClick={() => setShowConf(!showConf)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  {showConf ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 bg-[#0035C5] hover:bg-[#002db1] text-white font-bold rounded-none transition-all active:scale-[0.99] mt-2"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Sign Up"}
+            </button>
+
+            <p className="text-center text-[13px] text-slate-400 pt-2">
+              Already have an account? <Link href="/login" className="text-blue-400 hover:underline font-medium ml-1">Log In</Link>
+            </p>
+          </form>
         </div>
-
-        <form className="w-full flex flex-col gap-3 sm:gap-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Full name</label>
-            <input
-              type="text"
-              placeholder="Full name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-gray-500 transition-all"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Email</label>
-            <input
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-gray-500 transition-all"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Phone</label>
-            <div className="dark-phone-input">
-              <PhoneInput
-                country={"ke"}
-                value={form.phone}
-                onChange={handlePhoneChange}
-                containerClass="!w-full"
-                inputClass="!w-full !h-[44px] sm:!h-[50px] !bg-gray-400/20 !text-white !border-gray-600 !rounded-lg !text-sm sm:!text-base"
-                buttonClass="!bg-transparent !border-gray-600 !rounded-l-lg"
-                dropdownClass="!bg-slate-800 !text-white"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Password</label>
-            <div className="relative">
-              <input
-                type={showPass ? "text" : "password"}
-                value={form.password}
-                placeholder="Password"
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none"
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
-                onClick={() => setShowPass(!showPass)}
-              >
-                {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-gray-300 text-xs sm:text-sm font-medium ml-1">Confirm Password</label>
-            <div className="relative">
-              <input
-                type={showConf ? "text" : "password"}
-                value={form.confirmPassword}
-                placeholder="Password"
-                onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                className="w-full p-2.5 sm:p-3 bg-gray-400/20 border border-gray-600 rounded-lg text-white text-sm sm:text-base focus:ring-1 focus:ring-blue-500 outline-none"
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
-                onClick={() => setShowConf(!showConf)}
-              >
-                {showConf ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full mt-2 py-2.5 sm:py-3 bg-blue-700 hover:bg-blue-600 text-white font-medium rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign up"}
-          </button>
-
-          <div className="flex items-center my-1 sm:my-2">
-            <div className="grow border-t border-gray-700"></div>
-            <span className="px-3 text-gray-500 text-[10px] sm:text-xs uppercase">or continue with</span>
-            <div className="grow border-t border-gray-700"></div>
-          </div>
-
-          <button
-            data-testid="login-google"
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 rounded-lg border border-gray-600 text-gray-300 font-medium text-sm sm:text-base transition-colors hover:bg-white/5 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            <Image src="/google.svg" width={18} height={18} alt="Google" />
-            Sign up with Google
-          </button>
-
-          <p className="text-center text-xs sm:text-sm text-gray-400 mt-2">
-            Already have an account?{" "}
-            <Link href="/login" className="text-blue-500 hover:underline font-medium">
-              Sign in
-            </Link>
-          </p>
-        </form>
+        <div className="h-[5px] w-full" style={{ background: "linear-gradient(90deg, #2A4D8F 0%, #0F2438 50%, #070911 100%)" }} />
       </div>
     </div>
   );

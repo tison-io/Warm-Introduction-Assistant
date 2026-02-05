@@ -1,6 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import Image from "next/image";
+// Using a relative path to avoid the '@' alias error
+import { forgotPassword } from "../lib/founder-api"; 
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -8,6 +12,11 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,165 +25,83 @@ export default function ForgotPasswordPage() {
     setMessage("");
 
     try {
-      // Ensure your .env has NEXT_PUBLIC_FOUNDER_API_URL pointing to your NestJS server
-      const response = await fetch(`${process.env.NEXT_PUBLIC_FOUNDER_API_URL}/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      // We show the same message regardless of whether the email exists for security
-      if (response.ok) {
-        setMessage("A reset link has been sent to your email address.");
-      } else {
-        const data = await response.json();
-        setError(data.message || "Unable to process request. Please try again.");
-      }
-    } catch (err) {
-      console.error("Forgot password error:", err);
-      setError("Network error. Please check your connection.");
+      const data = await forgotPassword(email);
+      setMessage(data.message?.toLowerCase() || "a reset link has been sent to your email address.");
+    } catch (err: any) {
+      setError(err.message?.toLowerCase() || "unable to process request.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fp-bg">
-      <button className="fp-back" type="button" onClick={() => router.back()}>
-        <span>←</span> Back
-      </button>
+    <div className="min-h-screen flex items-center justify-center p-6 auth-page-container relative overflow-hidden">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .auth-page-container {
+          background-color: #070911;
+          background-image: linear-gradient(135deg, #2A4D8F 0%, #0F2438 30%, #070910 70%, #070911 100%);
+          background-attachment: fixed;
+        }
+      `}} />
 
-      <div className="fp-center-card">
-        <img src="/logo.png" alt="Warmly Logo" className="fp-logo" />
-        <h2 className="fp-title">Forgot Password?</h2>
-        <p className="fp-sub">Enter your email address below and we'll send you a link to reset your password.</p>
-
-        <form className="fp-form" onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label htmlFor="email">Email Address</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="e.g. name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          {message && <div className="fp-alert success">{message}</div>}
-          {error && <div className="fp-alert error">{error}</div>}
-
-          <button className="fp-btn" type="submit" disabled={loading}>
-            {loading ? "Sending..." : "Send Reset Link"}
-          </button>
-        </form>
+      <div className="absolute top-8 left-8 z-50">
+        <button onClick={() => router.push("/login")} className="flex items-center gap-2 text-white/40 hover:text-white transition-all group">
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium uppercase tracking-widest">Back</span>
+        </button>
       </div>
 
-      <style jsx>{`
-        .fp-bg {
-          min-height: 100vh;
-          background: url("/background.jpg") center/cover;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: 'Inter', sans-serif;
-        }
-        .fp-back {
-          position: absolute;
-          top: 25px;
-          left: 25px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: white;
-          padding: 8px 16px;
-          border-radius: 20px;
-          cursor: pointer;
-          font-size: 14px;
-          transition: background 0.3s;
-        }
-        .fp-back:hover { background: rgba(255, 255, 255, 0.2); }
-        .fp-center-card {
-          background: white;
-          padding: 40px;
-          border-radius: 16px;
-          width: 100%;
-          max-width: 420px;
-          box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-        .fp-logo {
-          width: 64px;
-          display: block;
-          margin: 0 auto 20px;
-        }
-        .fp-title {
-          text-align: center;
-          color: #1a202c;
-          font-size: 24px;
-          margin-bottom: 10px;
-        }
-        .fp-sub {
-          text-align: center;
-          color: #4a5568;
-          font-size: 14px;
-          margin-bottom: 30px;
-          line-height: 1.5;
-        }
-        .input-group { margin-bottom: 20px; }
-        .input-group label {
-          display: block;
-          font-size: 13px;
-          font-weight: 600;
-          margin-bottom: 8px;
-          color: #4a5568;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .input-group input {
-          width: 100%;
-          padding: 14px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          background: #f8fafc;
-          font-size: 16px;
-          transition: border-color 0.2s;
-        }
-        .input-group input:focus {
-          outline: none;
-          border-color: #1746e0;
-          background: white;
-        }
-        .fp-btn {
-          width: 100%;
-          padding: 14px;
-          background: #1746e0;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .fp-btn:hover { background: #123bb4; }
-        .fp-btn:disabled { background: #cbd5e0; cursor: not-allowed; }
-        
-        .fp-alert {
-          padding: 14px;
-          border-radius: 8px;
-          font-size: 14px;
-          margin-bottom: 20px;
-          text-align: center;
-          line-height: 1.4;
-        }
-        .success { background: #f0fff4; color: #22543d; border: 1px solid #c6f6d5; }
-        .error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
+      <div
+        className={`relative w-full max-w-[420px] rounded-none shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 transform transition-all duration-1000 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+        }`}
+        style={{ background: "linear-gradient(to bottom, #101625 0%, #101625 50%, #273E75 100%)", backdropFilter: "blur(40px)" }}
+      >
+        <div className="px-10 py-12 flex flex-col items-center">
+          <div className="flex flex-col items-center mb-8 text-center">
+            <Image src="/logo.png" alt="Warmly" width={100} height={40} className="mb-6 opacity-90" />
+            <h1 className="text-white text-3xl font-semibold tracking-tight">Forgot Password?</h1>
+            <p className="text-slate-400 text-sm mt-1 lowercase">provide the email linked with your account to reset your password.</p>
+          </div>
 
-        @media (max-width: 480px) {
-          .fp-center-card { padding: 30px 20px; margin: 15px; }
-        }
-      `}</style>
+          <form onSubmit={handleSubmit} className="w-full space-y-5">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Email</label>
+              <input
+                type="email"
+                className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            {message && (
+              <p className="text-green-400 text-xs text-center font-medium bg-green-400/5 py-2 border border-green-400/10 lowercase">
+                {message}
+              </p>
+            )}
+            
+            {error && (
+              <p className="text-red-400 text-xs text-center font-medium bg-red-400/5 py-2 border border-red-400/10 lowercase">
+                {error}
+              </p>
+            )}
+
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full h-12 bg-[#0035C5] hover:bg-[#002db1] text-white font-bold rounded-none transition-all active:scale-[0.99] mt-2"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Submit"}
+            </button>
+          </form>
+        </div>
+        
+        <div className="h-[5px] w-full" style={{ background: "linear-gradient(90deg, #2A4D8F 0%, #0F2438 50%, #070911 100%)" }} />
+      </div>
     </div>
   );
 }
