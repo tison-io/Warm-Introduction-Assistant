@@ -28,8 +28,12 @@ export default function LoginPage() {
     setError('');
     try {
       const data: FounderLoginResponse = await loginFounder(email, password);
+
+      const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+
+      localStorage.setItem('auth_expiry', expiryTime.toString());
       window.dispatchEvent(new Event(AUTH_EVENT));
       
       const searchParams = new URLSearchParams(window.location.search);
@@ -95,7 +99,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="email@example.com"
-                className="w-full h-12 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 transition-all"
+                className="w-full h-12 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 transition-all"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -109,7 +113,7 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className="w-full h-12 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 transition-all"
+                  className="w-full h-12 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 transition-all"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -145,9 +149,9 @@ export default function LoginPage() {
             </button>
 
             <div className="flex items-center gap-3 py-2">
-              <div className="flex-1 h-[1px] bg-white/10" />
+              <div className="flex-1 h-px bg-white/10" />
               <span className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter whitespace-nowrap">or continue with</span>
-              <div className="flex-1 h-[1px] bg-white/10" />
+              <div className="flex-1 hpx bg-white/10" />
             </div>
 
             <button
