@@ -1,12 +1,24 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { IntroQueue, IntroStatus, StatusUpdatePayload } from '../types/intro';
-import { fetchIntrosByFounder, updateIntroStatus, sendIntroRequest } from '../lib/intro-api';
-import { ChevronUp, ChevronDown, Plus, Loader2, Mail, MoreHorizontal } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { IntroQueue, IntroStatus } from '../types/intro';
+import { 
+  fetchIntrosByFounder, 
+  updateIntroStatus, 
+  sendIntroRequest, 
+  deleteIntro, 
+  updateIntroContent 
+} from '../lib/intro-api';
+import { 
+  ChevronUp, ChevronDown, Plus, Loader2, Mail, Search, 
+  ChevronLeft, ChevronRight, ArrowRight, Trash2, Save, Calendar 
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '../components/Toast';
 
+/**
+ * Status Badge Component
+ */
 interface StatusBadgeProps {
   status: IntroStatus;
 }
@@ -17,65 +29,67 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
     sent: 'bg-green-500/20 text-green-400 border border-green-500/50',
     completed: 'bg-purple-500/20 text-purple-400 border border-purple-500/50',
     investor_approval_requested: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50',
+    investor_approved: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50',
   };
 
   return (
-    <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded ${styles[status] || styles.queued}`}>
-      {status.replace('_', ' ')}
+    <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded ${styles[status] || styles.queued}`}>
+      {status.replace(/_/g, ' ')}
     </span>
   );
-};
-
-const getDefaultFollowUpDate = (): string => {
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  return nextWeek.toISOString().split('T')[0];
 };
 
 export default function IntroQueuePage() {
   const router = useRouter();
   const { showToast } = useToast();
 
+  // Data States
   const [intros, setIntros] = useState<IntroQueue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // Buffer states for editing
   const [draftContent, setDraftContent] = useState('');
-  const [newStatus, setNewStatus] = useState<IntroStatus>('queued');
-  const [noteContent, setNoteContent] = useState('');
-  const [followUpDate, setFollowUpDate] = useState(getDefaultFollowUpDate());
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [hasDateChanged, setHasDateChanged] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [hasStatusChanged, setHasStatusChanged] = useState(false);
+  const [investorEmail, setInvestorEmail] = useState('');
+  const [followUpDate, setFollowUpDate] = useState('');
+  
+  // Loading state for specific buttons
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadIntros();
-  }, []);
-
-  const loadIntros = async () => {
+  const loadIntros = useCallback(async (query: string, page: number) => {
     setLoading(true);
     try {
-      const data = await fetchIntrosByFounder();
-      setIntros(data);
+      const response = await fetchIntrosByFounder(undefined, query, page);
+      setIntros(response.data || []);
+      setTotalPages(response.meta?.lastPage || 1);
+      setTotalItems(response.meta?.total || 0);
     } catch (err: any) {
-      showToast(err.message || 'Failed to load intro queue', 'error');
+      showToast(err.message || 'Failed to load queue', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
-  const handleSendIntro = async (introId: string) => {
-    setIsSendingEmail(true);
-    try {
-      await sendIntroRequest(introId);
-      showToast("Email consent request has been sent to investor", "success");
-    } catch (err: any) {
-      showToast(err.message || "Failed to send intro request.", "error");
-    } finally {
-      setIsSendingEmail(false);
-    }
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadIntros(search, currentPage);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search, currentPage, loadIntros]);
+
+  const activeIntro = intros.find(i => i._id === expandedId);
+
+  // Dirty-check: Only show Save Changes if the content or email actually changed
+  const hasContentChanges = activeIntro && (
+    draftContent !== activeIntro.generatedIntro || 
+    investorEmail !== activeIntro.investorEmail
+  );
 
   const handleToggleExpand = (intro: IntroQueue) => {
     if (expandedId === intro._id) {
@@ -83,71 +97,100 @@ export default function IntroQueuePage() {
     } else {
       setExpandedId(intro._id);
       setDraftContent(intro.generatedIntro);
-      setNewStatus(intro.status);
-      setHasDateChanged(false);
-      setHasStatusChanged(false);
+      setInvestorEmail(intro.investorEmail);
       setFollowUpDate(
-        intro.status === 'sent' && intro.followUpDueDate
-          ? new Date(intro.followUpDueDate).toISOString().split('T')[0]
-          : getDefaultFollowUpDate()
+        intro.followUpDueDate 
+          ? new Date(intro.followUpDueDate).toISOString().split('T')[0] 
+          : ''
       );
-      setNoteContent('');
     }
   };
 
-  const handleUpdateStatus = async (introId: string) => {
-    let payload: StatusUpdatePayload = { status: newStatus };
-
-    if (newStatus === 'sent') {
-      if (!followUpDate) {
-        showToast("Please set a follow-up date before marking as sent.", "error");
-        return;
-      }
-      payload.followUpDueDate = new Date(followUpDate);
-    }
-
-    setIsUpdatingStatus(true);
+  const handleUpdateContent = async (id: string) => {
+    setIsProcessing('saving');
     try {
-      const updatedIntro = await updateIntroStatus(introId, payload);
-      setIntros(intros.map(i => i._id === introId ? { ...i, ...updatedIntro } : i));
-      setExpandedId(null);
-      setHasDateChanged(false);
-      setHasStatusChanged(false);
-      showToast(`Status updated to ${newStatus}`, 'success');
+      await updateIntroContent(id, { generatedIntro: draftContent, investorEmail });
+      showToast("Intro content updated successfully", "success");
+      // Refresh local state without full reload
+      setIntros(intros.map(i => i._id === id ? { ...i, generatedIntro: draftContent, investorEmail } : i));
     } catch (err: any) {
-      showToast(err.message || 'Failed to update intro status', 'error');
+      showToast(err.message || "Update failed", "error");
     } finally {
-      setIsUpdatingStatus(false);
+      setIsProcessing(null);
     }
   };
 
-  const expandedIntro = useMemo(() => intros.find(i => i._id === expandedId), [intros, expandedId]);
+  const handleUpdateFollowUp = async (id: string) => {
+    setIsProcessing('date');
+    try {
+      await updateIntroStatus(id, { followUpDueDate: new Date(followUpDate) });
+      showToast("Follow-up date updated", "success");
+    } catch (err: any) {
+      showToast(err.message || "Failed to update date", "error");
+    } finally {
+      setIsProcessing(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this introduction? This cannot be undone.")) return;
+    try {
+      await deleteIntro(id);
+      showToast("Introduction deleted", "success");
+      loadIntros(search, currentPage);
+    } catch (err: any) {
+      showToast("Failed to delete introduction.", "error");
+    }
+  };
+
+  const handleSendIntro = async (id: string) => {
+    setIsProcessing('sending');
+    try {
+      await sendIntroRequest(id);
+      showToast("Consent request sent to investor", "success");
+      loadIntros(search, currentPage); // Status changes to 'investor_approval_requested'
+      setExpandedId(null);
+    } catch (err: any) {
+      showToast(err.message || "Failed to send request.", "error");
+    } finally {
+      setIsProcessing(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#05070A] text-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         
-        {/* Header Section */}
-        <div className="flex justify-between items-center mb-10">
+        {/* Header Area */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white">Introduction Queue</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage and track your warm introduction requests</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Introduction Queue</h1>
+            <p className="text-sm text-gray-500 mt-1">Manage warm introductions and follow-ups</p>
           </div>
           <button
             onClick={() => router.push('/intro-wizard')}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition shadow-lg shadow-indigo-500/20"
           >
-            <Plus size={16} /> New Intro
+            <Plus size={18} /> New Intro
           </button>
         </div>
 
-        {/* Main List Card */}
+        {/* Search Bar */}
+        <div className="relative mb-6">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Search by Startup, Investor or Founder..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            className="w-full pl-12 pr-4 py-3.5 bg-[#0A0C10] border border-gray-800 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition"
+          />
+        </div>
+
+        {/* Table/List Container */}
         <div className="bg-[#0A0C10] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-          
-          {/* Table Header Styling */}
-          <div className="grid grid-cols-5 px-6 py-3 text-[11px] uppercase tracking-wider font-bold text-gray-500 border-b border-gray-800 bg-[#0D0F14]">
+          <div className="grid grid-cols-4 px-6 py-4 text-[11px] uppercase tracking-widest font-bold text-gray-500 border-b border-gray-800 bg-[#0D0F14]">
             <div>Startup</div>
-            <div>Investor</div>
             <div>Status</div>
             <div>Created</div>
             <div className="text-right">Actions</div>
@@ -155,120 +198,148 @@ export default function IntroQueuePage() {
 
           <div className="divide-y divide-gray-800">
             {loading ? (
-              <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-indigo-500" /></div>
+              <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-indigo-500 h-8 w-8" /></div>
             ) : intros.length === 0 ? (
-              <div className="p-12 text-center text-gray-500 text-sm italic">You have no intro queues at the moment.</div>
+              <div className="p-20 text-center text-gray-500 text-sm italic">No introductions found.</div>
             ) : (
-              intros.map((intro) => {
-                const isExpanded = intro._id === expandedId;
-                return (
-                  <div key={intro._id} className="group">
-                    <div
-                      onClick={() => handleToggleExpand(intro)}
-                      className="grid grid-cols-5 px-6 py-4 items-center cursor-pointer hover:bg-[#11141A] transition"
-                    >
-                      <div className="text-sm font-semibold text-white truncate">{intro.startupName}</div>
-                      <div className="text-sm text-gray-400 truncate">{intro.investorName}</div>
-                      <div><StatusBadge status={intro.status} /></div>
-                      <div className="text-sm text-gray-500">{new Date(intro.createdAt).toLocaleDateString()}</div>
-                      <div className="flex justify-end">
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} className="text-gray-600 group-hover:text-white" />}
+              intros.map((intro) => (
+                <div key={intro._id} className="group">
+                  {/* Row: Collapsed */}
+                  <div
+                    onClick={() => handleToggleExpand(intro)}
+                    className="grid grid-cols-4 px-6 py-5 items-center cursor-pointer hover:bg-[#11141A] transition"
+                  >
+                    <div className="text-sm font-semibold text-white">{intro.startupName}</div>
+                    <div><StatusBadge status={intro.status} /></div>
+                    <div className="text-sm text-gray-500">{new Date(intro.createdAt).toLocaleDateString()}</div>
+                    <div className="flex justify-end items-center gap-3">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDelete(intro._id); }}
+                        className="p-1.5 text-gray-600 hover:text-red-500 transition-colors"
+                        title="Delete Intro"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                      <div className="p-1.5 rounded-md bg-gray-800/50 group-hover:text-indigo-400 transition-colors">
+                        {intro._id === expandedId ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </div>
                     </div>
+                  </div>
 
-                    {isExpanded && expandedIntro && (
-                      <div className="px-6 pb-6 pt-2 bg-[#0D0F14] border-t border-gray-800 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* Generated Intro Field */}
-                          <div className="col-span-2">
-                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Generated Intro</label>
-                            <textarea
-                              className="w-full bg-[#161920] border border-gray-700 rounded-lg p-3 text-sm text-gray-300 focus:border-indigo-500 outline-none custom-scrollbar"
-                              rows={4}
-                              value={draftContent}
-                              onChange={(e) => setDraftContent(e.target.value)}
-                            />
-                          </div>
+                  {/* Expanded Detail View */}
+                  {intro._id === expandedId && (
+                    <div className="px-6 pb-8 pt-2 bg-[#0D0F14] border-t border-gray-800 animate-in fade-in slide-in-from-top-2 duration-200">
+                      
+                      {/* Flow: Founder to Investor */}
+                      <div className="flex items-center justify-between gap-4 mb-8 p-4 bg-[#161920] rounded-xl border border-gray-700/50">
+                        <div className="flex-1">
+                          <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">From (Founder)</label>
+                          <div className="text-sm font-medium text-white">{intro.founderName}</div>
+                          <div className="text-xs text-gray-500">{intro.founderEmail}</div>
+                        </div>
+                        <ArrowRight className="text-gray-700" size={20} />
+                        <div className="flex-1 text-right">
+                          <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">To (Investor)</label>
+                          <div className="text-sm font-medium text-white">{intro.investorName}</div>
+                          <input 
+                            value={investorEmail} 
+                            onChange={(e) => setInvestorEmail(e.target.value)}
+                            className="w-full bg-transparent text-right text-sm font-medium text-indigo-400 outline-none border-b border-transparent focus:border-indigo-500 transition-colors"
+                          />
+                        </div>
+                      </div>
 
-                          {/* Status and Follow up */}
-                          <div>
-                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Status</label>
-                            <select
-                              value={newStatus}
-                              onChange={(e) => {
-                                setNewStatus(e.target.value as IntroStatus);
-                                setHasStatusChanged(true);
-                              }}
-                              className="w-full bg-[#161920] border border-gray-800 rounded p-2 text-sm text-gray-300"
-                            >
-                              <option value="queued">Queued</option>
-                              <option value="sent">Sent</option>
-                              <option value="completed">Completed</option>
-                            </select>
-                          </div>
-
-                          {newStatus === 'sent' && (
-                            <div>
-                              <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Follow-up Date</label>
-                              <input
-                                type="date"
-                                value={followUpDate}
-                                onChange={(e) => {
-                                  setFollowUpDate(e.target.value);
-                                  setHasDateChanged(true);
-                                }}
-                                className="w-full bg-[#161920] border border-gray-800 rounded p-2 text-sm text-gray-300"
-                              />
-                            </div>
-                          )}
-
-                          {/* Investor Email (Read Only style) */}
-                          <div className={newStatus !== 'sent' ? 'col-span-1' : 'col-span-2'}>
-                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Investor Email</label>
-                            <div className="w-full bg-[#11141A] border border-gray-800 rounded p-2 text-sm text-gray-500">
-                              {expandedIntro.investorEmail}
-                            </div>
-                          </div>
-
-                          {/* Notes */}
-                          <div className="col-span-2">
-                            <label className="text-[10px] uppercase text-gray-500 font-bold mb-1 block">Internal Notes</label>
-                            <textarea
-                              className="w-full bg-[#161920] border border-gray-700 rounded p-2 text-sm text-gray-300"
-                              rows={2}
-                              value={noteContent}
-                              onChange={(e) => setNoteContent(e.target.value)}
-                            />
-                          </div>
+                      <div className="space-y-6">
+                        {/* Email Content Area */}
+                        <div>
+                          <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block">Intro Email Content</label>
+                          <textarea
+                            className="custom-scrollbar w-full bg-[#161920] border border-gray-700 rounded-lg p-4 text-sm text-gray-300 focus:ring-1 focus:ring-indigo-500 outline-none leading-relaxed"
+                            rows={6}
+                            value={draftContent}
+                            onChange={(e) => setDraftContent(e.target.value)}
+                          />
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex justify-end gap-3 pt-2">
-                          {(hasStatusChanged || hasDateChanged) && (
+                        {/* Follow-up Section: Only visible if Sent */}
+                        {intro.status === 'sent' && (
+                          <div className="p-4 border border-indigo-500/20 bg-indigo-500/5 rounded-xl flex items-end gap-4">
+                            <div className="flex-1">
+                              <label className="text-[10px] uppercase text-indigo-400 font-bold mb-2 block">Follow-up Due Date</label>
+                              <input
+                                type="date"
+                                className="w-full bg-[#0A0C10] border border-gray-700 rounded-lg p-2.5 text-sm text-white outline-none focus:border-indigo-500"
+                                value={followUpDate}
+                                onChange={(e) => setFollowUpDate(e.target.value)}
+                              />
+                            </div>
                             <button
-                              disabled={isUpdatingStatus}
-                              onClick={() => handleUpdateStatus(intro._id)}
-                              className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 flex items-center gap-2"
+                              onClick={() => handleUpdateFollowUp(intro._id)}
+                              disabled={isProcessing === 'date' || !followUpDate}
+                              className="bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 disabled:opacity-30"
                             >
-                              {isUpdatingStatus && <Loader2 size={14} className="animate-spin" />}
+                              {isProcessing === 'date' ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
+                              Set Date
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end items-center gap-4 pt-4 border-t border-gray-800">
+                          {hasContentChanges && (
+                            <button
+                              onClick={() => handleUpdateContent(intro._id)}
+                              disabled={isProcessing === 'saving'}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
+                            >
+                              {isProcessing === 'saving' ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                               Save Changes
                             </button>
                           )}
                           <button
-                            disabled={isSendingEmail}
+                            disabled={isProcessing === 'sending'}
                             onClick={() => handleSendIntro(intro._id)}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
                           >
-                            {isSendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
-                            {isSendingEmail ? 'Sending...' : 'Send Intro'}
+                            {isProcessing === 'sending' ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                            Send Consent Email
                           </button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })
+                    </div>
+                  )}
+                </div>
+              ))
             )}
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="px-6 py-5 bg-gray-900/30 border-t border-gray-800 flex items-center justify-between">
+            <p className="text-sm text-gray-400">
+              Showing <span className="text-white font-medium">{intros.length > 0 ? (currentPage - 1) * 5 + 1 : 0}</span> to <span className="text-white font-medium">{Math.min(currentPage * 5, totalItems)}</span> of <span className="text-white font-medium">{totalItems}</span> intros
+            </p>
+            
+            <div className="flex items-center space-x-4">
+              <button
+                disabled={currentPage === 1 || loading}
+                onClick={() => setCurrentPage(prev => prev - 1)}
+                className="p-2 rounded-xl border border-gray-800 hover:bg-gray-800 disabled:opacity-20 transition"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              
+              <span className="text-sm text-gray-400 font-medium">
+                Page <span className="text-white">{currentPage}</span> of {totalPages}
+              </span>
+
+              <button
+                disabled={currentPage === totalPages || loading}
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                className="p-2 rounded-xl border border-gray-800 hover:bg-gray-800 disabled:opacity-20 transition"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

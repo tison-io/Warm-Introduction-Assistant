@@ -92,8 +92,10 @@ export class TransformService {
   }
 
   // GetIntros
-  async getIntros(userId: string, workspaceId?: string) {
-    let query:any;
+  async getIntros(userId: string, workspaceId?: string, search?: string, page: number = 1) {
+    const limit = 5;
+    const skip = (page -1) * limit;
+    let query:any = {};
 
     if(workspaceId) {
       //Workspace- check membership first
@@ -104,11 +106,34 @@ export class TransformService {
       query = { founderId:new Types.ObjectId(userId), workspaceId: null };
     }
 
-    return this.introQueueModel
-      .find(query)
-      .populate('founderId', 'name')
-      .sort({ createdAt: -1 })
-      .exec();
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      query.$or = [
+        { startupName: searchRegex },
+        { investorName: searchRegex },
+        { founderName: searchRegex },
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.introQueueModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.introQueueModel.countDocuments(query),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+      },
+    };
   }
 
   //Queue Intro
@@ -297,26 +322,30 @@ export class TransformService {
   async updateIntroStatus(
     introId: string,
     userId: string, 
-    status: 'queued' | 'sent' | 'completed', 
+    status?: 'queued' | 'sent' | 'completed', 
     followUpDueDate?: Date
   ) {
     //Checks workspace membership and intro ownership
     const intro = await this.validateAccess(introId, userId, 'modify');
 
-    //Validation of status transitions and follow-up date
-    if (status === 'sent' && !followUpDueDate) {
+    const effectiveStatus = status || (intro.status as 'queued' | 'sent' | 'completed');
+
+    if (effectiveStatus === 'sent' && !followUpDueDate && status) { 
       throw new BadRequestException('A follow-up date is required when status is "sent".');
     }
 
-    if (followUpDueDate && status !== 'sent') {
+    if (followUpDueDate && effectiveStatus !== 'sent') {
       throw new BadRequestException('Follow-up date can only be set when status is "sent".');
     }
+    
+    if (status) {
+      intro.status = status;
+    }
 
-    //State Update
-    intro.status = status;
-
-    if (status === 'sent') {
-      intro.sentDate = new Date();
+    if (effectiveStatus === 'sent') {
+      if (status === 'sent') {
+        intro.sentDate = new Date();
+      }
     
       if (followUpDueDate) {
         intro.followUpDueDate = followUpDueDate;

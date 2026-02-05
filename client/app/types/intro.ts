@@ -9,10 +9,9 @@ export interface IntroQueue {
     investorId: string;
     investorName: string;
     investorEmail: string;
-    founderId: {
-        _id: string;
-        name: string;
-    }
+    founderId: string; 
+    founderName: string;
+    founderEmail: string;
     preferredIntroFormat: string;
     introPreferencesText?: string;
     generatedIntro: string;
@@ -26,7 +25,7 @@ export interface IntroQueue {
 }
 
 export interface StatusUpdatePayload {
-    status: IntroStatus;
+    status?: IntroStatus;
     followUpDueDate?: Date;
 }
 
@@ -42,4 +41,14 @@ export interface OutcomeLog {
     outcome:string;
     notes: string;
     createdAt: string;
+}
+
+export interface PaginatedIntroResponse {
+    data: IntroQueue[];
+    meta: {
+        total: number;
+        page: number;
+        lastPage: number;
+        hasNextPage: boolean;
+    };
 }

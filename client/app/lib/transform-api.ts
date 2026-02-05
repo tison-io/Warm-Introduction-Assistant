@@ -37,11 +37,9 @@ export async function transformIntroApi(dto: TransformIntroDto): Promise<Transfo
 }
 
 export async function queueIntroApi(data: QueueIntroDto): Promise<any> {
-    const headers = getAuthHeaders();
-
     const response = await fetch(`${API_BASE_URL}/intros/queue`, {
         method: 'POST',
-        headers: headers,
+        headers: getAuthHeaders(),
         body: JSON.stringify(data),
     });
 

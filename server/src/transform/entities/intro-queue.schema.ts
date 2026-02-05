@@ -11,6 +11,12 @@ export class IntroQueue {
     @Prop({ required:true })
     startupName: string;
 
+    @Prop({ required: true })
+    founderName: string;
+
+    @Prop({ required: true })
+    founderEmail: string;
+
     @Prop({ type: Types.ObjectId, ref: 'Investor', required: true })
     investorId: Types.ObjectId; 
 

@@ -30,6 +30,8 @@ export interface QueueIntroDto {
     investorName: string;
     investorEmail: string;
     founderId: string;
+    founderName: string;
+    founderEmail: string;
     preferredIntroFormat: string;
     introPreferencesText?: string;
     generatedIntro: string;

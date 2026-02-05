@@ -57,8 +57,8 @@ export default function DashboardPage() {
 
     const loadDashboardData = async () => {
         try {
-            const [intros, investors, reminders, rate, logs, requests] = await Promise.all([
-                fetchIntrosByFounder(),
+            const [introsResponse, investorsResponse, reminders, rate, logs, requests] = await Promise.all([
+                fetchIntrosByFounder(undefined, '', 1),
                 getInvestors(),
                 fetchReminders(),
                 fetchExecutionRate(),
@@ -66,20 +66,23 @@ export default function DashboardPage() {
                 getMyRequests(1, 10)
             ]);
 
-            const pendingCount = intros.filter(i => i.status === 'queued' || i.status === 'sent').length;
-            const completedCount = intros.filter(i => i.status === 'completed').length;
+            const introsData = introsResponse.data || [];
+            const investorsData = investorsResponse.investors || [];
+
+            const pendingCount = introsData.filter(i => i.status === 'queued' || i.status === 'sent').length;
+            const completedCount = introsData.filter(i => i.status === 'completed').length;
             
             setData({
-                totalIntros: intros.length,
+                totalIntros: introsResponse.meta?.total || introsData.length,
                 pendingFollowUps: pendingCount,
-                myInvestors: investors.length,
+                myInvestors: investorsResponse.meta?.total || investorsData.length,
                 remindersDue: reminders.filter(r => (isToday(new Date(r.date)) || differenceInDays(new Date(r.date)) < 0) && r.introId?.status !== 'completed').length,
                 executionRate: rate,
                 completedIntros: completedCount,
-                latestIntros: intros.slice(0, 3),
+                latestIntros: introsData.slice(0, 3),
                 reminders: reminders,
                 logs: logs.slice(0, 6),
-                recentRequests: requests.startups.slice(0,3),
+                recentRequests: requests.startups.slice(0, 3),
             });
         } catch (err: any) {
             showToast("An error occured while loading the dashboard", "error");

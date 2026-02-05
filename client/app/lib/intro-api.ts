@@ -1,4 +1,4 @@
-import { ExecutionRateResponse, IntroQueue, OutcomeLog, StatusUpdatePayload } from '../types/intro';
+import { ExecutionRateResponse, IntroQueue, OutcomeLog, PaginatedIntroResponse, StatusUpdatePayload } from '../types/intro';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 const INTRO_ENDPOINT = `${API_BASE_URL}/intros`;
@@ -25,11 +25,15 @@ const getAuthHeaders = () => {
 };
 
 
-export async function fetchIntrosByFounder(workspaceId?: string): Promise<IntroQueue[]> {
-    const url = workspaceId
-        ? `${API_BASE_URL}/intros/my-queue?workspaceId=${workspaceId}`
-        : `${API_BASE_URL}/intros/my-queue`;
-    
+export async function fetchIntrosByFounder(workspaceId?: string, search?: string, page: number = 1): Promise<PaginatedIntroResponse> {
+    const params = new URLSearchParams();
+
+    if (workspaceId) params.append('workspaceId', workspaceId);
+    if (search) params.append('search', search);
+    params.append('page', page.toString());
+    params.append('limit', '5');
+
+    const url = `${API_BASE_URL}/intros/my-queue?${params.toString()}`;
 
     const response = await fetch(url, {
         headers: getAuthHeaders(),

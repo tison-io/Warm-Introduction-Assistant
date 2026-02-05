@@ -17,9 +17,15 @@ export class TransformController {
 
   @Get('my-queue')
   @UseGuards(JwtAuthGuard, AccessGuard) 
-  async getMyIntros(@Req() req: any, @Query('workspaceId') workspaceId?:string) {
-    const founderId = req.user.userId; 
-    return this.transformService.getIntros(req.user.userId, workspaceId);
+  async getMyIntros(@Req() req: any, @Query('workspaceId') workspaceId?:string, @Query('search') search?: string, @Query('page') page: number = 1) {
+    const pageNumber = Math.max(1, Number(page));
+
+    return this.transformService.getIntros(
+      req.user.userId,
+      workspaceId,
+      search,
+      pageNumber
+    );
   }
 
   @Post('queue')
@@ -75,7 +81,7 @@ export class TransformController {
   async updateStatus(
     @Param('id') id: string,
     @Req() req: any,
-    @Body() body: { status: 'queued' | 'sent' | 'completed'; followUpDueDate?: Date }
+    @Body() body: { status?: 'queued' | 'sent' | 'completed'; followUpDueDate?: Date }
   ) {
     return this.transformService.updateIntroStatus(
       id, 
