@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeClosed } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
+import { resetPassword } from "../lib/founder-api"; 
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -11,283 +13,156 @@ function ResetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    setIsVisible(true);
     const tokenFromUrl = searchParams.get("token");
     if (tokenFromUrl) {
       setToken(tokenFromUrl);
     } else {
-      setError("Invalid reset link. Please request a new password reset.");
+      setError("invalid or missing reset token.");
     }
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      setError("passwords do not match");
       return;
     }
 
     setLoading(true);
     setError("");
-    setMessage("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_FOUNDER_API_URL}/founder/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage(data.message);
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
-      } else {
-        setError(data.message || 'Failed to reset password');
-      }
-    } catch (error) {
-      setError('Network error. Please try again.');
+      await resetPassword(token, password);
+      setIsSuccess(true);
+    } catch (err: any) {
+      setError(err.message?.toLowerCase() || "network error. please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="rp-bg">
-      <button className="rp-back" onClick={() => router.push("/login")}>
-        ← Back to Login
-      </button>
-      <div className="rp-center-card">
-        <img
-          src="/logo.png"
-          alt="Warmly Logo"
-          style={{ width: 70, margin: "0 auto 9px auto", display: "block" }}
-        />
-        <h2 className="rp-title">Reset Password</h2>
-        <div className="rp-sub">
-          Enter your new password below
+    <div className="min-h-screen flex items-center justify-center p-6 auth-page-container relative overflow-hidden">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .auth-page-container {
+          background-color: #070911;
+          background-image: linear-gradient(135deg, #2A4D8F 0%, #0F2438 30%, #070910 70%, #070911 100%);
+          background-attachment: fixed;
+        }
+      `}} />
+
+      {/* Back Button */}
+      {!isSuccess && (
+        <div className="absolute top-8 left-8 z-50">
+          <button onClick={() => router.push("/login")} className="flex items-center gap-2 text-white/40 hover:text-white transition-all group">
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-medium uppercase tracking-widest">Back</span>
+          </button>
+        </div>
+      )}
+
+      {/* THE BOX CONTAINER */}
+      <div
+        className={`relative w-full max-w-[420px] rounded-none shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 transform transition-all duration-1000 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+        }`}
+        style={{ background: "linear-gradient(to bottom, #101625 0%, #101625 50%, #273E75 100%)", backdropFilter: "blur(40px)" }}
+      >
+        <div className="px-10 py-12 flex flex-col items-center">
+          
+          {isSuccess ? (
+            /* SUCCESS STATE INSIDE BOX */
+            <div className="flex flex-col items-center text-center animate-in fade-in zoom-in duration-500 w-full">
+              <CheckCircle2 className="w-16 h-16 text-[#22C55E] mb-6" fill="#22C55E" stroke="white" strokeWidth={1} />
+              <h1 className="text-white text-2xl font-semibold tracking-tight mb-8 text-center">
+                Password changed successfully.
+              </h1>
+              <button 
+                onClick={() => router.push("/login")} 
+                className="w-full h-12 bg-[#0035C5] hover:bg-[#002db1] text-white font-bold rounded-none transition-all"
+              >
+                Proceed to Log in
+              </button>
+            </div>
+          ) : (
+            /* FORM STATE INSIDE BOX */
+            <>
+              <div className="flex flex-col items-center mb-8 text-center">
+                <Image src="/logo.png" alt="Warmly" width={100} height={40} className="mb-6 opacity-90" />
+                <h1 className="text-white text-3xl font-semibold tracking-tight">Reset Password</h1>
+                <p className="text-slate-400 text-sm mt-1 lowercase">enter your new password below</p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="w-full space-y-5">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {error && (
+                  <p className="text-red-400 text-xs text-center font-medium bg-red-400/5 py-2 border border-red-400/10 lowercase">
+                    {error}
+                  </p>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="w-full h-12 bg-[#0035C5] hover:bg-[#002db1] text-white font-bold rounded-none transition-all active:scale-[0.99] mt-2"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Update Password"}
+                </button>
+              </form>
+            </>
+          )}
         </div>
         
-        <form className="rp-form" onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label className="rp-label" htmlFor="password">New Password</label>
-            <div className="password-input-container">
-              <input
-                id="password"
-                className="rp-input"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                disabled={loading || !token}
-                minLength={6}
-              />
-              <span
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
-              </span>
-            </div>
-          </div>
-          
-          <div className="input-group">
-            <label className="rp-label" htmlFor="confirmPassword">Confirm Password</label>
-            <div className="password-input-container">
-              <input
-                id="confirmPassword"
-                className="rp-input"
-                type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading || !token}
-                minLength={6}
-              />
-              <span
-                className="password-toggle"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
-              </span>
-            </div>
-          </div>
-          
-          {message && (
-            <div className="rp-message success">{message}</div>
-          )}
-          
-          {error && (
-            <div className="rp-message error">{error}</div>
-          )}
-          
-          <button 
-            className="rp-btn" 
-            type="submit" 
-            disabled={loading || !token}
-          >
-            {loading ? 'Resetting...' : 'Reset Password'}
-          </button>
-        </form>
+        {/* Bottom Accent Line */}
+        <div className="h-[5px] w-full" style={{ background: "linear-gradient(90deg, #2A4D8F 0%, #0F2438 50%, #070911 100%)" }} />
       </div>
-      
-      <style jsx>{`
-        .rp-bg {
-          min-height: 100vh;
-          background: url("/backeground.jpg");
-          background-size: cover;
-          background-position: center;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-        }
-        .rp-back {
-          position: absolute;
-          top: 16px;
-          left: 26px;
-          background: none;
-          border: none;
-          color: #e9eafd;
-          font-size: 18px;
-          font-weight: 500;
-          cursor: pointer;
-        }
-        .rp-center-card {
-          background: #fff;
-          border-radius: 15px;
-          box-shadow: 0 0 32px rgba(0,0,0,0.13);
-          padding: 38px 38px 33px 38px;
-          width: 350px;
-          display: flex;
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .rp-title {
-          font-size: 1.7rem;
-          font-weight: 700;
-          color: #232b46;
-          text-align: center;
-          margin-bottom: 7px;
-        }
-        .rp-sub {
-          font-size: 15px;
-          color: #858db7;
-          margin-bottom: 22px;
-          text-align: center;
-        }
-        .rp-form {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-        }
-        .input-group {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-        .rp-label {
-          font-size: 15px;
-          color: #232b46;
-          font-weight: 500;
-        }
-        .password-input-container {
-          position: relative;
-        }
-        .rp-input {
-          width: 100%;
-          background: #f4f6fb;
-          border: 1.2px solid #ced4da;
-          border-radius: 7px;
-          padding: 12px 10px;
-          font-size: 16px;
-          outline: none;
-        }
-        .password-input-container .rp-input {
-          padding-right: 45px;
-        }
-        .password-toggle {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          cursor: pointer;
-          color: #6c757d;
-          display: flex;
-          align-items: center;
-        }
-        .password-toggle:hover {
-          color: #495057;
-        }
-        .rp-input:disabled {
-          background: #f8f9fa;
-          color: #6c757d;
-        }
-        .rp-btn {
-          background: #1746e0;
-          color: #fff;
-          font-size: 17px;
-          font-weight: 600;
-          border: none;
-          border-radius: 7px;
-          padding: 13px 0;
-          margin-top: 14px;
-          cursor: pointer;
-          transition: background 0.15s;
-        }
-        .rp-btn:hover,
-        .rp-btn:focus {
-          background: #123bb4;
-        }
-        .rp-btn:disabled {
-          background: #ccc;
-          cursor: not-allowed;
-        }
-        .rp-message {
-          padding: 10px;
-          border-radius: 5px;
-          text-align: center;
-          font-size: 14px;
-        }
-        .rp-message.success {
-          background: #d4edda;
-          color: #155724;
-          border: 1px solid #c3e6cb;
-        }
-        .rp-message.error {
-          background: #f8d7da;
-          color: #721c24;
-          border: 1px solid #f5c6cb;
-        }
-        @media (max-width: 500px) {
-          .rp-center-card {
-            width: 98vw;
-            padding: 18px 3vw 15px 3vw;
-          }
-        }
-      `}</style>
     </div>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#070911]"><Loader2 className="w-10 h-10 animate-spin text-white/20" /></div>}>
       <ResetPasswordContent />
     </Suspense>
   );
