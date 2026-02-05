@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePresence } from '../hooks/usePresence';
-import { Users, CheckCircle2, Clock, Bell, Check, Activity, ChevronRight, Plus, Sparkles } from 'lucide-react';
+import { Users, CheckCircle2, Clock, Bell, Check, Activity, ChevronRight, Plus, Sparkles, Copy } from 'lucide-react';
 import Link from 'next/link';
 import { fetchReminders, markReminderCompleted } from '../lib/reminder-api';
 import { getInvestors } from '../lib/investor-api';
@@ -57,6 +57,8 @@ export default function DashboardPage() {
     
     const [founder, setFounder] = useState<{ _id?: string; name: string; email: string; tier: string; } | null>(null);
     const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
+    const [shareUrl, setShareUrl] = useState("");
+    const [copied, setCopied] = useState(false);
 
     const loadDashboardData = async () => {
         try {
@@ -101,12 +103,20 @@ export default function DashboardPage() {
         const stored = localStorage.getItem('user');
         if (stored) {
             const parsed = JSON.parse(stored);
+            const baseUrl = process.env.NEXT_PUBLIC_DEPLOYED_URL || 'http://localhost:3000';
             if (parsed.id) setFounder({ ...parsed, _id: parsed.id });
+            setShareUrl(`${baseUrl}/submit/${parsed.id}`);
         }
         loadDashboardData();
     }, []);
 
     usePresence(founder?._id, (update) => console.log(update));
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(shareUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const handleMarkAsDone = async (reminder: Reminder) => {
         try {
@@ -266,7 +276,26 @@ export default function DashboardPage() {
                                     </Link>
                                 ))
                             ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-slate-500 italic text-sm">No new requests found.</div>
+                                <div className="h-full flex flex-col items-center justify-center text-center px-2">
+                                    <div className="p-3 bg-blue-500/10 rounded-full mb-4">
+                                        <Users size={24} className="text-blue-400" />
+                                    </div>
+                                    <p className="text-slate-500 italic text-sm font-medium mb-1">No founder requests found.</p>
+                                    <p className="text-xs text-slate-500 mb-5">Share your link to receive startup details</p>
+                                    
+                                    <div className="w-full flex items-center gap-2 bg-black/40 border border-blue-500/20 p-1.5 rounded-xl backdrop-blur-md">
+                                        <code className="text-blue-100/70 px-2 text-[10px] truncate grow text-left">
+                                            {shareUrl || "Loading link..."}
+                                        </code>
+                                        <button 
+                                            onClick={copyToClipboard} 
+                                            className="bg-blue-600 hover:bg-blue-500 text-white p-2 rounded-lg transition-all flex items-center gap-2 shrink-0 shadow-lg shadow-blue-500/20"
+                                        >
+                                            {copied ? <Check size={14} /> : <Copy size={14} />}
+                                            <span className="text-[10px] font-bold uppercase">{copied ? "Copied" : "Copy"}</span>
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </section>

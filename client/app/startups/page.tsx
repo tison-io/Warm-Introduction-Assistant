@@ -86,7 +86,7 @@ export default function FounderRequestsPage() {
                         <p className="text-blue-200/60 mt-1">Review new startups looking for introductions</p>
                     </div>
                     <div className="flex flex-col gap-2 w-full md:w-auto">
-                        <label className="text-xs font-semibold text-white uppercase tracking-wider ml-1">Send this to founders</label>
+                        <label className="text-xs font-semibold text-white uppercase tracking-wider ml-1">Share this link with founders to get their startup details</label>
                         <div className="flex items-center gap-2 bg-black/40 border border-blue-500/30 p-1.5 rounded-xl backdrop-blur-md">
                             <code className="text-blue-100 px-3 text-sm truncate max-w-[200px]">{shareUrl || "Loading..."}</code>
                             <button onClick={copyToClipboard} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-sm font-medium shadow-lg shadow-blue-500/20">

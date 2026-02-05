@@ -207,6 +207,7 @@ export default function IntroQueuePage() {
                   {/* Row: Collapsed */}
                   <div
                     onClick={() => handleToggleExpand(intro)}
+                    title="Click to view more details"
                     className="grid grid-cols-4 px-6 py-5 items-center cursor-pointer hover:bg-[#11141A] transition"
                   >
                     <div className="text-sm font-semibold text-white">{intro.startupName}</div>

@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { getFounderProfile, updateFounderProfile, updateFounderPassword } from "../lib/founder-api";
+import { getFounderProfile, updateFounderProfile, updateFounderPassword, getTrialStatus } from "../lib/founder-api";
 import { getInvoices } from "../lib/payments-api";
-import { FounderUpdateInput } from "../types/founder";
+import { FounderUpdateInput, TrialStatus } from "../types/founder";
 import { Invoice } from "../types/invoice";
 import { useToast } from "../components/Toast"; 
 import { Eye, EyeClosed, ExternalLink, Crown, CreditCard, Download, ShieldCheck, Lock } from "lucide-react";
@@ -20,6 +20,7 @@ export default function SettingsPage() {
     tier: "trial"
   });
 
+  const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
@@ -32,13 +33,18 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getFounderProfile();
+        const [profileData, status] = await Promise.all([
+          getFounderProfile(),
+          getTrialStatus()
+        ]);
         setProfile({ 
-          name: data.name || "",
-          email: data.email || "",
-          phone: data.phone || "",
-          tier: data.tier || "trial"
+          name: profileData.name || "",
+          email: profileData.email || "",
+          phone: profileData.phone || "",
+          tier: profileData.tier || "trial"
         });
+
+        setTrialStatus(status);
 
         if (tab === "billing") {
           const invData = await getInvoices();
@@ -176,6 +182,11 @@ export default function SettingsPage() {
                         {profile.tier === 'lifetime' ? 'Lifetime Access Plan' : 'Trial Plan'}
                         {profile.tier === 'lifetime' && <Crown className="w-5 h-5 text-yellow-500" />}
                       </h3>
+                      {trialStatus?.tier === 'trial' && (
+                        <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider ${trialStatus.daysRemaining <= 2 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}`}>
+                          {trialStatus.daysRemaining} days left
+                        </span>
+                      )}
                     </div>
                   </div>
                   {profile.tier === 'trial'? 
