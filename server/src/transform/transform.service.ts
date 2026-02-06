@@ -190,75 +190,102 @@ export class TransformService {
       throw new BadRequestException('Intro must be queued to request consent.');
     }
 
+    const recipients = [
+      { email: intro.investorEmail, name: intro.investorName },
+      { email: intro.founderEmail, name: intro.founderName }
+    ];
+
     const approvalUrl = `${process.env.FRONTEND_URL}/approve-intro?introId=${intro._id}`;
 
     const consentMessage = `
-      Hi ${intro.investorName},
-
-      The founder of ${intro.startupName} wants to send you a warm introduction.
-
-      Would you like to receive the intro?
-
-      <a href="${approvalUrl}" style="background-color:#0347D2;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;">
-      Yes, send me the intro
-      </a>
+      I was just looking through our network and noticed a great fit. You both share a deep focus on <strong>${intro.startupName}</strong> and its impact on the industry. I believe there's some significant synergy regarding your current goals. 
     `;
 
-    await this.mailService.sendGeneratedIntroEmail({
-      investorEmail: intro.investorEmail,
+    await this.mailService.sendConsentEmail({
+      recipients,
+      otherPersonName: intro.investorName,
       startupName: intro.startupName,
-      generatedIntro: consentMessage,
+      consentBody: consentMessage,
+      approvalUrl: approvalUrl,
     });
 
-    intro.status = 'investor_approval_requested';
+    intro.status = 'approvals_requested';
     await intro.save();
 
     return {
       success: true,
-      message: 'Investor consent email sent successfully.',
+      message: 'Consent mails sent to both parties successfully.',
       intro,
     };
   }
 
-  async approveInvestorIntro(introId: string) {
+  async processApproval(introId: string, email: string) {
     const intro = await this.introQueueModel.findById(introId);
     if (!intro) throw new NotFoundException('Intro not found');
 
-    if (intro.status !== 'investor_approval_requested') {
-      throw new BadRequestException('Intro is not awaiting investor consent.');
+    const normalizedEmail = email.toLowerCase().trim();
+    const isInvestor = normalizedEmail === intro.investorEmail.toLowerCase();
+    const isFounder = normalizedEmail === intro.founderEmail.toLowerCase();
+
+    if (!isInvestor && !isFounder) {
+      throw new ForbiddenException('Email does not match any party in this intro.');
     }
 
-    // Update status to approved
-    intro.status = 'investor_approved';
+    //Investor Approves
+    if (isInvestor) {
+      if (intro.status === 'sent' || intro.status === 'investor_approved') {
+        return { success: true, message: 'You had already approved this intro.', intro };
+      }
+
+      if (intro.status === 'founder_approved') {
+        return await this.finalizeAndSendIntro(intro);
+      }
+
+      intro.status = 'investor_approved';
+      await this.captureLog(intro, 'investor_approved_consent', `Investor ${intro.investorName} approved to ${intro.startupName}.`);
+    }
+
+    //Founder approves
+    if (isFounder) {
+      if (intro.status === 'sent' || intro.status === 'founder_approved') {
+        return { success: true, message: 'Already approved by you.', intro };
+      }
+
+      if (intro.status === 'investor_approved') {
+        return await this.finalizeAndSendIntro(intro);
+      }
+
+      intro.status = 'founder_approved';
+      await this.captureLog(intro, 'founder_approved_consent', `Founder ${intro.founderName} to ${intro.startupName} approved.`);
+    }
+
     await intro.save();
+    return {
+      success: true,
+      message: 'Approval recorded. Waiting for the other party to confirm.',
+      intro,
+    };
+  }
 
-    //Trigger logging
-    await this.captureLog(intro, 'investor_approved_consent', `Investor ${intro.investorName} approved consent mail.`);
-
-    // Send actual generated intro
+  private async finalizeAndSendIntro(intro: any) {
     await this.sendGeneratedIntroEmail({
       investorEmail: intro.investorEmail,
+      investorName: intro.investorName,
+      founderEmail: intro.founderEmail,
+      founderName: intro.founderName,
       startupName: intro.startupName,
       generatedIntro: intro.generatedIntro,
     });
 
-    // Mark as sent
     intro.status = 'sent';
     intro.sentDate = new Date();
     await intro.save();
 
-    //Trigger logging
-    await this.captureLog(intro, 'intro_mail_delivered', `Intro mail to ${intro.startupName} has been sent to investor ${intro.investorName}.`);
-
-    //Update investor status to 'contacted'
-    await this.investorModel.findByIdAndUpdate(intro.investorId, {
-      status: 'contacted',
-      contactedAt: new Date(),
-    });
+    await this.captureLog(intro, 'intro_mail_delivered', `Final intro of ${intro.startupName} sent to ${intro.investorEmail} and ${intro.founderEmail}.`);
 
     return {
       success: true,
-      message: 'Investor approved and intro email sent successfully.',
+      message: 'Double opt-in complete! Intro email sent.',
       intro,
     };
   }
@@ -266,56 +293,34 @@ export class TransformService {
   // Send Intro-Mails
   async sendGeneratedIntroEmail(options: {
     investorEmail: string;
+    investorName: string;
+    founderEmail: string;
+    founderName: string;
     startupName: string;
     generatedIntro: string;
   }) {
-    const { investorEmail, startupName, generatedIntro } = options;
+    const normalizeIntro = (raw: string): string => {
+      let clean = raw.trim();
+      if (clean.startsWith('"') && clean.endsWith('"')) clean = clean.slice(1, -1);
+      return clean.replace(/\\n/g, '<br />').replace(/\n/g, '<br />');
+    };
 
-    if (!investorEmail) throw new BadRequestException("Investor email is required.");
-    if (!startupName) throw new BadRequestException("Startup name is required.");
-    if (!generatedIntro) throw new BadRequestException("Generated intro text is required.");
-
-    // --- Normalize intro to be safe for JSON and emails ---
-    function normalizeGeneratedIntro(rawIntro: string): string {
-      let intro = rawIntro;
-
-      // Remove surrounding quotes if present
-      if (intro.startsWith('"') && intro.endsWith('"')) {
-        intro = intro.slice(1, -1).trim();
-      }
-
-      // Replace escaped sequences with actual characters
-      intro = intro.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-
-      intro = intro.replace(/\n/g, '<br />');
-
-      return intro.trim();
-    }
-
-    const formattedIntro = normalizeGeneratedIntro(generatedIntro);
-    const subject = `Warm Intro from ${startupName} startup`;
-
-    const htmlFormattedIntro = `
-      <div style="white-space: pre-wrap; font-family: sans-serif; line-height: 1.6; color: #333;">
-        ${formattedIntro}
-      </div>
-    `;
+    const formattedIntro = normalizeIntro(options.generatedIntro);
 
     try {
       const result = await this.mailService.sendGeneratedIntroEmail({
-        investorEmail,
-        startupName,
-        generatedIntro: htmlFormattedIntro,
+        ...options,
+        generatedIntro: formattedIntro,
       });
 
       return {
         success: true,
-        message: "Intro email sent successfully to investor.",
+        message: "Intro email sent successfully to both parties.",
         result,
       };
     } catch (error) {
-      console.error("Investor intro email failed:", error);
-      throw new BadRequestException("Failed to send investor intro email.");
+      console.error("Final intro delivery failed:", error);
+      throw new BadRequestException("Failed to deliver final introduction.");
     }
   }
 

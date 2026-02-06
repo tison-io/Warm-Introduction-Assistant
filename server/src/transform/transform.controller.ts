@@ -34,16 +34,6 @@ export class TransformController {
     return this.transformService.queueIntro(data, req.user.userId);
   }
 
-  @Post('send-intro')
-  @UseGuards(JwtAuthGuard, AccessGuard)
-  async sendIntroEmail(@Body() dto: SendIntroDto) {
-    return this.transformService.sendGeneratedIntroEmail({
-      investorEmail: dto.investorEmail,
-      startupName: dto.startupName,
-      generatedIntro: dto.generatedIntro,
-    });
-  }
-
   @Get('outcomes/history')
   @UseGuards(JwtAuthGuard, AccessGuard)
   async getHistory(
@@ -101,8 +91,7 @@ export class TransformController {
   //Approve intro ---
   @Post(':id/approve')
   @UseGuards()
-  async approveIntro(@Param('id') id: string) {
-    return this.transformService.approveInvestorIntro(id);
+  async approveIntro(@Param('id') id: string, @Body('email') email: string) {
+    return this.transformService.processApproval(id, email);
   }
-
 }

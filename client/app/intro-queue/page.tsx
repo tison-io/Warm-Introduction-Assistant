@@ -147,7 +147,7 @@ export default function IntroQueuePage() {
     setIsProcessing('sending');
     try {
       await sendIntroRequest(id);
-      showToast("Consent request sent to investor", "success");
+      showToast("Consent request sent to founder and investor.", "success");
       loadIntros(search, currentPage); // Status changes to 'investor_approval_requested'
       setExpandedId(null);
     } catch (err: any) {
