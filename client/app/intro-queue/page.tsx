@@ -158,7 +158,7 @@ export default function IntroQueuePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05070A] text-gray-100 p-8">
+    <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         
         {/* Header Area */}
@@ -183,135 +183,141 @@ export default function IntroQueuePage() {
             placeholder="Search by Startup, Investor or Founder..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-            className="w-full pl-12 pr-4 py-3.5 bg-[#0A0C10] border border-gray-800 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition"
+            className="w-full pl-12 pr-4 py-3.5 bg-gray-900 border border-gray-800 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition"
           />
         </div>
 
         {/* Table/List Container */}
-        <div className="bg-[#0A0C10] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-          <div className="grid grid-cols-4 px-6 py-4 text-[11px] uppercase tracking-widest font-bold text-gray-500 border-b border-gray-800 bg-[#0D0F14]">
-            <div>Startup</div>
-            <div>Status</div>
-            <div>Created</div>
-            <div className="text-right">Actions</div>
-          </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+          {/* Horizontal Scroll Wrapper */}
+          <div className="overflow-x-auto custom-scrollbar">
+            <div className="min-w-[800px]"> {/* Ensures table doesn't collapse too small */}
+              {/* Updated Grid: 6 columns now */}
+              <div className="grid grid-cols-6 px-6 py-4 text-[11px] uppercase tracking-widest font-bold text-gray-500 border-b border-gray-800 bg-gray-950">
+                <div>Startup</div>
+                <div>Founder</div>
+                <div>Investor</div>
+                <div>Status</div>
+                <div>Created</div>
+                <div className="text-right">Actions</div>
+              </div>
 
-          <div className="divide-y divide-gray-800">
-            {loading ? (
-              <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-indigo-500 h-8 w-8" /></div>
-            ) : intros.length === 0 ? (
-              <div className="p-20 text-center text-gray-500 text-sm italic">No introductions found.</div>
-            ) : (
-              intros.map((intro) => (
-                <div key={intro._id} className="group">
-                  {/* Row: Collapsed */}
-                  <div
-                    onClick={() => handleToggleExpand(intro)}
-                    title="Click to view more details"
-                    className="grid grid-cols-4 px-6 py-5 items-center cursor-pointer hover:bg-[#11141A] transition"
-                  >
-                    <div className="text-sm font-semibold text-white">{intro.startupName}</div>
-                    <div><StatusBadge status={intro.status} /></div>
-                    <div className="text-sm text-gray-500">{new Date(intro.createdAt).toLocaleDateString()}</div>
-                    <div className="flex justify-end items-center gap-3">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDelete(intro._id); }}
-                        className="p-1.5 text-gray-600 hover:text-red-500 transition-colors"
-                        title="Delete Intro"
+              <div className="divide-y divide-gray-800">
+                {loading ? (
+                  <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-indigo-500 h-8 w-8" /></div>
+                ) : intros.length === 0 ? (
+                  <div className="p-20 text-center text-gray-500 text-sm italic">No introductions found.</div>
+                ) : (
+                  intros.map((intro) => (
+                    <div key={intro._id} className="group">
+                      {/* Row: Collapsed */}
+                      <div
+                        onClick={() => handleToggleExpand(intro)}
+                        className="grid grid-cols-6 px-6 py-5 items-center cursor-pointer hover:bg-[#11141A] transition"
                       >
-                        <Trash2 size={16} />
-                      </button>
-                      <div className="p-1.5 rounded-md bg-gray-800/50 group-hover:text-indigo-400 transition-colors">
-                        {intro._id === expandedId ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Expanded Detail View */}
-                  {intro._id === expandedId && (
-                    <div className="px-6 pb-8 pt-2 bg-[#0D0F14] border-t border-gray-800 animate-in fade-in slide-in-from-top-2 duration-200">
-                      
-                      {/* Flow: Founder to Investor */}
-                      <div className="flex items-center justify-between gap-4 mb-8 p-4 bg-[#161920] rounded-xl border border-gray-700/50">
-                        <div className="flex-1">
-                          <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">From (Founder)</label>
-                          <div className="text-sm font-medium text-white">{intro.founderName}</div>
-                          <div className="text-xs text-gray-500">{intro.founderEmail}</div>
-                        </div>
-                        <ArrowRight className="text-gray-700" size={20} />
-                        <div className="flex-1 text-right">
-                          <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">To (Investor)</label>
-                          <div className="text-sm font-medium text-white">{intro.investorName}</div>
-                          <input 
-                            value={investorEmail} 
-                            onChange={(e) => setInvestorEmail(e.target.value)}
-                            className="w-full bg-transparent text-right text-sm font-medium text-indigo-400 outline-none border-b border-transparent focus:border-indigo-500 transition-colors"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        {/* Email Content Area */}
-                        <div>
-                          <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block">Intro Email Content</label>
-                          <textarea
-                            className="custom-scrollbar w-full bg-[#161920] border border-gray-700 rounded-lg p-4 text-sm text-gray-300 focus:ring-1 focus:ring-indigo-500 outline-none leading-relaxed"
-                            rows={6}
-                            value={draftContent}
-                            onChange={(e) => setDraftContent(e.target.value)}
-                          />
-                        </div>
-
-                        {/* Follow-up Section: Only visible if Sent */}
-                        {intro.status === 'sent' && (
-                          <div className="p-4 border border-indigo-500/20 bg-indigo-500/5 rounded-xl flex items-end gap-4">
-                            <div className="flex-1">
-                              <label className="text-[10px] uppercase text-indigo-400 font-bold mb-2 block">Follow-up Due Date</label>
-                              <input
-                                type="date"
-                                className="w-full bg-[#0A0C10] border border-gray-700 rounded-lg p-2.5 text-sm text-white outline-none focus:border-indigo-500"
-                                value={followUpDate}
-                                onChange={(e) => setFollowUpDate(e.target.value)}
-                              />
-                            </div>
-                            <button
-                              onClick={() => handleUpdateFollowUp(intro._id)}
-                              disabled={isProcessing === 'date' || !followUpDate}
-                              className="bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 disabled:opacity-30"
-                            >
-                              {isProcessing === 'date' ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
-                              Set Date
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Action Buttons */}
-                        <div className="flex justify-end items-center gap-4 pt-4 border-t border-gray-800">
-                          {hasContentChanges && (
-                            <button
-                              onClick={() => handleUpdateContent(intro._id)}
-                              disabled={isProcessing === 'saving'}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
-                            >
-                              {isProcessing === 'saving' ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                              Save Changes
-                            </button>
-                          )}
-                          <button
-                            disabled={isProcessing === 'sending'}
-                            onClick={() => handleSendIntro(intro._id)}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
+                        <div className="text-sm font-semibold text-white truncate pr-2">{intro.startupName}</div>
+                        <div className="text-sm text-gray-400 truncate pr-2">{intro.founderName}</div>
+                        <div className="text-sm text-gray-400 truncate pr-2">{intro.investorName}</div>
+                        <div><StatusBadge status={intro.status} /></div>
+                        <div className="text-sm text-gray-500">{new Date(intro.createdAt).toLocaleDateString()}</div>
+                        <div className="flex justify-end items-center gap-3">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDelete(intro._id); }}
+                            className="p-1.5 text-gray-600 hover:text-red-500 transition-colors"
                           >
-                            {isProcessing === 'sending' ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
-                            Send Consent Email
+                            <Trash2 size={16} />
                           </button>
+                          <div className="p-1.5 rounded-md bg-gray-800/50 group-hover:text-indigo-400 transition-colors">
+                            {intro._id === expandedId ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </div>
                         </div>
                       </div>
+
+                      {/* Expanded Detail View - Spans full width of the scrollable area */}
+                      {intro._id === expandedId && (
+                        <div className="px-6 pb-8 pt-2 bg-gray-800 border-t border-gray-800">
+                          <div className="max-w-4xl">
+                             {/* Flow Section */}
+                              <div className="flex items-center justify-between gap-4 mb-8 p-4 bg-[#161920] rounded-xl border border-gray-700/50 mt-4">
+                              <div className="flex-1">
+                                <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">From (Founder)</label>
+                                <div className="text-sm font-medium text-white">{intro.founderName}</div>
+                                <div className="text-xs text-gray-500">{intro.founderEmail}</div>
+                              </div>
+                              <ArrowRight className="text-blue-600" size={20} />
+                              <div className="flex-1 text-right">
+                                <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">To (Investor)</label>
+                                <div className="text-sm font-medium text-white">{intro.investorName}</div>
+                                <input 
+                                  value={investorEmail} 
+                                  onChange={(e) => setInvestorEmail(e.target.value)}
+                                  className="w-full bg-transparent text-right text-sm font-medium text-blue-400 outline-none border-b border-transparent transition-all duration-200 group-hover:opacity-80 focus:opacity-100 focus:border-indigo-500"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-6">
+                              <div>
+                                <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block">Intro Email Content</label>
+                                <textarea
+                                  className="w-full bg-[#161920] border border-gray-700 rounded-lg p-4 text-sm text-gray-300 focus:ring-1 focus:ring-indigo-500 outline-none leading-relaxed"
+                                  rows={6}
+                                  value={draftContent}
+                                  onChange={(e) => setDraftContent(e.target.value)}
+                                />
+                              </div>
+
+                              {intro.status === 'sent' && (
+                                <div className="p-4 border border-indigo-500/20 bg-indigo-500/5 rounded-xl flex items-end gap-4">
+                                  <div className="flex-1">
+                                    <label className="text-[10px] uppercase text-indigo-400 font-bold mb-2 block">Follow-up Due Date</label>
+                                    <input
+                                      type="date"
+                                      className="w-full bg-[#0A0C10] border border-gray-700 rounded-lg p-2.5 text-sm text-white outline-none focus:border-indigo-500"
+                                      value={followUpDate}
+                                      onChange={(e) => setFollowUpDate(e.target.value)}
+                                    />
+                                  </div>
+                                  <button
+                                    onClick={() => handleUpdateFollowUp(intro._id)}
+                                    disabled={isProcessing === 'date' || !followUpDate}
+                                    className="bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 disabled:opacity-30"
+                                  >
+                                    {isProcessing === 'date' ? <Loader2 size={14} className="animate-spin" /> : <Calendar size={14} />}
+                                    Set Date
+                                  </button>
+                                </div>
+                              )}
+
+                              <div className="flex justify-end items-center gap-4 pt-4 border-t border-gray-800">
+                                {hasContentChanges && (
+                                  <button
+                                    onClick={() => handleUpdateContent(intro._id)}
+                                    disabled={isProcessing === 'saving'}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
+                                  >
+                                    {isProcessing === 'saving' ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                    Save Changes
+                                  </button>
+                                )}
+                                <button
+                                  disabled={isProcessing === 'sending'}
+                                  onClick={() => handleSendIntro(intro._id)}
+                                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
+                                >
+                                  {isProcessing === 'sending' ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                                  Send Consent Email
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))
-            )}
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Pagination Footer */}

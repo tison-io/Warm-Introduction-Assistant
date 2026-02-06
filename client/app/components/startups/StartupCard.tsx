@@ -15,14 +15,14 @@ export default function StartupCard({ startup, isSelectable, compact, onMakeIntr
   const initials = (startup.founderName || "??").split(' ').map(n => n[0]).join('').toUpperCase();
 
   return (
-    <div className={`bg-[#11141b] rounded-2xl border border-gray-800/50 flex flex-col md:flex-row gap-4 transition-all hover:border-blue-500/30 group ${compact ? 'p-4' : 'p-6 shadow-xl'}`}>
+    <div className={`bg-gray-800 rounded-2xl border border-gray-800/50 flex flex-col md:flex-row gap-4 transition-all hover:border-blue-500/30 group ${compact ? 'p-4' : 'p-6 shadow-xl'}`}>
       
       {/* Founder Info */}
       <div className={`flex flex-row md:flex-col items-center md:items-start gap-3 shrink-0 ${compact ? 'md:w-32' : 'md:w-48'}`}>
         <div className={`${compact ? 'w-10 h-10 text-sm' : 'w-14 h-14 text-xl'} bg-[#1c212c] border border-gray-800 rounded-full flex items-center justify-center text-white font-bold shrink-0 group-hover:border-blue-500/50 transition-colors`}>
           {initials}
         </div>
-        <div className="overflow-hidden">
+        <div className="overflow-hidden min-w-0">
           <h3 className={`font-bold text-white truncate ${compact ? 'text-sm' : ''}`}>{startup.founderName}</h3>
           <p className="text-[10px] text-gray-500 truncate">{startup.founderEmail}</p>
         </div>

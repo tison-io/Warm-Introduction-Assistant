@@ -74,14 +74,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
         `}
       >
         {/* Toggle Button */}
-        {!isMobile && (
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="absolute -right-4 top-20 bg-[#7b78ff] text-white rounded-full p-1.5 shadow-lg hover:bg-[#6a67ff] transition-colors z-1012 flex items-center justify-center"
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
-        )}
 
         <div className="overflow-y-auto px-4 custom-scrollbar">
           {!isCollapsed && (

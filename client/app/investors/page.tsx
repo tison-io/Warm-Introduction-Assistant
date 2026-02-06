@@ -51,8 +51,8 @@ const InvestorListPage = () => {
   };
 
   return (
-    <div className="min-h-screen text-white bg-linear-to-br from-blue-900 via-slate-900 to-gray-950">
-      <div className="max-w-7xl mx-auto pt-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-slate-200 p-6 lg:p-10">
+      <div className="max-w-7xl mx-auto space-y-10">
         
         <div className="mb-10">
           <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
@@ -88,80 +88,83 @@ const InvestorListPage = () => {
 
         {/* Table / List Container */}
         <div className="bg-slate-900/50 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm">
-          <table className="min-w-full">
-            <thead className="border-b border-slate-800 bg-slate-950/50">
-              <tr>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">No.</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Investor</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Tags</th>
-                <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Format</th>
-                <th className="px-6 py-5 text-right text-xs font-bold uppercase tracking-widest text-slate-500">Actions</th>
-              </tr>
-            </thead>
 
-            <tbody className="divide-y divide-slate-800">
-              {loading ? (
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="min-w-[900px] w-full">
+              <thead className="border-b border-slate-800 bg-slate-950/50">
                 <tr>
-                  <td colSpan={5} className="py-32 text-center">
-                    <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
-                    <p className="mt-4 text-slate-500 font-medium">Fetching connections...</p>
-                  </td>
+                  <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">No.</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Investor</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Tags</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Format</th>
+                  <th className="px-6 py-5 text-right text-xs font-bold uppercase tracking-widest text-slate-500">Actions</th>
                 </tr>
-              ) : investors.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-32 text-center">
-                    <div className="flex flex-col items-center">
-                      <div className="bg-slate-800/50 p-6 rounded-3xl mb-4 border border-slate-700">
-                        <Users className="h-6 w-6 text-slate-500" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-2">No investors found</h3>
-                      <p className="text-slate-500 max-w-xs mx-auto mb-8">
-                        {search ? `No results for "${search}". Try a different name or tag.` : "You haven't added any investors yet. Start building your network today."}
-                      </p>
-                      {!search && (
-                        <Link href="/investors/create">
-                          <button className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-xl transition-all border border-slate-700">
-                            Add new investor
-                          </button>
-                        </Link>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                investors.map((investor, index) => (
-                  <tr key={investor._id} className="hover:bg-blue-500/5 transition-colors group">
-                    <td className="px-6 py-5 text-sm text-slate-500 font-mono">
-                      {String((currentPage - 1) * 5 + (index + 1)).padStart(2, '0')}
+              </thead>
+
+              <tbody className="divide-y divide-slate-800">
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="py-32 text-center">
+                      <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
+                      <p className="mt-4 text-slate-500 font-medium">Fetching connections...</p>
                     </td>
-                    <td className="px-6 py-5">
-                       <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
-                        {investor.name}
-                       </span>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex flex-wrap gap-2">
-                        {investor.tags.map((tag, i) => (
-                          <span key={i} className="text-[10px] font-black px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-tighter">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 text-sm text-slate-400">{investor.preferred_intro_format}</td>
-                    <td className="px-6 py-5 text-right">
-                      <div className="flex justify-end items-center space-x-4">
-                        <Link href={`/investors/${investor._id}/edit`} className="text-slate-400 hover:text-blue-300 text-xs font-bold uppercase tracking-widest transition-colors">Edit</Link>
-                        <button onClick={() => handleDelete(investor._id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                  </tr>
+                ) : investors.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-32 text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="bg-slate-800/50 p-6 rounded-3xl mb-4 border border-slate-700">
+                          <Users className="h-6 w-6 text-slate-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">No investors found</h3>
+                        <p className="text-slate-500 max-w-xs mx-auto mb-8">
+                          {search ? `No results for "${search}". Try a different name or tag.` : "You haven't added any investors yet. Start building your network today."}
+                        </p>
+                        {!search && (
+                          <Link href="/investors/create">
+                            <button className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-xl transition-all border border-slate-700">
+                              Add new investor
+                            </button>
+                          </Link>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  investors.map((investor, index) => (
+                    <tr key={investor._id} className="hover:bg-blue-500/5 transition-colors group">
+                      <td className="px-6 py-5 text-sm text-slate-500 font-mono">
+                        {String((currentPage - 1) * 5 + (index + 1)).padStart(2, '0')}
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
+                          {investor.name}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex flex-wrap gap-2">
+                          {investor.tags.map((tag, i) => (
+                            <span key={i} className="text-[10px] font-black px-2 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-tighter">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-sm text-slate-400">{investor.preferred_intro_format}</td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex justify-end items-center space-x-4">
+                          <Link href={`/investors/${investor._id}/edit`} className="text-slate-400 hover:text-blue-300 text-xs font-bold uppercase tracking-widest transition-colors">Edit</Link>
+                          <button onClick={() => handleDelete(investor._id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {/* Pagination UI - Only show if data exists */}
           {investors.length > 0 && (

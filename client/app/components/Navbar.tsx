@@ -81,21 +81,6 @@ export default function Navbar() {
               className="sm:w-[55px] sm:h-[55px]"
             />
           </Link>
-
-          {/* Dashboard Mobile Menu Button */}
-          {isDashboardPage && (
-            <button
-              className="ml-4 md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1 hover:bg-white/10 rounded p-1 transition-colors"
-              onClick={() => {
-                const event = new CustomEvent('toggleSidebar');
-                window.dispatchEvent(event);
-              }}
-            >
-              <span className="block w-5 h-0.5 bg-gray-700"></span>
-              <span className="block w-5 h-0.5 bg-gray-700"></span>
-              <span className="block w-5 h-0.5 bg-gray-700"></span>
-            </button>
-          )}
         </div>
 
         {/* Desktop Menu */}
