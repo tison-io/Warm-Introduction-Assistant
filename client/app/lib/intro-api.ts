@@ -107,16 +107,17 @@ export async function sendIntroRequest(introId: string): Promise<any> {
     return response.json();
 }
 
-export async function approveIntro(introId: string): Promise<any> {
+export async function approveIntro(introId: string, email: string): Promise<any> {
     const response = await fetch(`${INTRO_ENDPOINT}/${introId}/approve`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
     });
 
     const data = await response.json().catch(() => ({}));
 
-    // Treat "already approved" as normal response
-    if (!response.ok && !data.message?.includes("Intro is not awaiting investor consent")) {
-        throw new Error(data.message || 'Failed to approve intro.');
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to process approval.');
     }
 
     return data;

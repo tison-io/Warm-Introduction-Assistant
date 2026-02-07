@@ -46,7 +46,7 @@ export default function NewStartupPage() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 pt-16 pb-20 px-4">
+        <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 pt-16 pb-20 px-4">
             {showSuccess && <SuccessModal onClose={() => setShowSuccess(false)} />}
             
             <div className="max-w-2xl mx-auto">

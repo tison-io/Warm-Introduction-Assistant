@@ -4,6 +4,7 @@ import { ConditionalNavbar } from "./components/ConditionalNavbar";
 import DashboardLayout from "./components/DashboardLayout";
 import ChatbotFloat from "./components/ChatbotFloat";
 import { ToastProvider } from "./components/Toast";
+import AuthGuard from "./components/AuthHelper";
 
 export const metadata: Metadata = {
   icons: {
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={{ margin: 0, padding: 0, background: 'transparent' }}>
+        <AuthGuard />
         <ConditionalNavbar />
         <DashboardLayout><ToastProvider>{children}</ToastProvider></DashboardLayout>
         <ChatbotFloat />

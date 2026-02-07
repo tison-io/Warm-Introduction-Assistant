@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const dashboardRoutes = ['/dashboard', '/investors', '/startups', '/create-startup', '/generate-intro',  '/intro-wizard', '/intro-queue', '/reminders', '/terms-of-service', '/settings', '/profile'];
+  const dashboardRoutes = ['/dashboard', '/investors', '/startups', '/create-startup', '/generate-intro',  '/intro-wizard', '/intro-queue', '/reminders', '/terms-of-service', '/settings', '/profile', '/transform'];
   const showSidebar = dashboardRoutes.some(route => pathname?.startsWith(route));
 
   if (!showSidebar) {

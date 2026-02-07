@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Founder, FounderDocument } from './entities/founder.entity';
@@ -14,6 +14,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from '../mail/mail.service';
 import * as crypto from 'crypto';
+import { UpdatePasswordDto } from './dto/update-password-dto';
 
 
 @Injectable()
@@ -115,7 +116,7 @@ export class FounderService {
   }
 
   async updateProfile(userId: string, updateFounderDto: UpdateFounderDto): Promise<FounderResponse> {
-    const { name, email, phone, password } = updateFounderDto;
+    const { name, email, phone } = updateFounderDto;
 
     const user = await this.founderModel.findById(userId);
     if (!user) {
@@ -144,10 +145,6 @@ export class FounderService {
       user.phone = phone;
     }
 
-    if (password) {
-      user.password = await bcrypt.hash(password, 10);
-    }
-
     const updatedUser = await user.save();
 
     return {
@@ -156,6 +153,25 @@ export class FounderService {
       email: updatedUser.email,
       createdAt: updatedUser.createdAt,
     };
+  }
+
+  async updatePassword(userId: string, updatePasswordDto: UpdatePasswordDto): Promise<{ message: string }> {
+    const { oldPassword, newPassword } = updatePasswordDto;
+
+    const user = await this.founderModel.findById(userId).select('+password');
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Current password does not match');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return { message: 'Password updated successfully' };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
@@ -220,5 +236,29 @@ export class FounderService {
     );
 
     return { message: 'Password has been reset successfully' };
+  }
+
+  async getTrialStatus(userId: string) {
+    const founder = await this.founderModel.findById(userId);
+    if (!founder) throw new NotFoundException('Founder not found');
+
+    if (founder.tier === "lifetime") {
+      return { tier: 'lifetime', expired: false, daysRemaining: 999999 }
+    }
+
+    const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+    const expiryDate = new Date(founder.trialStartDate.getTime() + TRIAL_DURATION_MS);
+    const now = new Date();
+
+    const diffTime = expiryDate.getTime() - now.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    const isExpired = now > expiryDate;
+
+    return {
+      tier: founder.tier,
+      expired: isExpired,
+      daysRemaining: daysRemaining,
+      expiryDate: expiryDate
+    };
   }
 }

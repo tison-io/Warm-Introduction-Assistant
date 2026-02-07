@@ -83,42 +83,115 @@ export class MailService {
     }
   }
 
+  // ---Brevo: Consent Emails ---
+  async sendConsentEmail(options: {
+    recipients: { email: string; name: string }[];
+    startupName: string;
+    otherPersonName: string;
+    consentBody: string;
+    approvalUrl: string;
+  }) {
+    const { recipients, startupName, consentBody, approvalUrl } = options;
+
+    const validRecipients = recipients.filter(r => r.email && r.email.includes('@'));
+
+    if (validRecipients.length === 0) {
+      throw new Error("No valid recipients provided");
+    }
+
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSmtpEmail.sender = { name: this.brevoFromName, email: this.brevoFromEmail };
+
+    sendSmtpEmail.to = validRecipients.map(r => ({ email: r.email, name: r.name }));
+
+    sendSmtpEmail.messageVersions = recipients.map(r => ({
+      to: [{ 
+        email: r.email.trim().toLowerCase(), 
+        name: r.name 
+      }],
+      params: { 
+        personalizedUrl: `${approvalUrl}&email=${encodeURIComponent(r.email.trim())}` 
+      }
+    }));
+    
+    sendSmtpEmail.subject = `Action Required: Intro regarding ${startupName}`;
+
+    sendSmtpEmail.htmlContent = `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+        <div style="padding: 20px;">
+          <p>Hi there,</p>
+          <p>${consentBody}</p>
+          <p>If you're open to this connection, click the button below and I'll send over the formal intro. If you're too busy right now, no worries at all!</p>
+        </div>
+        
+        <div style="background-color: #f4f7ff; border-top: 2px solid #0347D2; padding: 24px; text-align: center;">
+          <p style="margin-top: 0; font-size: 14px; color: #555; font-weight: bold;">Warm Intro Assistant</p>
+          <p style="font-size: 12px; color: #777; margin-bottom: 20px;">This request was generated to save you time. Please confirm your interest below:</p>
+          
+          <a href="{{params.personalizedUrl}}" 
+            style="background-color: #0347D2; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; box-shadow: 0 2px 4px rgba(3, 71, 210, 0.2);">
+            Confirm & Approve Intro
+          </a>
+          
+          <p style="font-size: 11px; color: #999; margin-top: 20px;">
+            By clicking approve, the community manager will be notified to finalize the introduction thread.
+          </p>
+        </div>
+      </div>
+    `;
+
+    return await this.brevoApi.sendTransacEmail(sendSmtpEmail);
+  }
+
   // --- Brevo: Intro Emails ---
   async sendGeneratedIntroEmail(options: {
     investorEmail: string;
+    investorName: string;
+    founderEmail: string;
+    founderName: string;
     startupName: string;
     generatedIntro: string;
   }) {
-    const { investorEmail, startupName, generatedIntro } = options;
-
-    if (!investorEmail) throw new BadRequestException("Investor email is required.");
-    if (!startupName) throw new BadRequestException("Startup name is required.");
-    if (!generatedIntro) throw new BadRequestException("Generated intro text is required.");
-
-    const subject = `Warm Intro from ${startupName} startup`;
+    const { investorEmail, investorName, founderEmail, founderName, startupName, generatedIntro } = options;
 
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      name: this.brevoFromName,
-      email: this.brevoFromEmail,
-    };
-    sendSmtpEmail.to = [{ email: investorEmail }];
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
-      ${generatedIntro}
-    </div>`;
+    sendSmtpEmail.sender = { name: this.brevoFromName, email: this.brevoFromEmail };
+    
+    sendSmtpEmail.to = [
+      { email: investorEmail, name: investorName },
+      { email: founderEmail, name: founderName }
+    ];
+
+    sendSmtpEmail.subject = `Intro: ${founderName} (${startupName}) <> ${investorName}`;
+
+    sendSmtpEmail.htmlContent = `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px;">
+        <p>Hi ${founderName} and ${investorName},</p>
+        
+        <p>I'm pleased to connect you both! As we discussed, you both expressed interest in this introduction.</p>
+        
+        <div style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #0347D2; margin: 20px 0;">
+          <h4 style="margin-top: 0; color: #0347D2;">The Context</h4>
+          <p style="font-style: italic;">${generatedIntro}</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <p><strong>${founderName} (${startupName}):</strong> A founder building in this space with a focus on scaling high-impact solutions.</p>
+          <p><strong>${investorName}:</strong> An experienced partner looking for innovative startups like ${startupName}.</p>
+        </div>
+
+        <p>I'll let you two take it on from here!.</p>
+      </div>
+    `;
+
+    /* // Move the community manager to BCC after the initial mail
+    sendSmtpEmail.bcc = [{ email: this.brevoFromEmail, name: this.brevoFromName }];  To add this later*/
 
     try {
-      const result = await this.brevoApi.sendTransacEmail(sendSmtpEmail);
-
-      return {
-        success: true,
-        message: "Intro email sent successfully to investor.",
-        result,
-      };
+      return await this.brevoApi.sendTransacEmail(sendSmtpEmail);
     } catch (error) {
-      console.error("Investor intro email failed:", error);
-      throw new BadRequestException("Failed to send investor intro email.");
+      console.error("Final Intro Email Failed:", error.response?.body || error.message);
+      throw new BadRequestException("Failed to send the final introduction email.");
     }
   }
 

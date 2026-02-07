@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import InvestorForm from '../../../components/investors/InvestorForm';
-import { getInvestorById } from '../../../lib/investor-api'; // Use the specific fetcher
+import { getInvestorById } from '../../../lib/investor-api';
 import { Investor } from '../../../types/investor';
 import { Loader2, AlertCircle } from 'lucide-react';
 
@@ -23,7 +23,6 @@ const EditInvestorPage = () => {
     const fetchInvestor = async () => {
       try {
         setLoading(true);
-        // Fetch only the specific investor needed
         const data = await getInvestorById(id);
         setInvestor(data);
       } catch (err: any) {
@@ -67,14 +66,14 @@ const EditInvestorPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0b1e] pt-12 pb-20">
+    <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 pt-12 pb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
             <button 
                 onClick={() => router.back()}
-                className="text-slate-500 hover:text-white text-sm transition"
+                className="text-slate-500 hover:text-white text-xl transition"
             >
-                ← Back
+              ← Back
             </button>
         </div>
         <div data-testid="page-investor-edit">

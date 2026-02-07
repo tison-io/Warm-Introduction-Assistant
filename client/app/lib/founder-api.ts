@@ -1,4 +1,4 @@
-import { FounderLoginResponse, FounderResponse, FounderSignupInput, FounderUpdateInput } from "../types/founder";
+import { FounderLoginResponse, FounderResponse, FounderSignupInput, FounderUpdateInput, TrialStatus } from "../types/founder";
 
 const BASE_URL = process.env.NEXT_PUBLIC_FOUNDER_API_URL || 'http://localhost:4000';
 const AUTH_URL = `${BASE_URL}/auth/google`;
@@ -172,5 +172,44 @@ export async function resetPassword(token: string, password: string): Promise<{ 
         return res.json();
     } catch (error: any) {
         throw new Error(error.message || "Network error. Please check your connection.");
+    }
+}
+
+export async function getTrialStatus(): Promise<TrialStatus> {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${BASE_URL}/founder/trial-status`, {
+        method: "GET",
+        headers: { 
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json" 
+        },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch trial status");
+    return res.json();
+}
+
+export async function updateFounderPassword(data: any): Promise<{ message: string }> {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error("No token found.");
+
+        const res = await fetch(`${BASE_URL}/founder/password`, {
+            method: "PATCH",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || "Failed to update password");
+        }
+
+        return res.json();
+    } catch (error: any) {
+        throw new Error(error.message || "Network error.");
     }
 }

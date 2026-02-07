@@ -4,19 +4,30 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { User } from 'lucide-react';
+import { User, Zap } from 'lucide-react';
 import { AUTH_EVENT } from '../lib/auth-events';
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userTier, setUserTier] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const syncAuth = () => {
       const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
       setIsLoggedIn(!!token);
+
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          setUserTier(user.tier);
+        } catch (e) {
+          setUserTier(null);
+        }
+      }
     };
 
     syncAuth(); 
@@ -31,6 +42,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('auth_expiry');
 
     window.dispatchEvent(new Event(AUTH_EVENT));
 
@@ -69,21 +81,6 @@ export default function Navbar() {
               className="sm:w-[55px] sm:h-[55px]"
             />
           </Link>
-
-          {/* Dashboard Mobile Menu Button */}
-          {isDashboardPage && (
-            <button
-              className="ml-4 md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1 hover:bg-white/10 rounded p-1 transition-colors"
-              onClick={() => {
-                const event = new CustomEvent('toggleSidebar');
-                window.dispatchEvent(event);
-              }}
-            >
-              <span className="block w-5 h-0.5 bg-gray-700"></span>
-              <span className="block w-5 h-0.5 bg-gray-700"></span>
-              <span className="block w-5 h-0.5 bg-gray-700"></span>
-            </button>
-          )}
         </div>
 
         {/* Desktop Menu */}
@@ -91,6 +88,15 @@ export default function Navbar() {
           {isDashboardPage ? (
             isLoggedIn && (
               <>
+                {userTier === 'trial' && (
+                  <Link href="/pricing">
+                    <button className="flex items-center gap-1.5 px-3 py-1 border border-indigo-500/50 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-full text-xs font-bold transition-all mr-2">
+                      <Zap size={12} className="fill-indigo-400" />
+                      Upgrade
+                    </button>
+                  </Link>
+                )}
+                
                 <Link href="/about">
                   <button className="bg-transparent text-gray-300 rounded-lg px-3 py-1.5 text-sm hover:text-[#0347D2]">
                     About Us

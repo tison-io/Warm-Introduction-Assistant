@@ -105,7 +105,7 @@ export default function RemindersPage({ workspaceId }: { workspaceId?: string })
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 p-6 lg:p-10">
+    <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-slate-200 p-6 lg:p-10">
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header Section */}
@@ -142,42 +142,48 @@ export default function RemindersPage({ workspaceId }: { workspaceId?: string })
 
               return (
                 <div 
-                  key={reminder._id}
-                  className="bg-[#0f172a]/40 border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-indigo-500/30 transition-all group"
+                key={reminder._id}
+                className="bg-gray-800 border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-indigo-500/30 transition-all group"
+              >
+                <Link 
+                  href={`/intro-queue`}
+                  className="space-y-2 flex-1 group/link"
                 >
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors">
-                        {reminder.introId?.investorName || 'Unknown Investor'}
-                      </h3>
-                      <DueBadge date={dueDate} />
-                    </div>
+                  <div className="flex items-center gap-3">
                     <p className="text-slate-400 text-sm">
                       Follow up on intro to <span className="text-slate-200 font-medium">{reminder.introId?.startupName || 'Project'}</span>
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                      <Calendar size={12} />
-                      Due: {dueDate.toISOString().split('T')[0]}
-                    </div>
+                    <DueBadge date={dueDate} />
                   </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+                    <Calendar size={12} />
+                    Due: {dueDate.toISOString().split('T')[0]}
+                  </div>
+                </Link>
 
-                  <div className="flex items-center gap-3 self-end md:self-center">
-                    <button
-                      onClick={() => handleComplete(reminder._id)}
-                      disabled={isProcessing}
-                      className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
-                    >
-                      {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                      Mark Done
-                    </button>
-                    <button
-                      onClick={() => handleDelete(reminder._id)}
-                      className="p-2 bg-slate-900/50 border border-slate-800 text-slate-400 hover:text-rose-500 hover:border-rose-500/50 rounded-xl transition-all"
-                    >
-                      <Trash size={18} />
-                    </button>
-                  </div>
+                <div className="flex items-center gap-3 self-end md:self-center shrink-0">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleComplete(reminder._id);
+                    }}
+                    disabled={isProcessing}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
+                  >
+                    {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                    Mark Done
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(reminder._id);
+                    }}
+                    className="p-2 bg-slate-900/50 border border-slate-800 text-slate-400 hover:text-rose-500 hover:border-rose-500/50 rounded-xl transition-all"
+                  >
+                    <Trash size={18} />
+                  </button>
                 </div>
+              </div>
               );
             })}
           </div>
