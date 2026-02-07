@@ -88,7 +88,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 p-6 md:p-8 text-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 p-6 md:p-8 text-white">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-1">Settings</h1>
         <p className="text-gray-400 mb-8">Manage your profile and preferences</p>

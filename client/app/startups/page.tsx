@@ -76,7 +76,7 @@ export default function FounderRequestsPage() {
     };
 
     return (
-        <div className="min-h-screen overflow-x-hidden bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 p-6 lg:p-10">
+        <div className="min-h-screen overflow-x-hidden bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 p-6 lg:p-10">
         <div className="max-w-5xl mx-auto space-y-10 min-w-0">
 
             {/* Header */}

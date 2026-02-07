@@ -13,19 +13,20 @@ export default function AuthGuard() {
       const token = localStorage.getItem("token");
       const expiry = localStorage.getItem("auth_expiry");
 
-      if (token && expiry) {
-        if (Date.now() > parseInt(expiry)) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          localStorage.removeItem("auth_expiry");
-          
-          window.dispatchEvent(new Event(AUTH_EVENT));
-          router.push("/login");
-        }
+      if (token && expiry && Date.now() > parseInt(expiry)) {
+        localStorage.clear();
+        window.dispatchEvent(new Event(AUTH_EVENT));
+        router.push("/login");
+        return true;
       }
+      return false;
     };
 
     checkAuth();
+
+    const interval = setInterval(checkAuth, 60000);
+
+    return () => clearInterval(interval);
   }, [pathname, router]);
 
   return null;

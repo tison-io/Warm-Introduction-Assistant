@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
 import { initiateGoogleLogin, signupFounder } from "../lib/founder-api";
 import { useToast } from "../components/Toast";
 
@@ -30,12 +28,21 @@ export default function SignupPage() {
     setIsVisible(true);
   }, []);
 
-  const handlePhoneChange = (value: string) => {
-    setForm({ ...form, phone: value });
-  };
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const phoneRegex = /^\+\d{7,15}$/;
+  
+    if (!phoneRegex.test(form.phone)) {
+      showToast("Your phone no has invalid details", "error");
+      return;
+    }
+
+    if (form.password.length < 8) {
+      showToast("password must be at least 8 characters", "error");
+      return;
+    }
+
     setLoading(true);
 
     if (form.password.length < 8) {
@@ -54,7 +61,7 @@ export default function SignupPage() {
         name: form.name,
         email: form.email,
         password: form.password,
-        phone: `+${form.phone}`,
+        phone: form.phone,
       });
 
       showToast(`account created for ${result.name}`, "success");
@@ -74,22 +81,6 @@ export default function SignupPage() {
           background-image: linear-gradient(135deg, #2A4D8F 0%, #0F2438 30%, #070910 70%, #070911 100%);
           background-attachment: fixed;
         }
-        /* Custom styling for the Phone Library to match your design */
-        .dark-phone-input .react-tel-input .form-control {
-          width: 100% !important;
-          height: 44px !important;
-          background: white !important;
-          color: #0f172a !important;
-          border: none !important;
-          border-radius: 4px !important;
-          font-size: 14px !important;
-        }
-        .dark-phone-input .react-tel-input .flag-dropdown {
-          background: white !important;
-          border: none !important;
-          border-right: 1px solid #e2e8f0 !important;
-          border-radius: 4px 0 0 4px !important;
-        }
       `}} />
 
       <div className="absolute top-8 left-8 z-50">
@@ -104,8 +95,7 @@ export default function SignupPage() {
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
         }`}
         style={{ 
-          background: "linear-gradient(to bottom, #101625 0%, #101625 50%, #273E75 100%)",
-          backdropFilter: "blur(40px)" 
+          background: "linear-gradient(to bottom, #101625 0%, #101625 100%)",
         }}
       >
         <div className="px-10 py-12 flex flex-col items-center">
@@ -120,7 +110,7 @@ export default function SignupPage() {
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Full Name</label>
               <input
                 type="text"
-                className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                 value={form.name}
                 placeholder="john doe"
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -132,7 +122,7 @@ export default function SignupPage() {
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Email</label>
               <input
                 type="email"
-                className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                 value={form.email}
                 placeholder="email@example.com"
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -141,15 +131,17 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Phone</label>
-              <div className="dark-phone-input">
-                <PhoneInput
-                  country={"ke"}
-                  value={form.phone}
-                  onChange={handlePhoneChange}
-                  inputProps={{ required: true }}
-                />
-              </div>
+              <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">
+                Phone Number - with country code
+              </label>
+              <input
+                type="tel"
+                className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 text-sm"
+                value={form.phone}
+                placeholder="+254 712 345 678"
+                onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/[^\d+]/g, "") })}
+                required
+              />
             </div>
 
             <div className="space-y-1">
@@ -157,7 +149,7 @@ export default function SignupPage() {
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
-                  className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                  className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                   value={form.password}
                   placeholder="••••••••"
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -175,7 +167,7 @@ export default function SignupPage() {
               <div className="relative">
                 <input
                   type={showConf ? "text" : "password"}
-                  className="w-full h-11 px-4 rounded-[4px] bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
+                  className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                   value={form.confirmPassword}
                   placeholder="••••••••"
                   onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}

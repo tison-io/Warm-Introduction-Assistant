@@ -51,7 +51,7 @@ const InvestorListPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-slate-200 p-6 lg:p-10">
+    <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-slate-200 p-6 lg:p-10">
       <div className="max-w-7xl mx-auto space-y-10">
         
         <div className="mb-10">

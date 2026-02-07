@@ -165,7 +165,7 @@ function IntroWizardContent() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 py-12 px-4">
+        <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 py-12 px-4">
             <div className="max-w-5xl mx-auto">
                 
                 <button 

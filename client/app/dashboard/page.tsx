@@ -133,7 +133,7 @@ export default function DashboardPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 p-6 lg:p-10 space-y-8">
+            <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 p-6 lg:p-10 space-y-8">
                 <div className="max-w-7xl mx-auto space-y-8">
                     <div className="h-10 w-64 bg-slate-800/50 rounded-lg animate-pulse" />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -151,7 +151,7 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-slate-200 p-6 lg:p-10">
+        <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-slate-200 p-6 lg:p-10">
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                     {founder && (

@@ -4,10 +4,11 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { AUTH_EVENT } from '@/app/lib/auth-events';
 import { 
-  LayoutDashboard, Users, Rocket, Wand2, ListOrdered, 
+  Users, Rocket, Wand2, ListOrdered, 
   Settings, LogOut, ChevronLeft, ChevronRight,
-  Info, PenTool, LayoutGrid,
-  Zap
+  Info, LayoutGrid,
+  Zap,
+  Bell
 } from "lucide-react";
 import Image from "next/image";
 
@@ -21,9 +22,9 @@ const menu = [
   { href: "/dashboard", label: "My Dashboard", icon: LayoutGrid},
   { href: "/startups", label: "Founder requests", icon: Rocket },
   { href: "/investors", label: "Investor network", icon: Users },
-  { href: "/intro-queue", label: "Intro Queue", icon: ListOrdered },
   { href: "/intro-wizard", label: "Intro Wizard", icon: Wand2 },
-  { href: "/reminders", label: "Reminders", icon: PenTool },
+  { href: "/intro-queue", label: "Intro Queue", icon: ListOrdered },
+  { href: "/reminders", label: "Reminders", icon: Bell },
   { href: "/terms-of-service", label: "Terms of Service", icon: Info }
 ];
 

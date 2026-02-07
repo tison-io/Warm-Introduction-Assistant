@@ -29,19 +29,17 @@ export default function LoginPage() {
     try {
       const data: FounderLoginResponse = await loginFounder(email, password);
 
+      const expiryTime = Date.now() + (3 * 60 * 60 * 1000);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
+      localStorage.setItem('auth_expiry', expiryTime.toString());
+      window.dispatchEvent(new Event(AUTH_EVENT));
+
       const status = await getTrialStatus();
       if (status.expired) {
         router.push('/trial-expired');
         return;
       }
-
-      const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
-      localStorage.setItem('auth_expiry', expiryTime.toString());
-
-      window.dispatchEvent(new Event(AUTH_EVENT));
       
       const searchParams = new URLSearchParams(window.location.search);
       const callbackUrl = searchParams.get('callbackUrl');

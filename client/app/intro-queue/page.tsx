@@ -158,7 +158,7 @@ export default function IntroQueuePage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-gray-100 p-8">
+    <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         
         {/* Header Area */}
