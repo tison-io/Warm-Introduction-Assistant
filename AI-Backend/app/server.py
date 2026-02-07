@@ -33,7 +33,7 @@ app = FastAPI(
 )  
 
 allowed_origins = [
-  "https://warmly-intro-assistant.vercel.app"
+  "https://warmly-intro-assistant.vercel.app" 
 ]
 
 app.add_middleware(
