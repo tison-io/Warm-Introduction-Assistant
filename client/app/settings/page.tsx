@@ -128,7 +128,7 @@ export default function SettingsPage() {
                   <label className="text-sm font-medium text-gray-400">Phone</label>
                   <input className="bg-[#161b22] border border-gray-800 text-white rounded-lg px-4 py-2.5 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition" value={profile.phone} onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))} />
                 </div>
-                <button className="mt-4 bg-white text-black hover:bg-gray-200 font-bold py-3 rounded-xl transition shadow-lg active:scale-[0.98]" disabled={loading} onClick={handleSaveProfile}>
+                <button className="mt-4 bg-indigo-600 text-white hover:opacity-90 font-bold py-3 rounded-xl transition shadow-lg active:scale-[0.98]" disabled={loading} onClick={handleSaveProfile}>
                   {loading ? "Saving..." : "Save Changes"}
                 </button>
               </div>

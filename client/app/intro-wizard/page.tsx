@@ -167,14 +167,6 @@ function IntroWizardContent() {
     return (
         <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 py-12 px-4">
             <div className="max-w-5xl mx-auto">
-                
-                <button 
-                    onClick={() => router.back()} 
-                    className="flex items-center space-x-2 text-gray-500 hover:text-white mb-8 transition-colors"
-                >
-                    <ArrowLeft size={20} />
-                    <span>Back</span>
-                </button>
 
                 <div className="mb-10 text-center md:text-left">
                     <h1 className="text-4xl font-extrabold text-white tracking-tight mb-3">
@@ -185,7 +177,7 @@ function IntroWizardContent() {
                     </p>
                 </div>
 
-                <div className="bg-[#0f1219] rounded-3xl shadow-2xl border border-gray-800/50 overflow-hidden flex flex-col min-h-[750px]">
+                <div className="bg-gray-900 rounded-3xl shadow-2xl border border-gray-800/50 overflow-hidden flex flex-col min-h-[750px]">
                     
                     {/* Dark Tabs */}
                     <div className="flex border-b border-gray-800 bg-[#11141b]">

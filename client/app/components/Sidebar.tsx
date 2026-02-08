@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { AUTH_EVENT } from '@/app/lib/auth-events';
+import { getFounderProfile } from "../lib/founder-api";
 import { 
   Users, Rocket, Wand2, ListOrdered, 
   Settings, LogOut, ChevronLeft, ChevronRight,
@@ -34,15 +35,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
   const [userTier, setUserTier] = useState<string | null>(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
+    const fetchTier = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
       try {
-        const user = JSON.parse(userData);
-        setUserTier(user.tier);
+        const profile = await getFounderProfile();
+        setUserTier(profile.tier || "trial");
       } catch (e) {
-        console.error("Failed to parse user data", e);
+        console.error("Failed to fetch user tier in Sidebar", e);
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          setUserTier(user.tier);
+        }
       }
-    }
+    };
+
+    fetchTier();
 
     const handleToggleSidebar = () => setIsCollapsed(!isCollapsed);
     window.addEventListener('toggleSidebar', handleToggleSidebar);

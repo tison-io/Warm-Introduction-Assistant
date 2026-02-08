@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { User, Zap } from 'lucide-react';
 import { AUTH_EVENT } from '../lib/auth-events';
+import { getFounderProfile } from '../lib/founder-api';
 
 export default function Navbar() {
   const router = useRouter();
@@ -15,18 +16,24 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const syncAuth = () => {
+    const syncAuth = async () => {
       const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
       setIsLoggedIn(!!token);
 
-      if (userData) {
+      if (token) {
         try {
-          const user = JSON.parse(userData);
-          setUserTier(user.tier);
+          const profile = await getFounderProfile();
+          setUserTier(profile.tier || "trial");
         } catch (e) {
-          setUserTier(null);
+          console.error("Failed to fetch tier in Navbar:", e);
+          const userData = localStorage.getItem('user');
+          if (userData) {
+            const user = JSON.parse(userData);
+            setUserTier(user.tier);
+          }
         }
+      } else {
+        setUserTier(null);
       }
     };
 
@@ -45,7 +52,7 @@ export default function Navbar() {
     localStorage.removeItem('auth_expiry');
 
     window.dispatchEvent(new Event(AUTH_EVENT));
-
+    setUserTier(null);
     router.push('/');
   };
 

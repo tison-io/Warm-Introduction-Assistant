@@ -46,7 +46,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
       console.log("Sending message:", userText);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 10 second timeout
 
       // --- API Call to your streaming endpoint ---
       const response = await fetch("https://warm-introduction-assistant.onrender.com/chat", {
