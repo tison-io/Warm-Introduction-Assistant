@@ -75,29 +75,31 @@ export class PaymentsService {
             const session = event.data.object as Stripe.Checkout.Session;
             const founderId = session.metadata?.founderId;
             
-            //Update tier
-            if (founderId) {
-                const updatedFounder = await this.founderModel.findByIdAndUpdate(
-                    founderId, 
-                    { tier: 'lifetime' },
-                    { new: true }
+            if (!founderId) {
+                console.error('No founderId found in session metadata for session:', session.id);
+                return;
+            }
+
+            const updatedFounder = await this.founderModel.findByIdAndUpdate(
+                founderId, 
+                { tier: 'lifetime' },
+                { new: true }
             );
-            //Extract Payment info for invoice
+
             const invoiceData = {
                 founderId: new Types.ObjectId(founderId),
                 stripeSessionId: session.id,
                 amount: session.amount_total,
                 currency: session.currency,
                 status: 'paid',
-                receiptUrl: session.payment_intent,
+                receiptUrl: typeof session.payment_intent === 'string' 
+                    ? `https://dashboard.stripe.com/payments/${session.payment_intent}` 
+                    : null,
             };
             await this.invoiceModel.create(invoiceData);
 
-            console.log(`Success! Founder ${updatedFounder?.name} has gained Lifetime access.`);
-        } else {
-            console.error('No founderId found in session metadata');
+            console.log(`Success! Founder ${updatedFounder?.name} gained Lifetime access.`);
         }
-    }
     }
 
     async getInvoices(founderId: string) {

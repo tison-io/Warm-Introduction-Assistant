@@ -1,33 +1,55 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createCheckoutSession } from '../lib/payments-api';
+import { getFounderProfile } from '../lib/founder-api';
 import { CheckCircle2, Rocket, ShieldCheck, Zap } from 'lucide-react';
 
 const PricingPage = () => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [userTier, setUserTier] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const fetchData = async () => {
       try {
-        setUser(JSON.parse(storedUser));
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          setUserId(parsed.id);
+        }
+
+        const profile = await getFounderProfile();
+        setUserTier(profile.tier || "trial");
       } catch (e) {
-        console.error('Failed to parse user from storage', e);
+        console.error('Failed to fetch user status', e);
+      } finally {
+        setDataLoading(false);
       }
-    }
+    };
+    fetchData();
   }, []);
 
+  const handleTrialButtonClick = () => {
+    if (userTier === 'trial') {
+      router.back();
+    } else {
+      window.location.href = '/signup';
+    }
+  };
+
   const handlePurchase = async () => {
-    if (!user?.id) {
+    if (!userId) {
       alert('Please login to continue');
       return;
     }
 
     setLoading(true);
     try {
-      const checkoutUrl = await createCheckoutSession(user.id);
+      const checkoutUrl = await createCheckoutSession(userId);
       window.location.href = checkoutUrl;
     } catch (err: any) {
       console.error("Payment Error:", err);
@@ -39,7 +61,6 @@ const PricingPage = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-900 via-slate-800 to-gray-950 text-white flex flex-col items-center justify-center p-6">
-      {/* Background Decorative Element */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-blue-600/5 blur-[120px] pointer-events-none" />
 
       <div className="text-center mb-16 relative z-10">
@@ -60,7 +81,12 @@ const PricingPage = () => {
               <Zap size={24} className="text-blue-500" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">7-day Free Trial</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold">7-day Free Trial</h3>
+                {userTier === 'trial' && (
+                  <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30">Current Plan</span>
+                )}
+              </div>
               <p className="text-slate-500 text-sm">Perfect for getting started</p>
             </div>
           </div>
@@ -78,16 +104,20 @@ const PricingPage = () => {
 
           <button 
             type="button"
-            onClick={() => window.location.href = '/signup'}
-            className="w-full py-4 bg-slate-800 border border-slate-700 rounded-2xl font-bold hover:bg-slate-700 transition-all active:scale-95"
+            disabled={userTier === 'lifetime'} 
+            onClick={handleTrialButtonClick}
+            className="w-full py-4 bg-slate-800 border border-slate-700 rounded-2xl font-bold hover:bg-slate-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Get Started
+            {userTier === 'lifetime' 
+              ? 'Already on Lifetime' 
+              : userTier === 'trial' 
+                ? 'Continue Using' 
+                : 'Get Started'}
           </button>
         </div>
 
-        {/* The Paid One (Pro) */}
+        {/* The Paid One */}
         <div className="relative bg-gray-900 border-2 border-blue-600 rounded-3xl p-8 flex flex-col shadow-[0_0_50px_rgba(37,99,235,0.15)] overflow-hidden">
-          {/* Badge */}
           <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2 rounded-bl-2xl">
             Recommended
           </div>
@@ -97,7 +127,12 @@ const PricingPage = () => {
               <Rocket size={24} className="text-blue-500" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Lifetime Access Plan</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-bold">Lifetime Access</h3>
+                {userTier === 'lifetime' && (
+                  <span className="text-[10px] bg-blue-400 text-white px-2 py-0.5 rounded-full border border-blue-600">Current Plan</span>
+                )}
+              </div>
               <p className="text-slate-500 text-sm">Full access for community owners</p>
             </div>
           </div>
@@ -115,15 +150,17 @@ const PricingPage = () => {
           </ul>
 
           <button 
-            disabled={loading}
+            disabled={loading || userTier === 'lifetime'}
             onClick={handlePurchase}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:bg-slate-800 disabled:border-slate-700 disabled:shadow-none"
           >
             {loading ? (
               <span className="flex items-center gap-2">
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Processing...
               </span>
+            ) : userTier === 'lifetime' ? (
+              "Already on lifetime plan"
             ) : (
               <>
                 <ShieldCheck size={20} />
