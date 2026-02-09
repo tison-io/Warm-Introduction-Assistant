@@ -4,9 +4,9 @@ import { Model, Types } from 'mongoose';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
 import { Investor } from '../schemas/investor.schema';
-import { WorkspacesService } from 'src/workspace/workspace.service';
-import { Startup } from 'src/startups/entities/startup.entity';
-import { Workspace } from 'src/workspace/entities/workspace.entity';
+import { WorkspacesService } from '../workspace/workspace.service';
+import { Startup } from '../startups/entities/startup.entity';
+import { Workspace } from '../workspace/entities/workspace.entity';
 
 @Injectable()
 export class InvestorsService {

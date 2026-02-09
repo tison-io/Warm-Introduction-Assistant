@@ -3,7 +3,7 @@ import { InvestorsService } from './investors.service';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { AccessGuard } from 'src/guards/access.guard';
+import { AccessGuard } from '../guards/access.guard';
 
 interface AuthenticatedRequest {
   user: {

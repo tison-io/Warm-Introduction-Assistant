@@ -7,7 +7,7 @@ import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { Founder, FounderDocument } from '../founder/entities/founder.entity';
 import { Invitation } from './entities/invitation.entity';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class WorkspacesService {
