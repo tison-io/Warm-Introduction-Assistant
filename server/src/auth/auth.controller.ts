@@ -12,14 +12,11 @@ export class AuthController {
         private configService: ConfigService,
     ) {}
 
-    //Initiate Google OAuth flow
     @Get('google')
     @UseGuards(AuthGuard('google'))
     async googleAuth(@Req() req) {
-        // Passport redirects to Google for authentication
     }
 
-    //Google redirects here after successful sign-in
     @Get('google/callback')
     @UseGuards(AuthGuard('google'))
     async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
@@ -30,14 +27,12 @@ export class AuthController {
         const frontendUrl = this.configService.get<string>('FRONTEND_URL');
         
         const callbackUrl = (req.query.state as string) || '/dashboard'
-        // Set as an HTTP-only cookie with the JWT
         res.cookie('jwt', tokenPayload.token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 86400000, //1 day 
+            maxAge: 86400000, 
         });
 
-        // Redirect the user back to the Next.Js frontend
         return res.redirect(
             `${frontendUrl}/login/success?token=${tokenPayload.token}&callbackUrl=${encodeURIComponent(callbackUrl)}`
         );
