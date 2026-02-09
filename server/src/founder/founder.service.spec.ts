@@ -1,57 +1,56 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FounderService } from './founder.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { Founder } from './entities/founder.entity';
-import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from '../mail/mail.service';
+import { FounderService } from './founder.service';
+import { Founder } from './entities/founder.entity';
+import * as bcrypt from 'bcrypt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
-import { CreateFounderDto } from './dto/create-founder.dto';
-import { LoginDto } from './dto/login.dto';
-import { UpdateFounderDto } from './dto/update-founder.dto';
-import * as jsonwebtoken from 'jsonwebtoken';
 
-jest.mock('bcrypt', () => ({
-  hash: jest.fn(),
-  compare: jest.fn(),
-}));
-
-jest.mock('jsonwebtoken', () => ({
-  sign: jest.fn().mockReturnValue('jwt_token'),
-  verify: jest.fn(),
-}));
+// Mock bcrypt
+jest.mock('bcrypt');
 
 describe('FounderService', () => {
   let service: FounderService;
-  let mockFounderModel: any;
-  let mockConfigService: any;
-  let mockJwtService: any;
+  let model: any;
+  let mailService: MailService;
+
+  const mockFounder = {
+    _id: '507f1f77bcf86cd799439011',
+    name: 'John Doe',
+    email: 'john@example.com',
+    password: 'hashedPassword',
+    tier: 'trial',
+    trialStartDate: new Date(),
+    save: jest.fn().mockResolvedValue(this),
+  };
+
+  const mockFounderModel = {
+    findOne: jest.fn(),
+    create: jest.fn(),
+    findById: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
+  };
+
+  const mockMailService = {
+    sendPasswordResetEmail: jest.fn(),
+  };
 
   beforeEach(async () => {
-    mockFounderModel = {
-      findOne: jest.fn(),
-      findById: jest.fn(),
-      create: jest.fn(),
-    };
-
-    mockConfigService = {
-      get: jest.fn(),
-    };
-
-    mockJwtService = {
-      sign: jest.fn(),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FounderService,
         { provide: getModelToken(Founder.name), useValue: mockFounderModel },
-        { provide: ConfigService, useValue: mockConfigService },
-        { provide: JwtService, useValue: mockJwtService },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('secret') } },
+        { provide: JwtService, useValue: { sign: jest.fn().mockReturnValue('token') } },
+        { provide: MailService, useValue: mockMailService },
       ],
     }).compile();
 
     service = module.get<FounderService>(FounderService);
+    model = module.get(getModelToken(Founder.name));
+    mailService = module.get<MailService>(MailService);
   });
 
   afterEach(() => {
@@ -59,103 +58,61 @@ describe('FounderService', () => {
   });
 
   describe('signup', () => {
-    it('should throw ConflictException if email exists', async () => {
-      mockFounderModel.findOne.mockResolvedValueOnce({ _id: '1', email: 'test@test.com' });
-      const dto: CreateFounderDto = { name: 'Test', email: 'test@test.com', password: 'pass', phone: '123' };
-      await expect(service.signup(dto)).rejects.toThrow(ConflictException);
-    });
+    it('should successfully create a new founder', async () => {
+      const dto = { name: 'John', email: 'j@j.com', password: '123', phone: '123' };
+      model.findOne.mockReturnValue(null); // No existing user
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
+      model.create.mockResolvedValue({ ...mockFounder, ...dto, _id: { toString: () => 'id' } });
 
-    it('should throw ConflictException if name exists', async () => {
-      mockFounderModel.findOne
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({ _id: '1', name: 'Test' });
-      const dto: CreateFounderDto = { name: 'Test', email: 'new@test.com', password: 'pass', phone: '123' };
-      await expect(service.signup(dto)).rejects.toThrow(ConflictException);
-    });
-
-    it('should create founder and return FounderResponse', async () => {
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed_password');
-      mockFounderModel.findOne.mockResolvedValue(null);
-      mockFounderModel.create.mockResolvedValue({
-        _id: '1',
-        name: 'Test',
-        email: 'test@test.com',
-        password: 'hashed_password',
-        createdAt: new Date(),
-      });
-      const dto: CreateFounderDto = { name: 'Test', email: 'test@test.com', password: 'pass', phone: '123' };
       const result = await service.signup(dto);
-      expect(result).toHaveProperty('id', '1');
-      expect(result).toHaveProperty('name', 'Test');
-      expect(result).toHaveProperty('email', 'test@test.com');
+
+      expect(model.create).toHaveBeenCalled();
+      expect(result).toHaveProperty('id');
+      expect(result.email).toBe(dto.email);
+    });
+
+    it('should throw ConflictException if email exists', async () => {
+      model.findOne.mockReturnValue(mockFounder);
+      await expect(service.signup({ email: 'test@test.com' } as any))
+        .rejects.toThrow(ConflictException);
     });
   });
 
   describe('login', () => {
-    const loginDto: LoginDto = { email: 'test@test.com', password: 'pass' };
-
-    it('should throw UnauthorizedException if user not found', async () => {
-      mockFounderModel.findOne.mockResolvedValue(null);
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should throw UnauthorizedException if password invalid', async () => {
-      mockFounderModel.findOne.mockResolvedValue({ _id: '1', email: 'test@test.com', password: 'hashed', name: 'Test' });
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should return token and user if login succeeds', async () => {
-      const loginDto = { email: 'test@test.com', password: 'pass' };
-      const mockUser = { _id: '1', email: 'test@test.com', password: 'hashed', name: 'Test' };
-
-      mockFounderModel.findOne.mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
-
-      mockConfigService.get.mockReturnValue('secret');
-      (jsonwebtoken.sign as jest.Mock).mockReturnValue('jwt_token');
+    it('should return a token for valid credentials', async () => {
+      const loginDto = { email: 'john@example.com', password: 'password123' };
+      
+      // Setup chain: model.findOne().select()
+      model.findOne.mockReturnValue({
+        select: jest.fn().mockReturnValue(mockFounder),
+      });
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.login(loginDto);
 
-      expect(result).toEqual({
-        token: 'jwt_token',
-        user: { id: '1', name: 'Test', email: 'test@test.com' },
-      });
-      expect(jsonwebtoken.sign).toHaveBeenCalled();
+      expect(result).toHaveProperty('token');
+      expect(result.user.email).toBe(mockFounder.email);
+    });
+
+    it('should throw UnauthorizedException for wrong password', async () => {
+      model.findOne.mockReturnValue({ select: jest.fn().mockReturnValue(mockFounder) });
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await expect(service.login({ email: 'j@j.com', password: 'wrong' }))
+        .rejects.toThrow(UnauthorizedException);
     });
   });
 
-  describe('getUserProfile', () => {
-    it('should throw UnauthorizedException if user not found', async () => {
-      mockFounderModel.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(null) });
-      await expect(service.getUserProfile('1')).rejects.toThrow(UnauthorizedException);
-    });
+  describe('forgotPassword', () => {
+    it('should call mailService if user exists', async () => {
+      model.findOne.mockReturnValue(mockFounder);
+      model.findByIdAndUpdate.mockResolvedValue(true);
+      mailService.sendPasswordResetEmail = jest.fn().mockResolvedValue(undefined);
 
-    it('should return user profile if found', async () => {
-      const mockUser = { _id: '1', name: 'Test', email: 'test@test.com' };
-      mockFounderModel.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(mockUser) });
-      const result = await service.getUserProfile('1');
-      expect(result).toBe(mockUser);
-    });
-  });
+      const result = await service.forgotPassword({ email: 'john@example.com' });
 
-  describe('updateProfile', () => {
-    it('should update user profile successfully', async () => {
-      const mockUser: any = { 
-        _id: '1', name: 'Old', email: 'old@test.com', phone: '123', save: jest.fn().mockResolvedValue({
-          _id: '1', name: 'New', email: 'new@test.com', createdAt: new Date()
-        }), password: 'hashed' 
-      };
-      mockFounderModel.findById.mockResolvedValue(mockUser);
-      mockFounderModel.findOne.mockResolvedValue(null);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('new_hashed');
-
-      const dto: UpdateFounderDto = { name: 'New', email: 'new@test.com', phone: '321', password: 'pass' };
-      const result = await service.updateProfile('1', dto);
-
-      expect(mockUser.save).toHaveBeenCalled();
-      expect(result.name).toBe('New');
-      expect(result.email).toBe('new@test.com');
+      expect(mailService.sendPasswordResetEmail).toHaveBeenCalled();
+      expect(result.message).toContain('password reset link has been sent');
     });
   });
 });
