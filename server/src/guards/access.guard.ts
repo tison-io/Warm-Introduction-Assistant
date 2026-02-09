@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Founder, FounderDocument } from 'src/founder/entities/founder.entity';
+import { Founder, FounderDocument } from '../founder/entities/founder.entity';
 
 @Injectable()
 export class AccessGuard implements CanActivate {
