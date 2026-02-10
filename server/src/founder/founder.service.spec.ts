@@ -8,7 +8,6 @@ import { Founder } from './entities/founder.entity';
 import * as bcrypt from 'bcrypt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 
-// Mock bcrypt
 jest.mock('bcrypt');
 
 describe('FounderService', () => {
@@ -60,7 +59,7 @@ describe('FounderService', () => {
   describe('signup', () => {
     it('should successfully create a new founder', async () => {
       const dto = { name: 'John', email: 'j@j.com', password: '123', phone: '123' };
-      model.findOne.mockReturnValue(null); // No existing user
+      model.findOne.mockReturnValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
       model.create.mockResolvedValue({ ...mockFounder, ...dto, _id: { toString: () => 'id' } });
 
@@ -82,7 +81,6 @@ describe('FounderService', () => {
     it('should return a token for valid credentials', async () => {
       const loginDto = { email: 'john@example.com', password: 'password123' };
       
-      // Setup chain: model.findOne().select()
       model.findOne.mockReturnValue({
         select: jest.fn().mockReturnValue(mockFounder),
       });

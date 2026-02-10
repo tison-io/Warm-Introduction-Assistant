@@ -24,7 +24,6 @@ describe('InvestorsService', () => {
     save: jest.fn(),
   };
 
-  // Helper for chaining mocks like .find().sort().skip().limit().exec()
   const mockQuery = {
     sort: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
@@ -66,8 +65,8 @@ describe('InvestorsService', () => {
   describe('findAll', () => {
     it('should return paginated investors for personal pipeline', async () => {
       const mockInvestors = [mockInvestor];
-      mockQuery.exec.mockResolvedValueOnce(mockInvestors); // For find()
-      investorModel.countDocuments().exec.mockResolvedValueOnce(1); // For countDocuments()
+      mockQuery.exec.mockResolvedValueOnce(mockInvestors);
+      investorModel.countDocuments().exec.mockResolvedValueOnce(1);
 
       const result = await service.findAll(mockUserId);
 

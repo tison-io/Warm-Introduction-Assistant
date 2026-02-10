@@ -29,22 +29,18 @@ export class FounderService {
   async signup(createFounderDto: CreateFounderDto): Promise<FounderResponse> {
     const { name, email, password, phone } = createFounderDto;
 
-    //Check for existing user
     const existingEmail = await this.founderModel.findOne({ email});
     if (existingEmail) {
       throw new ConflictException('Email is already in use');
     }
 
-    //Check for existing name
     const existingName = await this.founderModel.findOne({ name });
     if (existingName) {
       throw new ConflictException('Name is already in use');
     }
 
-    //Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //Create founder
     const founder = await this.founderModel.create({
       name, 
       email, 
@@ -52,7 +48,6 @@ export class FounderService {
       phone
     });
 
-    //return saved founder
     return {
       id: founder._id.toString(),
       name: founder.name,
@@ -123,7 +118,6 @@ export class FounderService {
       throw new UnauthorizedException('User not found');
     }
 
-    // Check for duplicate email
     if (email && email !== user.email) {
       const existingEmail = await this.founderModel.findOne({ email });
       if (existingEmail) {
@@ -132,7 +126,6 @@ export class FounderService {
       user.email = email;
     }
 
-    // Check for duplicate name
     if (name && name !== user.name) {
       const existingName = await this.founderModel.findOne({ name });
       if (existingName) {
@@ -179,15 +172,12 @@ export class FounderService {
     
     const user = await this.founderModel.findOne({ email });
     if (!user) {
-      // Don't reveal if email exists or not for security
       return { message: 'If the email exists, a password reset link has been sent.' };
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+    const resetTokenExpiry = new Date(Date.now() + 3600000);
 
-    // Save reset token to user
     await this.founderModel.findByIdAndUpdate(
       user._id,
       {
@@ -197,7 +187,6 @@ export class FounderService {
       { runValidators: false }
     );
 
-    // Send reset email
     try {
       await this.mailService.sendPasswordResetEmail(email, resetToken);
       return { message: 'If the email exists, a password reset link has been sent.' };
@@ -219,10 +208,8 @@ export class FounderService {
       throw new UnauthorizedException('Invalid or expired reset token');
     }
 
-    // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update password and clear reset token
     await this.founderModel.findByIdAndUpdate(
       user._id, 
       {

@@ -33,7 +33,6 @@ export class InvestorsService {
       await this.workspaceService.getMembers(workspaceId, userId);
       query.workspaceId = new Types.ObjectId(workspaceId);
     } else {
-      // Personal Pipeline: Look for null OR missing workspaceId
       query.userId = userId;
       query.workspaceId = { $in: [null, undefined] }; 
     }
@@ -83,11 +82,9 @@ export class InvestorsService {
     const investor = await this.investorModel.findById(id);
     if(!investor) throw new NotFoundException('Investor not found');
 
-    //If in workspace, check if user is a member
     if(investor.workspaceId) {
       await this.workspaceService.getMembers(investor.workspaceId.toString(), userId);
     } else {
-      //Personal pipeline - check owner
       if(investor.userId.toString() !== userId) throw new ForbiddenException('You are not authorized to update this investor.');
     }
 
@@ -107,7 +104,6 @@ export class InvestorsService {
     const investor = await this.investorModel.findById(id);
     if(!investor) throw new NotFoundException('Investor not found.');
 
-    //Only creator can delete
     if(investor.userId.toString() !== userId) {
       throw new ForbiddenException('You are not authorized to delete this investor.');
     }
@@ -116,7 +112,6 @@ export class InvestorsService {
   }
 
   async getFundraisingVelocity(userId: string, workspaceId?: string) {
-    // 1. Cast string IDs to ObjectIds for the Aggregation Pipeline
     const userObjectId = new Types.ObjectId(userId);
     const workspaceObjectId = workspaceId ? new Types.ObjectId(workspaceId) : null;
 
@@ -129,10 +124,8 @@ export class InvestorsService {
     };
 
     if (workspaceObjectId) {
-      // Workspace velocity
       matchQuery.workspaceId = workspaceObjectId;
     } else {
-      // Personal velocity
       matchQuery.userId = userObjectId;
       matchQuery.workspaceId = { $in: [null, undefined] };
     }
@@ -188,8 +181,8 @@ export class InvestorsService {
       name: { $nin: existingInPipeline },
       tags: { $in: tagRegexes},          
       $or: [
-        { userId: new Types.ObjectId(userId) }, // My personal investors 
-        { visibility: 'public' }               // Global public investors
+        { userId: new Types.ObjectId(userId) },
+        { visibility: 'public' }             
       ]
     })
     .limit(20)

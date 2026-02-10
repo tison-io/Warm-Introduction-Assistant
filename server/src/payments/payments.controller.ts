@@ -2,7 +2,7 @@ import { Controller, Post, Body, Headers, Req, BadRequestException, UseGuards, G
 import type { RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
 import { PaymentsService } from './payments.service';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Controller('payments')
 export class PaymentsController {

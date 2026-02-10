@@ -3,7 +3,7 @@ import { TransformService } from './transform.service';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { SendIntroDto } from './dto/send-intro.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { AccessGuard } from 'src/guards/access.guard';
+import { AccessGuard } from '../guards/access.guard';
 
 @Controller('intros')
 export class TransformController {
@@ -47,7 +47,7 @@ export class TransformController {
   @UseGuards(JwtAuthGuard, AccessGuard)
   async getRate(@Req() req: any, @Query('workspaceId') workspaceId?: string) {
     const rate = await this.transformService.getExecutionRate(req.user.userId, workspaceId);
-    return { executionRate: rate }; // Output example: { "executionRate": 75 }
+    return { executionRate: rate };
   }
 
   @Patch(':id')
@@ -81,14 +81,12 @@ export class TransformController {
     );
   }
 
-  //Request investor consent ---
   @Post(':id/request-consent')
   @UseGuards(JwtAuthGuard, AccessGuard)
   async requestConsent(@Param('id') id: string) {
     return this.transformService.requestInvestorConsent(id);
   }
 
-  //Approve intro ---
   @Post(':id/approve')
   @UseGuards()
   async approveIntro(@Param('id') id: string, @Body('email') email: string) {

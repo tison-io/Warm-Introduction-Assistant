@@ -1,56 +1,77 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TransformService } from './transform.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { IntroQueue } from './entities/intro-queue.schema';
-import { ReminderService } from '../scheduler/reminder.service';
 import { Types } from 'mongoose';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { IntroQueue } from './entities/intro-queue.schema';
+import { Founder } from '../founder/entities/founder.entity';
+import { Investor } from '../schemas/investor.schema';
+import { ReminderService } from '../scheduler/reminder.service';
+import { WorkspacesService } from '../workspace/workspace.service';
+import { MailService } from '../mail/mail.service';
 
-// Mock Mongoose Document
-class MockIntroQueueDocument {
-  _id = new Types.ObjectId();
-  startupId: Types.ObjectId;
-  startupName: string;
-  investorId: Types.ObjectId;
-  investorName: string;
-  founderId: Types.ObjectId;
-  preferredIntroFormat: string;
-  introPreferencesText?: string;
-  generatedIntro: string;
-  status: 'queued' | 'sent' | 'completed' = 'queued';
-  reminderSent: boolean = false;
-  followUpCount: number = 0;
-  followUpDueDate?: Date;
-  sentDate?: Date;
-
-  constructor(data: Partial<MockIntroQueueDocument>) {
-    Object.assign(this, data);
-  }
-
-  save = jest.fn().mockResolvedValue(this);
-}
+global.fetch = jest.fn();
 
 describe('TransformService', () => {
   let service: TransformService;
   let introQueueModel: any;
-  let reminderService: any;
+  let founderModel: any;
+  let mailService: any;
+
+  const mockUserId = new Types.ObjectId().toString();
 
   beforeEach(async () => {
+    const mockQuery = {
+      find: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      exec: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TransformService,
         {
           provide: getModelToken(IntroQueue.name),
           useValue: {
-            create: jest.fn(),
-            find: jest.fn(),
+            ...mockQuery,
+            countDocuments: jest.fn(),
             findById: jest.fn(),
+            findByIdAndUpdate: jest.fn(),
+            findByIdAndDelete: jest.fn(),
+            create: jest.fn(),
+            aggregate: jest.fn(),
           },
         },
         {
+          provide: getModelToken('IntroOutcomeLog'),
+          useValue: { 
+            create: jest.fn(), 
+            find: jest.fn().mockReturnValue(mockQuery) 
+          },
+        },
+        {
+          provide: getModelToken(Investor.name),
+          useValue: { findByIdAndUpdate: jest.fn() },
+        },
+        {
+          provide: getModelToken(Founder.name),
+          useValue: { findById: jest.fn() },
+        },
+        {
           provide: ReminderService,
+          useValue: { createReminder: jest.fn() },
+        },
+        {
+          provide: WorkspacesService,
+          useValue: { getMembers: jest.fn() },
+        },
+        {
+          provide: MailService,
           useValue: {
-            createReminder: jest.fn(),
+            sendConsentEmail: jest.fn(),
+            sendGeneratedIntroEmail: jest.fn(),
           },
         },
       ],
@@ -58,146 +79,104 @@ describe('TransformService', () => {
 
     service = module.get<TransformService>(TransformService);
     introQueueModel = module.get(getModelToken(IntroQueue.name));
-    reminderService = module.get(ReminderService);
+    founderModel = module.get(getModelToken(Founder.name));
+    mailService = module.get<MailService>(MailService);
   });
 
-  afterEach(() => jest.clearAllMocks());
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-  describe('transformIntro', () => {
-    it('should throw BadRequestException if blurb is missing', async () => {
-      await expect(service.transformIntro({ blurb: '', investor_preference: 'pref' } as any))
-        .rejects.toThrow(BadRequestException);
+  describe('transformIntro (Tier Limits & GenAI)', () => {
+    it('should throw ForbiddenException if free tier user exceeds 5 intros', async () => {
+      founderModel.findById.mockResolvedValue({ tier: 'free' });
+      introQueueModel.countDocuments.mockResolvedValue(5);
+
+      await expect(
+        service.transformIntro({ blurb: 'test', investor_preference: 'email' }, mockUserId),
+      ).rejects.toThrow(ForbiddenException);
     });
 
-    it('should throw BadRequestException if investor_preference is missing', async () => {
-      await expect(service.transformIntro({ blurb: 'blurb', investor_preference: '' } as any))
-        .rejects.toThrow(BadRequestException);
-    });
-
-    it('should return transformed intro response', async () => {
-      global.fetch = jest.fn().mockResolvedValue({
+    it('should return transformed text on successful API call', async () => {
+      founderModel.findById.mockResolvedValue({ tier: 'pro' });
+      (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
-        text: jest.fn().mockResolvedValue('Transformed intro text'),
-      } as any);
-
-      const dto = { blurb: 'Hello', investor_preference: 'pref' };
-      const result = await service.transformIntro(dto as any);
-
-      expect(result.transformed_intro).toBe('Transformed intro text');
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe('getIntrosByFounder', () => {
-    it('should return intros for a founder', async () => {
-      const founderId = new Types.ObjectId().toHexString();
-      const mockIntro = new MockIntroQueueDocument({ founderId: new Types.ObjectId(founderId) });
-
-      introQueueModel.find.mockReturnValue({
-        sort: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue([mockIntro]),
-        }),
+        text: () => Promise.resolve('Transformed Intro Content'),
       });
 
-      const result = await service.getIntrosByFounder(founderId);
-      expect(result).toEqual([mockIntro]);
-    });
-  });
-
-  describe('queueIntro', () => {
-    it('should create a queued intro', async () => {
-      const founderId = new Types.ObjectId().toHexString();
-      const startupId = new Types.ObjectId().toHexString();
-      const investorId = new Types.ObjectId().toHexString();
-
-      const mockIntro = new MockIntroQueueDocument({
-        founderId: new Types.ObjectId(founderId),
-        startupId: new Types.ObjectId(startupId),
-        investorId: new Types.ObjectId(investorId),
-        startupName: 'Startup',
-        investorName: 'Investor',
-        preferredIntroFormat: 'email',
-        generatedIntro: 'Generated',
-      });
-
-      introQueueModel.create.mockResolvedValue(mockIntro);
-
-      const result = await service.queueIntro({
-        founderId,
-        startupId,
-        startupName: 'Startup',
-        investorId,
-        investorName: 'Investor',
-        preferredIntroFormat: 'email',
-        generatedIntro: 'Generated',
-      });
-
-      expect(introQueueModel.create).toHaveBeenCalled();
-      expect(result).toEqual(mockIntro);
-    });
-
-    it('should throw BadRequestException if followUpDueDate is provided', async () => {
-      await expect(service.queueIntro({
-        founderId: new Types.ObjectId().toHexString(),
-        startupId: new Types.ObjectId().toHexString(),
-        startupName: 'Startup',
-        investorId: new Types.ObjectId().toHexString(),
-        investorName: 'Investor',
-        preferredIntroFormat: 'email',
-        generatedIntro: 'Generated',
-        followUpDueDate: new Date(),
-      })).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('updateIntroStatus', () => {
-    it('should throw NotFoundException if intro not found', async () => {
-      introQueueModel.findById.mockResolvedValue(null);
-      await expect(service.updateIntroStatus(new Types.ObjectId().toHexString(), 'sent', new Date()))
-        .rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw BadRequestException if followUpDueDate rules are violated', async () => {
-      const intro = new MockIntroQueueDocument({});
-      introQueueModel.findById.mockResolvedValue(intro);
-
-      await expect(service.updateIntroStatus(new Types.ObjectId().toHexString(), 'sent'))
-        .rejects.toThrow(BadRequestException);
-
-      await expect(service.updateIntroStatus(new Types.ObjectId().toHexString(), 'queued', new Date()))
-        .rejects.toThrow(BadRequestException);
-    });
-
-    it('should update intro status to sent and call reminderService', async () => {
-      const founderId = new Types.ObjectId();
-      const intro = new MockIntroQueueDocument({
-        founderId,
-        status: 'queued',
-      });
-      introQueueModel.findById.mockResolvedValue(intro);
-
-      const followUpDate = new Date();
-      reminderService.createReminder.mockResolvedValue({ success: true });
-
-      const result = await service.updateIntroStatus(intro._id.toHexString(), 'sent', followUpDate);
-
-      expect(result.status).toBe('sent');
-      expect(result.sentDate).toBeInstanceOf(Date);
-      expect(result.followUpDueDate).toBe(followUpDate);
-      expect(reminderService.createReminder).toHaveBeenCalledWith(
-        founderId.toHexString(),
-        intro._id.toHexString(),
-        followUpDate
+      const result = await service.transformIntro(
+        { blurb: 'b', investor_preference: 'email' },
+        mockUserId,
       );
+      expect(result.transformed_intro).toBe('Transformed Intro Content');
+      expect(global.fetch).toHaveBeenCalled();
+    });
+  });
+
+  describe('processApproval (Double Opt-in Logic)', () => {
+    const mockIntro = {
+      _id: 'intro_123',
+      investorEmail: 'investor@test.com',
+      founderEmail: 'founder@test.com',
+      status: 'approvals_requested',
+      investorName: 'Investor Name',
+      founderName: 'Founder Name',
+      startupName: 'Startup Name',
+      generatedIntro: 'Hello...',
+      save: jest.fn().mockResolvedValue(true),
+    };
+
+    it('should set status to investor_approved when investor approves first', async () => {
+      introQueueModel.findById.mockResolvedValue({ ...mockIntro });
+
+      const result = await service.processApproval('intro_123', 'investor@test.com');
+
+      expect(result.intro.status).toBe('investor_approved');
+      expect(result.message).toContain('Waiting for the other party');
     });
 
-    it('should update intro status to completed', async () => {
-      const intro = new MockIntroQueueDocument({ status: 'sent' });
-      introQueueModel.findById.mockResolvedValue(intro);
+    it('should finalize and send intro if investor approves after founder already approved', async () => {
+      const alreadyApprovedIntro = { 
+        ...mockIntro, 
+        status: 'founder_approved',
+        save: jest.fn().mockResolvedValue(true) 
+      };
+      introQueueModel.findById.mockResolvedValue(alreadyApprovedIntro);
 
-      const result = await service.updateIntroStatus(intro._id.toHexString(), 'completed');
-      expect(result.status).toBe('completed');
-      expect(result.followUpDueDate).toBeNull();
+      await service.processApproval('intro_123', 'investor@test.com');
+
+      expect(alreadyApprovedIntro.status).toBe('sent');
+      expect(mailService.sendGeneratedIntroEmail).toHaveBeenCalled();
+    });
+  });
+
+  describe('getExecutionRate (Aggregation)', () => {
+    it('should return calculated rate from aggregation results', async () => {
+      introQueueModel.aggregate.mockResolvedValue([{ rate: 75 }]);
+
+      const rate = await service.getExecutionRate(mockUserId);
+
+      expect(rate).toBe(75);
+    });
+
+    it('should return 0 if no intros exist', async () => {
+      introQueueModel.aggregate.mockResolvedValue([]);
+      const rate = await service.getExecutionRate(mockUserId);
+      expect(rate).toBe(0);
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete if user is the founder', async () => {
+      const mockIntro = { 
+        founderId: new Types.ObjectId(mockUserId),
+        workspaceId: null 
+      };
+      introQueueModel.findById.mockResolvedValue(mockIntro);
+      introQueueModel.findByIdAndDelete.mockResolvedValue(true);
+
+      await service.remove('intro_id', mockUserId);
+      expect(introQueueModel.findByIdAndDelete).toHaveBeenCalledWith('intro_id');
     });
   });
 });
