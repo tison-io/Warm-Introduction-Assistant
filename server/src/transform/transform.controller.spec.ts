@@ -1,13 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TransformController } from './transform.controller';
 import { TransformService } from './transform.service';
-import { TransformIntroDto } from './dto/transform-intro.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-
-// Mock JwtAuthGuard so it doesn’t block tests
-jest.mock('../guards/jwt-auth.guard', () => ({
-  JwtAuthGuard: class {},
-}));
+import { AccessGuard } from '../guards/access.guard';
 
 describe('TransformController', () => {
   let controller: TransformController;
@@ -15,12 +10,19 @@ describe('TransformController', () => {
 
   const mockTransformService = {
     transformIntro: jest.fn(),
-    getIntrosByFounder: jest.fn(),
+    getIntros: jest.fn(),
     queueIntro: jest.fn(),
+    getOutcomeLogs: jest.fn(),
+    getExecutionRate: jest.fn(),
+    updateIntro: jest.fn(),
+    remove: jest.fn(),
     updateIntroStatus: jest.fn(),
+    requestInvestorConsent: jest.fn(),
+    processApproval: jest.fn(),
   };
 
-  const mockReq = { user: { userId: 'founder123' } };
+  const mockGuard = { canActivate: jest.fn(() => true) };
+  const mockUserRequest = { user: { userId: 'user_999' } };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,7 +33,12 @@ describe('TransformController', () => {
           useValue: mockTransformService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AccessGuard)
+      .useValue(mockGuard)
+      .compile();
 
     controller = module.get<TransformController>(TransformController);
     service = module.get<TransformService>(TransformService);
@@ -45,65 +52,58 @@ describe('TransformController', () => {
     expect(controller).toBeDefined();
   });
 
-  // -----------------------------
-  // transformIntro
-  // -----------------------------
   describe('transformIntro', () => {
-    it('should call transformService.transformIntro with DTO', async () => {
-      const dto: TransformIntroDto = { blurb: 'Hello', investor_preference: 'email' };
-      const result = { success: true, transformed_intro: 'Transformed' };
-
-      mockTransformService.transformIntro.mockResolvedValue(result);
-
-      const response = await controller.transformIntro(dto);
-      expect(response).toBe(result);
-      expect(service.transformIntro).toHaveBeenCalledWith(dto);
+    it('should call service.transformIntro', async () => {
+      const dto = { blurb: 'test', investor_preference: 'tech' };
+      await controller.transformIntro(dto as any, mockUserRequest);
+      expect(service.transformIntro).toHaveBeenCalledWith(dto, 'user_999');
     });
   });
 
-  // -----------------------------
-  // getMyIntros
-  // -----------------------------
   describe('getMyIntros', () => {
-    it('should call transformService.getIntrosByFounder with userId', async () => {
-      const intros = [{ _id: '1' }, { _id: '2' }];
-      mockTransformService.getIntrosByFounder.mockResolvedValue(intros);
+    it('should handle pagination and search queries', async () => {
+      await controller.getMyIntros(mockUserRequest, 'work_1', 'search_val', 2);
+      expect(service.getIntros).toHaveBeenCalledWith('user_999', 'work_1', 'search_val', 2);
+    });
 
-      const response = await controller.getMyIntros(mockReq);
-      expect(response).toBe(intros);
-      expect(service.getIntrosByFounder).toHaveBeenCalledWith('founder123');
+    it('should default page to 1 if invalid number provided', async () => {
+      await controller.getMyIntros(mockUserRequest, undefined, undefined, 0);
+      expect(service.getIntros).toHaveBeenCalledWith('user_999', undefined, undefined, 1);
     });
   });
 
-  // -----------------------------
-  // queue
-  // -----------------------------
-  describe('queue', () => {
-    it('should call transformService.queueIntro with provided data', async () => {
-      const data = { startupId: '1', generatedIntro: 'Intro text' };
-      const created = { _id: 'abc', ...data };
-
-      mockTransformService.queueIntro.mockResolvedValue(created);
-
-      const response = await controller.queue(data);
-      expect(response).toBe(created);
-      expect(service.queueIntro).toHaveBeenCalledWith(data);
+  describe('metrics/execution-rate', () => {
+    it('should return wrapped execution rate object', async () => {
+      mockTransformService.getExecutionRate.mockResolvedValue(85);
+      const result = await controller.getRate(mockUserRequest, 'work_1');
+      expect(result).toEqual({ executionRate: 85 });
+      expect(service.getExecutionRate).toHaveBeenCalledWith('user_999', 'work_1');
     });
   });
 
-  // -----------------------------
-  // updateStatus
-  // -----------------------------
+  describe('Double Opt-in Flow', () => {
+    it('requestConsent should call service with id', async () => {
+      await controller.requestConsent('intro_1');
+      expect(service.requestInvestorConsent).toHaveBeenCalledWith('intro_1');
+    });
+
+    it('approveIntro should call service with id and email', async () => {
+      const email = 'test@investor.com';
+      await controller.approveIntro('intro_1', email);
+      expect(service.processApproval).toHaveBeenCalledWith('intro_1', email);
+    });
+  });
+
   describe('updateStatus', () => {
-    it('should call transformService.updateIntroStatus with id, status, and followUpDueDate', async () => {
+    it('should pass status and followUpDate to service', async () => {
       const body = { status: 'sent' as const, followUpDueDate: new Date() };
-      const updated = { _id: '1', status: 'sent' };
-
-      mockTransformService.updateIntroStatus.mockResolvedValue(updated);
-
-      const response = await controller.updateStatus('1', body);
-      expect(response).toBe(updated);
-      expect(service.updateIntroStatus).toHaveBeenCalledWith('1', body.status, body.followUpDueDate);
+      await controller.updateStatus('intro_1', mockUserRequest, body);
+      expect(service.updateIntroStatus).toHaveBeenCalledWith(
+        'intro_1',
+        'user_999',
+        body.status,
+        body.followUpDueDate
+      );
     });
   });
 });

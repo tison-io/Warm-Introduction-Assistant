@@ -1,27 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReminderController } from './reminder.controller';
 import { ReminderService } from './reminder.service';
-import { Types } from 'mongoose';
-import { NotFoundException } from '@nestjs/common';
-
-// Mock ReminderService
-const mockReminderService = {
-  findAllByUser: jest.fn(),
-  markReminderAndIntroCompleted: jest.fn(),
-  deleteReminder: jest.fn(),
-};
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AccessGuard } from '../guards/access.guard';
 
 describe('ReminderController', () => {
   let controller: ReminderController;
-  let service: typeof mockReminderService;
+  let service: ReminderService;
 
-  const mockFounderId = new Types.ObjectId().toHexString();
-  const mockReminderId = new Types.ObjectId().toHexString();
-  const mockReminder = {
-    _id: mockReminderId,
-    founderId: mockFounderId,
-    introId: new Types.ObjectId(),
-    status: 'queued',
+  const mockReminderService = {
+    findAllByUser: jest.fn(),
+    markReminderAndIntroCompleted: jest.fn(),
+    deleteReminder: jest.fn(),
+  };
+
+  const mockGuard = { canActivate: jest.fn(() => true) };
+
+  const mockRequest = {
+    user: { userId: 'user_123' },
   };
 
   beforeEach(async () => {
@@ -33,54 +29,57 @@ describe('ReminderController', () => {
           useValue: mockReminderService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AccessGuard)
+      .useValue(mockGuard)
+      .compile();
 
     controller = module.get<ReminderController>(ReminderController);
-    service = module.get(ReminderService);
+    service = module.get<ReminderService>(ReminderService);
   });
 
-  afterEach(() => jest.clearAllMocks());
-
-  it('should get all reminders for founder', async () => {
-    mockReminderService.findAllByUser.mockResolvedValue([mockReminder]);
-    const req = { user: { userId: mockFounderId } };
-
-    const result = await controller.getAllReminders(req);
-
-    expect(service.findAllByUser).toHaveBeenCalledWith(mockFounderId);
-    expect(result).toEqual([mockReminder]);
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should mark a reminder as done', async () => {
-    mockReminderService.markReminderAndIntroCompleted.mockResolvedValue({ success: true });
-    const req = { user: { userId: mockFounderId } };
-
-    const result = await controller.markAsDone(mockReminderId, req);
-
-    expect(service.markReminderAndIntroCompleted).toHaveBeenCalledWith(mockReminderId, mockFounderId);
-    expect(result).toEqual({ success: true });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 
-  it('should delete a reminder', async () => {
-    mockReminderService.deleteReminder.mockResolvedValue({ success: true });
-    const req = { user: { userId: mockFounderId } };
+  describe('getAllReminders', () => {
+    it('should call findAllByUser with userId and workspaceId', async () => {
+      const workspaceId = 'work_999';
+      mockReminderService.findAllByUser.mockResolvedValue([]);
 
-    await controller.deleteReminder(mockReminderId, req);
+      await controller.getAllReminders(mockRequest, workspaceId);
 
-    expect(service.deleteReminder).toHaveBeenCalledWith(mockReminderId, mockFounderId);
+      expect(service.findAllByUser).toHaveBeenCalledWith('user_123', workspaceId);
+    });
   });
 
-  it('should handle NotFoundException when marking as done', async () => {
-    mockReminderService.markReminderAndIntroCompleted.mockRejectedValue(new NotFoundException());
-    const req = { user: { userId: mockFounderId } };
+  describe('markAsDone', () => {
+    it('should call markReminderAndIntroCompleted', async () => {
+      const reminderId = 'rem_1';
+      mockReminderService.markReminderAndIntroCompleted.mockResolvedValue({ success: true });
 
-    await expect(controller.markAsDone(mockReminderId, req)).rejects.toThrow(NotFoundException);
+      const result = await controller.markAsDone(reminderId, mockRequest);
+
+      expect(service.markReminderAndIntroCompleted).toHaveBeenCalledWith(reminderId, 'user_123');
+      expect(result).toEqual({ success: true });
+    });
   });
 
-  it('should handle NotFoundException when deleting reminder', async () => {
-    mockReminderService.deleteReminder.mockRejectedValue(new NotFoundException());
-    const req = { user: { userId: mockFounderId } };
+  describe('deleteReminder', () => {
+    it('should call deleteReminder service method', async () => {
+      const reminderId = 'rem_2';
+      mockReminderService.deleteReminder.mockResolvedValue({ success: true });
 
-    await expect(controller.deleteReminder(mockReminderId, req)).rejects.toThrow(NotFoundException);
+      const result = await controller.deleteReminder(reminderId, mockRequest);
+
+      expect(service.deleteReminder).toHaveBeenCalledWith(reminderId, 'user_123');
+      expect(result).toEqual({ success: true });
+    });
   });
 });

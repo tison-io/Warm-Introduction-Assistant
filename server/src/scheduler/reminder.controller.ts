@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { ReminderService } from './reminder.service';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { AccessGuard } from 'src/guards/access.guard';
+import { AccessGuard } from '../guards/access.guard';
 
 @Controller('reminders')
 @UseGuards(JwtAuthGuard, AccessGuard)

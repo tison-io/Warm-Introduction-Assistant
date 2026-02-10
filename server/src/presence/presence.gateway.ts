@@ -54,7 +54,6 @@ export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect
                 lastActive: lastSeen,
             });
 
-            // FIX: Match the event name "userStatusUpdate" used in your React hook
             this.server.emit('userStatusUpdate', { 
                 userId, 
                 isOnline: false, 

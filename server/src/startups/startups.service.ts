@@ -12,7 +12,6 @@ export class StartupsService {
     private startupModel: Model<StartupDocument>,
   ) {}
 
-  //Public
   async create(dto: CreateStartupDto) {
 
     const startup = new this.startupModel({

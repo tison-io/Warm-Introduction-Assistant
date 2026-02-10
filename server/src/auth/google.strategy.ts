@@ -14,7 +14,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET');
         const callbackURL = configService.get<string>('GOOGLE_CALLBACK_URL');
 
-        // Add a check to ensure configuration is available
         if (!clientID || !clientSecret || !callbackURL) {
             throw new UnauthorizedException('Google OAuth configuration is missing.');
         }

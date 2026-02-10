@@ -18,13 +18,11 @@ export class AccessGuard implements CanActivate {
         const founder = await this.founderModel.findById(user.userId);
         if (!founder) return false;
 
-        //Check lifetime access
         if (founder.tier === 'lifetime') {
             return true;
         }
 
-        //Check Trial Expiry
-        const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days free trial
+        const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
         const expiryDate = new Date(founder.trialStartDate.getTime() + TRIAL_DURATION_MS);
         const now = new Date();
 

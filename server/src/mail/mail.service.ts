@@ -12,12 +12,12 @@ export class MailService {
   private brevoFromName: string;
 
   constructor(private readonly configService: ConfigService) {
-    // --- Initialize Resend ---
+    // --- Initialize Resend
     const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
     if (!resendApiKey) throw new Error('RESEND_API_KEY is missing');
     this.resend = new Resend(resendApiKey);
 
-    // --- Initialize Brevo Transactional API ---
+    // --- Initialize Brevo Transactional API
     const brevoApiKey = this.configService.get<string>('BREVO_API_KEY');
     if (!brevoApiKey) throw new Error('BREVO_API_KEY is missing');
 
@@ -33,7 +33,7 @@ export class MailService {
     }
   }
 
-  // --- Resend: Contact Form ---
+  // --- Resend: Contact Form
   async sendContactEmail(name: string, email: string, message: string) {
     const fromEmail = this.configService.get<string>('RESEND_FROM_EMAIL');
     const toEmail = this.configService.get<string>('CONTACT_RECEIVER_EMAIL');
@@ -49,7 +49,7 @@ export class MailService {
     });
   }
 
-  // --- Brevo: Password Reset ---
+  // --- Brevo: Password Reset
   async sendPasswordResetEmail(targetEmail: string, token: string) {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
@@ -83,7 +83,7 @@ export class MailService {
     }
   }
 
-  // ---Brevo: Consent Emails ---
+  // ---Brevo: Consent Emails
   async sendConsentEmail(options: {
     recipients: { email: string; name: string }[];
     startupName: string;
@@ -143,7 +143,7 @@ export class MailService {
     return await this.brevoApi.sendTransacEmail(sendSmtpEmail);
   }
 
-  // --- Brevo: Intro Emails ---
+  // --- Brevo: Intro Emails
   async sendGeneratedIntroEmail(options: {
     investorEmail: string;
     investorName: string;
@@ -184,7 +184,7 @@ export class MailService {
       </div>
     `;
 
-    /* // Move the community manager to BCC after the initial mail
+    /* // Move the community manager to BCC
     sendSmtpEmail.bcc = [{ email: this.brevoFromEmail, name: this.brevoFromName }];  To add this later*/
 
     try {
@@ -195,7 +195,7 @@ export class MailService {
     }
   }
 
-  // --- Brevo: Worspace Invitation Emails ---
+  // --- Brevo: Worspace Invitation Emails
   async sendWorkspaceInvite(email: string, workspaceName: string, inviterName: string, token: string) {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
     const inviteUrl = `${frontendUrl}/accept-invite?token=${token}`;

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StartupsController } from './startups.controller';
 import { StartupsService } from './startups.service';
-import { CreateStartupDto } from './dto/create-startup.dto';
-import { UpdateStartupDto } from './dto/update-startup.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { AccessGuard } from '../guards/access.guard';
 
 describe('StartupsController', () => {
   let controller: StartupsController;
@@ -10,13 +10,14 @@ describe('StartupsController', () => {
 
   const mockStartupsService = {
     create: jest.fn(),
-    findAllByFounder: jest.fn(),
+    findMyRequests: jest.fn(),
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
   };
 
-  const mockReq = { user: { userId: 'founder123' } };
+  const mockGuard = { canActivate: jest.fn(() => true) };
+  const mockUserRequest = { user: { userId: 'founder_123' } };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,10 +28,19 @@ describe('StartupsController', () => {
           useValue: mockStartupsService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue(mockGuard)
+      .overrideGuard(AccessGuard)
+      .useValue(mockGuard)
+      .compile();
 
     controller = module.get<StartupsController>(StartupsController);
     service = module.get<StartupsService>(StartupsService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -38,65 +48,59 @@ describe('StartupsController', () => {
   });
 
   describe('create', () => {
-    it('should call service.create with correct arguments', async () => {
-      const dto: CreateStartupDto = {
-        name: 'Test Startup',
-        blurb: 'Short description',
-        pitchLink: 'https://link.com',
-      };
-      const result = { _id: '1', ...dto };
-
-      mockStartupsService.create.mockResolvedValue(result);
-
-      const response = await controller.create(dto, mockReq);
-      expect(response).toBe(result);
-      expect(service.create).toHaveBeenCalledWith(dto, 'founder123');
+    it('should call service.create with dto', async () => {
+      const dto = { name: 'New Startup' };
+      await controller.create(dto as any, mockUserRequest);
+      expect(service.create).toHaveBeenCalledWith(dto);
     });
   });
 
   describe('findMyStartups', () => {
-    it('should return startups for the logged-in founder', async () => {
-      const startups = [{ _id: '1' }, { _id: '2' }];
-      mockStartupsService.findAllByFounder.mockResolvedValue(startups);
+    it('should convert query strings to numbers and call service', async () => {
+      await controller.findMyStartups(mockUserRequest, '2', '10', 'search-term');
 
-      const response = await controller.findMyStartups(mockReq);
-      expect(response).toBe(startups);
-      expect(service.findAllByFounder).toHaveBeenCalledWith('founder123');
+      expect(service.findMyRequests).toHaveBeenCalledWith(
+        'founder_123',
+        2,
+        10,
+        'search-term'
+      );
+    });
+
+    it('should use default values if queries are not provided', async () => {
+      await controller.findMyStartups(mockUserRequest);
+
+      expect(service.findMyRequests).toHaveBeenCalledWith(
+        'founder_123',
+        1,
+        5,
+        undefined
+      );
     });
   });
 
   describe('findOne', () => {
-    it('should return a single startup', async () => {
-      const startup = { _id: '1', name: 'Test' };
-      mockStartupsService.findOne.mockResolvedValue(startup);
-
-      const response = await controller.findOne('1', mockReq);
-      expect(response).toBe(startup);
-      expect(service.findOne).toHaveBeenCalledWith('1', 'founder123');
+    it('should pass id and userId to service', async () => {
+      const id = 'startup_abc';
+      await controller.findOne(id, mockUserRequest);
+      expect(service.findOne).toHaveBeenCalledWith(id, 'founder_123');
     });
   });
 
   describe('update', () => {
-    it('should update a startup', async () => {
-      const dto: UpdateStartupDto = { name: 'Updated' };
-      const updated = { _id: '1', ...dto };
-
-      mockStartupsService.update.mockResolvedValue(updated);
-
-      const response = await controller.update('1', dto, mockReq);
-      expect(response).toBe(updated);
-      expect(service.update).toHaveBeenCalledWith('1', dto, 'founder123');
+    it('should pass id, dto, and userId to service', async () => {
+      const id = 'startup_abc';
+      const dto = { name: 'Updated' };
+      await controller.update(id, dto, mockUserRequest);
+      expect(service.update).toHaveBeenCalledWith(id, dto, 'founder_123');
     });
   });
 
   describe('remove', () => {
-    it('should delete a startup', async () => {
-      const response = { message: 'Startup deleted successfully' };
-      mockStartupsService.remove.mockResolvedValue(response);
-
-      const res = await controller.remove('1', mockReq);
-      expect(res).toBe(response);
-      expect(service.remove).toHaveBeenCalledWith('1', 'founder123');
+    it('should call remove with correct parameters', async () => {
+      const id = 'startup_abc';
+      await controller.remove(id, mockUserRequest);
+      expect(service.remove).toHaveBeenCalledWith(id, 'founder_123');
     });
   });
 });

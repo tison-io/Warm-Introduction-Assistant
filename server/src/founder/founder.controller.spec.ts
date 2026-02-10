@@ -8,7 +8,6 @@ describe('FounderController', () => {
   let controller: FounderController;
   let service: FounderService;
 
-  // 1. Create the Mock Service
   const mockFounderService = {
     signup: jest.fn(),
     login: jest.fn(),

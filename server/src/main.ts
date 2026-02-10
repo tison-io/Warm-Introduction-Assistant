@@ -7,18 +7,15 @@ import { getConnectionToken } from '@nestjs/mongoose';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
-  // Enable validation
   app.useGlobalPipes(new ValidationPipe());
 
-  // Enable CORS for frontend
   app.enableCors({
     origin: [
-      'http://localhost:3000',         // for local development
-      'https://warmly-intro-assistant.vercel.app', // for production
+      'http://localhost:3000',
+      'https://warmly-intro-assistant.vercel.app',
     ],
   });                                     
                                                                        
-  // mongoose connection events logging
   const connection = app.get<Connection>(getConnectionToken());
 
   if (connection.readyState === 1) {

@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Reminder } from '../schemas/reminder.schema';
 import { IntroQueue } from '../transform/entities/intro-queue.schema';
-import { WorkspacesService } from 'src/workspace/workspace.service';
+import { WorkspacesService } from '../workspace/workspace.service';
 
 @Injectable()
 export class ReminderService {
