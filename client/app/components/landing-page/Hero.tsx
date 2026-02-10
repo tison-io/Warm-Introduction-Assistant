@@ -28,7 +28,7 @@ const Hero = () => {
         <div 
           className="absolute top-1/2 left-[-10%] -translate-y-1/2 w-[600px] h-[600px] rounded-full"
           style={{
-            background: 'rgba(33, 163, 255, 0.25)',
+            background: 'rgba(33, 162, 255, 0.14)',
             filter: 'blur(130px)',
             boxShadow: '0 0 150px 50px rgba(33, 163, 255, 0.2)',
           }}
@@ -37,7 +37,7 @@ const Hero = () => {
         <div 
           className="absolute top-1/2 right-[-10%] -translate-y-1/2 w-[600px] h-[600px] rounded-full"
           style={{
-            background: 'rgba(132, 86, 201, 0.2)',
+            background: 'rgba(132, 86, 201, 0.27)',
             filter: 'blur(130px)',
             boxShadow: '0 0 150px 50px rgba(132, 86, 201, 0.15)',
           }}
@@ -88,7 +88,7 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row gap-5 mb-14 w-full" style={getRevealStyle(0.75)}>
             <Link
               href="#"
-              className="group flex items-center justify-center px-10 py-4.5 rounded-xl bg-blue-600 text-white font-bold text-lg transition-all shadow-[0_0_25px_rgba(37,99,235,0.3)] hover:bg-blue-500 hover:shadow-[0_0_35px_rgba(37,99,235,0.4)] active:scale-95"
+              className="group flex items-center justify-center px-10 py-4.5 rounded-xl bg-gradient-to-br from-[#d35400] via-[#e67e22] to-[#c0392b]  text-white font-bold text-lg transition-all shadow-[0_0_25px_rgba(37,99,235,0.3)] hover:bg-blue-500 hover:shadow-[0_0_35px_rgba(37,99,235,0.4)] active:scale-95"
             >
               Start Free Trial
               <span className="ml-2 text-xl group-hover:translate-x-1 transition-transform">&#8594;</span>
@@ -118,7 +118,7 @@ const Hero = () => {
         <div className="md:w-[45%] w-full flex justify-end items-center relative">
           <div className="absolute inset-0 bg-gradient-to-r from-[#010204] via-transparent to-transparent z-20 pointer-events-none" />
           <img
-            src="/public-network.png"
+            src="/public-network.jpeg"
             alt="People network"
             className="w-[125%] md:scale-[1.45] max-w-none object-contain relative z-10 translate-x-20"
             style={{
