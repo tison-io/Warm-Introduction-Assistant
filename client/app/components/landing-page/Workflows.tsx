@@ -32,7 +32,7 @@ const Workflows = () => (
       <div 
         className="absolute top-1/2 left-[-10%] -translate-y-1/2 w-[600px] h-[600px] rounded-full"
         style={{
-          background: 'rgba(33, 163, 255, 0.22)', 
+          background: 'rgba(33, 162, 255, 0.07)', 
           filter: 'blur(100px)', // Lowered from 130px
           boxShadow: '0 0 120px 40px rgba(33, 163, 255, 0.15)',
         }}
@@ -41,7 +41,7 @@ const Workflows = () => (
       <div 
         className="absolute top-1/2 right-[-10%] -translate-y-1/2 w-[600px] h-[600px] rounded-full"
         style={{
-          background: 'rgba(132, 86, 201, 0.14)', // Lowered from 0.2
+          background: 'rgba(132, 86, 201, 0.09)', // Lowered from 0.2
           filter: 'blur(100px)', // Lowered from 130px
           boxShadow: '0 0 120px 40px rgba(132, 86, 201, 0.1)',
         }}

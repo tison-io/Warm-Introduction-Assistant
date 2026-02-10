@@ -98,7 +98,7 @@ const CTA = () => {
               ))}
             </ul>
 
-            <button className="w-full py-4.5 rounded-xl bg-gradient-to-br from-[#d35400] via-[#e67e22] to-[#c0392b] text-white font-bold text-lg transition-all hover:scale-[1.02] shadow-[0_15px_30px_-10px_rgba(211,84,0,0.4)] flex items-center justify-center gap-2">
+           <button className="w-full py-4.5 rounded-xl bg-gradient-to-br from-[#d35400] via-[#e67e22] to-[#c0392b] text-white font-bold text-lg transition-all hover:scale-[1.02] shadow-[0_15px_30px_-10px_rgba(211,84,0,0.4)] flex items-center justify-center gap-2">
               Start Your Free Trial
               <span className="font-bold">→</span>
             </button>
