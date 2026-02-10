@@ -1,16 +1,14 @@
-// src/transform/transform.service.ts (Updated to handle Types.ObjectId and denormalized fields)
-
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose'; // <-- Import Types here
+import { Model, Types } from 'mongoose';
 import { TransformIntroDto } from './dto/transform-intro.dto';
 import { IntroQueue, IntroQueueDocument } from './entities/intro-queue.schema';
 import { ReminderService } from '../scheduler/reminder.service';
-import { MailService } from 'src/mail/mail.service';
-import { Investor, InvestorDocument } from 'src/schemas/investor.schema';
-import { WorkspacesService } from 'src/workspace/workspace.service';
+import { MailService } from '../mail/mail.service';
+import { Investor, InvestorDocument } from '../schemas/investor.schema';
+import { WorkspacesService } from '../workspace/workspace.service';
 import { IntroOutcomeLogDocument } from './entities/intro-logs.schema';
-import { Founder, FounderDocument } from 'src/founder/entities/founder.entity';
+import { Founder, FounderDocument } from '../founder/entities/founder.entity';
 
 
 @Injectable()
@@ -25,12 +23,10 @@ export class TransformService {
     private readonly mailService: MailService,
   ) {}
 
-  // GenAI Transform engine
   async transformIntro(dto: TransformIntroDto, userId: string) {
     const founder = await this.founderModel.findById(userId);
     if (!founder) throw new NotFoundException('Founder not found');
 
-    //Tier-based restriction
     if (founder.tier === 'free') {
       const transformationCount = await this.introQueueModel.countDocuments({
         founderId: new Types.ObjectId(userId)
@@ -68,7 +64,6 @@ export class TransformService {
 
       const transformed = await response.text();
 
-      // FRONTEND-SAFE RESPONSE
       return {
         success: true,
         message: "Intro transformed successfully.",
@@ -91,18 +86,15 @@ export class TransformService {
     }
   }
 
-  // GetIntros
   async getIntros(userId: string, workspaceId?: string, search?: string, page: number = 1) {
     const limit = 5;
     const skip = (page -1) * limit;
     let query:any = {};
 
     if(workspaceId) {
-      //Workspace- check membership first
       await this.workspaceService.getMembers(workspaceId, userId);
       query = { workspaceId: new Types.ObjectId(workspaceId) };
     } else {
-      //Personal- check founderId
       query = { founderId:new Types.ObjectId(userId), workspaceId: null };
     }
 
@@ -136,7 +128,6 @@ export class TransformService {
     };
   }
 
-  //Queue Intro
   async queueIntro(data: any, userId: string) {
     const workspaceId = data.workspaceId ? new Types.ObjectId(data.workspaceId) : null;
 
@@ -154,21 +145,16 @@ export class TransformService {
     return await this.introQueueModel.create(createData);
   }
 
-  // 3. Permission Helper
   private async validateAccess(introId: string, userId: string, action: 'view' | 'modify') {
     const intro = await this.introQueueModel.findById(introId);
     if (!intro) throw new NotFoundException('Intro not found');
 
     if (intro.workspaceId) {
-      // Check if user is in the workspace
       await this.workspaceService.getMembers(intro.workspaceId.toString(), userId);
-      
-      //Only creator can modify/send/delete
       if (action === 'modify' && intro.founderId.toString() !== userId) {
         throw new ForbiddenException('Only the person who generated this intro can send or delete it.');
       }
     } else {
-      // Personal pipeline check
       if (intro.founderId.toString() !== userId) {
         throw new ForbiddenException('Access denied to this personal intro.');
       }
@@ -176,7 +162,6 @@ export class TransformService {
     return intro;
   }
 
-  //Delete intro
   async remove(introId:string, userId:string) {
     const intro = await this.validateAccess(introId, userId, 'modify');
     return await this.introQueueModel.findByIdAndDelete(introId);
@@ -231,7 +216,6 @@ export class TransformService {
       throw new ForbiddenException('Email does not match any party in this intro.');
     }
 
-    //Investor Approves
     if (isInvestor) {
       if (intro.status === 'sent' || intro.status === 'investor_approved') {
         return { success: true, message: 'You had already approved this intro.', intro };
@@ -245,7 +229,6 @@ export class TransformService {
       await this.captureLog(intro, 'investor_approved_consent', `Investor ${intro.investorName} approved to ${intro.startupName}.`);
     }
 
-    //Founder approves
     if (isFounder) {
       if (intro.status === 'sent' || intro.status === 'founder_approved') {
         return { success: true, message: 'Already approved by you.', intro };
@@ -290,7 +273,6 @@ export class TransformService {
     };
   }
 
-  // Send Intro-Mails
   async sendGeneratedIntroEmail(options: {
     investorEmail: string;
     investorName: string;
@@ -330,7 +312,6 @@ export class TransformService {
     status?: 'queued' | 'sent' | 'completed', 
     followUpDueDate?: Date
   ) {
-    //Checks workspace membership and intro ownership
     const intro = await this.validateAccess(introId, userId, 'modify');
 
     const effectiveStatus = status || (intro.status as 'queued' | 'sent' | 'completed');
@@ -372,7 +353,6 @@ export class TransformService {
 
   async updateIntro( introId: string, userId: string, updateData: {investorEmail?: string; generatedIntro?: string }) {
     const intro = await this.validateAccess(introId, userId, 'modify');
-    //If email, update both intro and investor record
     if(updateData.investorEmail) {
       await this.investorModel.findByIdAndUpdate(
         intro.investorId,
@@ -402,7 +382,6 @@ export class TransformService {
     return this.auditLogModel.find(query).sort({ createdAt:-1 }).exec();
   }
 
-  // Internal helper: Capture event for logging
   private async captureLog(intro: any, outcome: string, notes?: string) {
     return await this.auditLogModel.create({
       introId: intro._id,
@@ -451,7 +430,6 @@ export class TransformService {
       }
     ]);
 
-    //default to 0 if no stats
     return stats.length > 0 ? stats[0].rate : 0;
   }
 }

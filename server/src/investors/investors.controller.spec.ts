@@ -1,40 +1,27 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InvestorsController } from './investors.controller';
 import { InvestorsService } from './investors.service';
+import { getModelToken } from '@nestjs/mongoose';
+import { Founder } from '../founder/entities/founder.entity';
 import { CreateInvestorDto } from './dto/create-investor.dto';
 import { UpdateInvestorDto } from './dto/update-investor.dto';
-import { NotFoundException } from '@nestjs/common';
-import { Types } from 'mongoose';
-
-class MockInvestorDocument {
-  _id = new Types.ObjectId();
-  __v = 0;
-  name: string;
-  tags: string[];
-  preferred_intro_format: string;
-  intro_preferences_text: string;
-  notes?: string;
-  userId: string;
-
-  constructor(data: Partial<MockInvestorDocument>) {
-    Object.assign(this, data);
-  }
-  save = jest.fn().mockResolvedValue(this);
-}
 
 describe('InvestorsController', () => {
   let controller: InvestorsController;
-  let service: any;
+  let service: InvestorsService;
 
-  const mockUser = { userId: 'userId123', email: 'test@example.com' };
-  const mockInvestor = new MockInvestorDocument({
-    name: 'Test Investor',
-    tags: ['tech', 'finance'],
-    preferred_intro_format: 'email',
-    intro_preferences_text: 'Looking for tech startups',
-    notes: 'Optional note',
-    userId: mockUser.userId,
-  });
+  const mockUserId = 'user-123';
+  const mockReq = { user: { userId: mockUserId, email: 'test@test.com' } };
+
+  const mockInvestorsService = {
+    create: jest.fn(),
+    findAll: jest.fn(),
+    getFundraisingVelocity: jest.fn(),
+    getRecommendations: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -42,65 +29,95 @@ describe('InvestorsController', () => {
       providers: [
         {
           provide: InvestorsService,
+          useValue: mockInvestorsService,
+        },
+        {
+          provide: getModelToken(Founder.name),
           useValue: {
-            create: jest.fn().mockResolvedValue(mockInvestor),
-            findAll: jest.fn().mockResolvedValue([mockInvestor]),
-            findOne: jest.fn().mockResolvedValue(mockInvestor),
-            update: jest.fn().mockResolvedValue(mockInvestor),
-            remove: jest.fn().mockResolvedValue(mockInvestor),
+            findById: jest.fn(),
           },
         },
       ],
     }).compile();
 
     controller = module.get<InvestorsController>(InvestorsController);
-    service = module.get(InvestorsService);
+    service = module.get<InvestorsService>(InvestorsService);
   });
 
-  afterEach(() => jest.clearAllMocks());
-
-  it('should create an investor', async () => {
-    const dto: CreateInvestorDto = {
-      name: 'Test Investor',
-      tags: ['tech', 'finance'],
-      preferred_intro_format: 'email',
-      intro_preferences_text: 'Looking for tech startups',
-      notes: 'Optional note',
-    };
-
-    const result = await controller.create(dto, { user: mockUser });
-
-    expect(service.create).toHaveBeenCalledWith(dto, mockUser.userId);
-    expect(result).toBeInstanceOf(MockInvestorDocument);
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 
-  it('should get all investors', async () => {
-    const result = await controller.getInvestors('', { user: mockUser });
-    expect(service.findAll).toHaveBeenCalledWith(mockUser.userId, '');
-    expect(result).toEqual([mockInvestor]);
+  describe('create', () => {
+    it('should call service.create with DTO and userId', async () => {
+      const dto: CreateInvestorDto = { name: 'Sequoia', email: 'v@sequoia.com' } as any;
+      await controller.create(dto, mockReq as any);
+      expect(service.create).toHaveBeenCalledWith(dto, mockUserId);
+    });
   });
 
-  it('should get a single investor', async () => {
-    const result = await controller.findOne('id123', { user: mockUser });
-    expect(service.findOne).toHaveBeenCalledWith('id123', mockUser.userId);
-    expect(result).toBe(mockInvestor);
+  describe('getInvestors', () => {
+    it('should parse pagination strings and call service.findAll', async () => {
+      await controller.getInvestors('search-term', 'ws-1', '2', '10', mockReq as any);
+
+      expect(service.findAll).toHaveBeenCalledWith(
+        mockUserId,
+        'ws-1',
+        'search-term',
+        2,
+        10
+      );
+    });
+
+    it('should use default pagination if strings are missing', async () => {
+      await controller.getInvestors(
+        undefined as any, 
+        undefined as any, 
+        undefined as any, 
+        undefined as any, 
+        mockReq as any
+      );
+      
+      expect(service.findAll).toHaveBeenCalledWith(mockUserId, undefined, undefined, 1, 5);
+    });
   });
 
-  it('should update an investor', async () => {
-    const dto: UpdateInvestorDto = { name: 'Updated' };
-    const result = await controller.update('id123', dto, { user: mockUser });
-    expect(service.update).toHaveBeenCalledWith('id123', dto, mockUser.userId);
-    expect(result).toBe(mockInvestor);
+  describe('getVelocity', () => {
+    it('should call getFundraisingVelocity with correct params', async () => {
+      await controller.getVelocity('ws-123', mockReq as any);
+      expect(service.getFundraisingVelocity).toHaveBeenCalledWith(mockUserId, 'ws-123');
+    });
   });
 
-  it('should remove an investor', async () => {
-    const result = await controller.remove('id123', { user: mockUser });
-    expect(service.remove).toHaveBeenCalledWith('id123', mockUser.userId);
-    expect(result).toBe(mockInvestor);
+  describe('getRecommendations', () => {
+    it('should call getRecommendations with workspaceId and startupId', async () => {
+      await controller.getRecommendations('ws-1', 'startup-1', mockReq as any);
+      expect(service.getRecommendations).toHaveBeenCalledWith(mockUserId, 'ws-1', 'startup-1');
+    });
   });
 
-  it('should handle NotFoundException in findOne', async () => {
-    service.findOne.mockRejectedValueOnce(new NotFoundException());
-    await expect(controller.findOne('invalidId', { user: mockUser })).rejects.toThrow(NotFoundException);
+  describe('findOne', () => {
+    it('should call service.findOne with id and userId', async () => {
+      const id = 'investor-999';
+      await controller.findOne(id, mockReq as any);
+      expect(service.findOne).toHaveBeenCalledWith(id, mockUserId);
+    });
+  });
+
+  describe('update', () => {
+    it('should call service.update with id, dto, and userId', async () => {
+      const id = 'investor-999';
+      const dto: UpdateInvestorDto = { name: 'Updated Name' };
+      await controller.update(id, dto, mockReq as any);
+      expect(service.update).toHaveBeenCalledWith(id, dto, mockUserId);
+    });
+  });
+
+  describe('remove', () => {
+    it('should call service.remove with id and userId', async () => {
+      const id = 'investor-delete';
+      await controller.remove(id, mockReq as any);
+      expect(service.remove).toHaveBeenCalledWith(id, mockUserId);
+    });
   });
 });

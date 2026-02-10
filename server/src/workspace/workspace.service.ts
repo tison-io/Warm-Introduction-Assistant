@@ -7,7 +7,7 @@ import { CreateWorkspaceDto } from './dto/create-workspace.dto';
 import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { Founder, FounderDocument } from '../founder/entities/founder.entity';
 import { Invitation } from './entities/invitation.entity';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class WorkspacesService {
@@ -22,7 +22,6 @@ export class WorkspacesService {
     const founder = await this.founderModel.findById(founderId).select('name email tier');
     if (!founder) throw new NotFoundException('Founder not found');
 
-    // Tier-based restriction
     if (founder.tier !== 'pro') {
       throw new ForbiddenException('Please upgrade to pro version to start a workspace');
     }
@@ -64,7 +63,6 @@ export class WorkspacesService {
       
       { $unwind: '$members' },
       
-      // Join with the Founders collection
       {
         $lookup: {
           from: 'founders',        
@@ -74,7 +72,6 @@ export class WorkspacesService {
         }
       },
       
-      // Flatten the founderStatus array
       { $unwind: '$founderStatus' },
       
       {
@@ -95,7 +92,6 @@ export class WorkspacesService {
       throw new NotFoundException('Workspace not found');
     }
 
-    // Workspace Membership Verification
     const isMember = workspaceWithDetails.some(
       (m) => m.memberId.toString() === founderId
     );
@@ -125,7 +121,6 @@ export class WorkspacesService {
 
     const inviterId = inviter.userId;
 
-    // 2. Security Check
     if (workspace.ownerId.toString() !== inviterId) {
       throw new ForbiddenException('Only the workspace owner can invite new members');
     }
@@ -133,11 +128,9 @@ export class WorkspacesService {
     const isAlreadyMember = workspace.members.some(m => m.email === email);
     if (isAlreadyMember) throw new BadRequestException('User is already a member of this workspace');
 
-    // 3. Get the inviter's name from DB (since it's not in the JWT)
     const inviterRecord = await this.founderModel.findById(inviterId);
     const inviterName = inviterRecord?.name || inviter.email;
 
-    // 4. Generate secure token and save invitation
     const token = crypto.randomBytes(32).toString('hex');
     await this.inviteModel.create({
       email,
@@ -204,7 +197,6 @@ export class WorkspacesService {
         };
     }
 
-    // 4. Mark invitation as accepted
     invitation.isAccepted = true;
     await invitation.save();
 
@@ -219,7 +211,6 @@ export class WorkspacesService {
     const workspace = await this.workspaceModel.findById(workspaceId);
     if(!workspace) throw new NotFoundException('Workspace not found');
 
-    //Only owner can remove
     if(workspace.ownerId.toString() !== requesterId) {
       throw new ForbiddenException('Only the owner can remove members');
     }

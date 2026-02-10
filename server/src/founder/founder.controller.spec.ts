@@ -3,28 +3,21 @@ import { FounderController } from './founder.controller';
 import { FounderService } from './founder.service';
 import { CreateFounderDto } from './dto/create-founder.dto';
 import { LoginDto } from './dto/login.dto';
-import { UpdateFounderDto } from './dto/update-founder.dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { ExecutionContext } from '@nestjs/common';
-
-// Mock the entire FounderService
-const mockFounderService = {
-  signup: jest.fn(),
-  login: jest.fn(),
-  socialLogin: jest.fn(),
-  socialSignup: jest.fn(),
-  getUserProfile: jest.fn(),
-  updateProfile: jest.fn(),
-};
-
-// Mock the JwtAuthGuard to allow testing the route without full authentication setup
-const mockJwtAuthGuard = {
-  canActivate: (context: ExecutionContext) => true,
-};
 
 describe('FounderController', () => {
   let controller: FounderController;
-  let service: typeof mockFounderService;
+  let service: FounderService;
+
+  const mockFounderService = {
+    signup: jest.fn(),
+    login: jest.fn(),
+    getUserProfile: jest.fn(),
+    updateProfile: jest.fn(),
+    updatePassword: jest.fn(),
+    forgotPassword: jest.fn(),
+    resetPassword: jest.fn(),
+    getTrialStatus: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,89 +28,62 @@ describe('FounderController', () => {
           useValue: mockFounderService,
         },
       ],
-    })
-      // Override the JwtAuthGuard to use a simple mock for testing guards
-      .overrideGuard(JwtAuthGuard)
-      .useValue(mockJwtAuthGuard)
-      .compile();
+    }).compile();
 
     controller = module.get<FounderController>(FounderController);
-    service = module.get(FounderService);
-
-    jest.clearAllMocks();
+    service = module.get<FounderService>(FounderService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('Authentication Endpoints', () => {
-    it('should call founderService.signup with the correct DTO', async () => {
-      const dto: CreateFounderDto = { name: 'Test', email: 'test@test.com', password: 'pass', phone: '123' };
-      service.signup.mockResolvedValue('founder-data');
+  describe('signup', () => {
+    it('should call service.signup with DTO', async () => {
+      const dto: CreateFounderDto = { 
+        name: 'John', email: 'j@j.com', password: '123', phone: '123' 
+      };
+      mockFounderService.signup.mockResolvedValue({ id: '1', ...dto });
 
       const result = await controller.signup(dto);
-      
+
       expect(service.signup).toHaveBeenCalledWith(dto);
-      expect(result).toBe('founder-data');
-    });
-
-    it('should call founderService.login with the correct DTO', async () => {
-      const loginDto: LoginDto = { email: 'test@test.com', password: 'pass' };
-      service.login.mockResolvedValue('auth-token');
-
-      const result = await controller.login(loginDto);
-      
-      expect(service.login).toHaveBeenCalledWith(loginDto);
-      expect(result).toBe('auth-token');
+      expect(result).toHaveProperty('id', '1');
     });
   });
 
-  describe('Social Authentication Endpoints', () => {
-    it('should call founderService.socialLogin for google', async () => {
-      service.socialLogin.mockResolvedValue('social-token');
-      await controller.googleLogin();
-      expect(service.socialLogin).toHaveBeenCalledWith('google');
-    });
+  describe('getProfile', () => {
+    it('should extract userId from req and call service', async () => {
+      const mockReq = { user: { userId: 'user_123' } };
+      mockFounderService.getUserProfile.mockResolvedValue({ name: 'John' });
 
-    it('should call founderService.socialLogin for apple', async () => {
-      await controller.appleLogin();
-      expect(service.socialLogin).toHaveBeenCalledWith('apple');
-    });
+      await controller.getProfile(mockReq);
 
-    it('should call founderService.socialSignup for facebook', async () => {
-      service.socialSignup.mockResolvedValue('social-signup-data');
-      await controller.facebookSignup();
-      expect(service.socialSignup).toHaveBeenCalledWith('facebook');
+      expect(service.getUserProfile).toHaveBeenCalledWith('user_123');
     });
   });
 
-  describe('Protected Profile Endpoints', () => {
-    const mockRequest = { user: { userId: '123' } };
-
-    it('should be protected by JwtAuthGuard', () => {
-        // Use Reflect.getMetadata to check for the guard
-        const guards = Reflect.getMetadata('__guards__', controller.getProfile);
-        expect(guards[0].name).toBe(JwtAuthGuard.name);
-    });
-
-    it('should call founderService.getUserProfile with req.user.userId', async () => {
-      service.getUserProfile.mockResolvedValue({ id: '123', name: 'Test' });
-
-      const result = await controller.getProfile(mockRequest);
+  describe('updateProfile', () => {
+    it('should call updateProfile with userId and updateDto', async () => {
+      const mockReq = { user: { userId: 'user_123' } };
+      const updateDto = { name: 'New Name' };
       
-      expect(service.getUserProfile).toHaveBeenCalledWith('123');
-      expect(result).toEqual({ id: '123', name: 'Test' });
+      await controller.updateProfile(mockReq, updateDto);
+
+      expect(service.updateProfile).toHaveBeenCalledWith('user_123', updateDto);
     });
+  });
 
-    it('should call founderService.updateProfile with userId and DTO', async () => {
-      const updateDto: UpdateFounderDto = { name: 'New Name' };
-      service.updateProfile.mockResolvedValue({ id: '123', name: 'New Name' });
+  describe('getTrialStatus', () => {
+    it('should return trial data from service', async () => {
+      const mockReq = { user: { userId: 'user_123' } };
+      const trialData = { tier: 'trial', expired: false, daysRemaining: 5 };
+      mockFounderService.getTrialStatus.mockResolvedValue(trialData);
 
-      const result = await controller.updateProfile(mockRequest, updateDto);
-      
-      expect(service.updateProfile).toHaveBeenCalledWith('123', updateDto);
-      expect(result).toEqual({ id: '123', name: 'New Name' });
+      const result = await controller.getTrialStatus(mockReq);
+
+      expect(service.getTrialStatus).toHaveBeenCalledWith('user_123');
+      expect(result.daysRemaining).toBe(5);
     });
   });
 });

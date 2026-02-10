@@ -3,7 +3,7 @@ import { StartupsService } from './startups.service';
 import { CreateStartupDto } from './dto/create-startup.dto';
 import { UpdateStartupDto } from './dto/update-startup.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { AccessGuard } from 'src/guards/access.guard';
+import { AccessGuard } from '../guards/access.guard';
 
 @Controller('startups')
 export class StartupsController {

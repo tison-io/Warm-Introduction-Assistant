@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsArray, IsOptional, IsEmail, ArrayMinSize, ArrayMaxSize, IsIn } from 'class-validator';
-import { VALID_TAGS } from 'src/startups/dto/create-startup.dto';
+import { VALID_TAGS } from '../../startups/dto/create-startup.dto';
 
 export class CreateInvestorDto {
   @IsString()

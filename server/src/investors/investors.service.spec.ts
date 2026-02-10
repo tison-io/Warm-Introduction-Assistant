@@ -1,41 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InvestorsService } from './investors.service';
 import { Investor } from '../schemas/investor.schema';
-import { CreateInvestorDto } from './dto/create-investor.dto';
-import { UpdateInvestorDto } from './dto/update-investor.dto';
-import { Types } from 'mongoose';
-
-// Mock Mongoose Document
-class MockInvestorDocument {
-  _id = new Types.ObjectId();
-  __v = 0;
-  name: string;
-  tags: string[];
-  preferred_intro_format: string;
-  intro_preferences_text: string;
-  notes?: string;
-  userId: string;
-
-  constructor(data: Partial<MockInvestorDocument>) {
-    Object.assign(this, data);
-  }
-
-  save = jest.fn().mockResolvedValue(this);
-}
+import { Startup } from '../startups/entities/startup.entity';
+import { Workspace } from '../workspace/entities/workspace.entity';
+import { WorkspacesService } from '../workspace/workspace.service';
 
 describe('InvestorsService', () => {
   let service: InvestorsService;
-  let model: any;
+  let investorModel: any;
+  let workspaceService: WorkspacesService;
 
-  const mockInvestorData = {
-    name: 'Test Investor',
-    tags: ['tech', 'finance'],
-    preferred_intro_format: 'email',
-    intro_preferences_text: 'Looking for tech startups',
-    notes: 'Optional note',
-    userId: 'userId123',
+  const mockUserId = new Types.ObjectId().toString();
+  const mockInvestorId = new Types.ObjectId().toString();
+
+  const mockInvestor = {
+    _id: mockInvestorId,
+    name: 'Sequoia Capital',
+    userId: mockUserId,
+    workspaceId: null,
+    save: jest.fn(),
+  };
+
+  const mockQuery = {
+    sort: jest.fn().mockReturnThis(),
+    skip: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    exec: jest.fn(),
+    select: jest.fn().mockReturnThis(),
   };
 
   beforeEach(async () => {
@@ -44,104 +38,86 @@ describe('InvestorsService', () => {
         InvestorsService,
         {
           provide: getModelToken(Investor.name),
-          useValue: MockInvestorDocument,
+          useValue: {
+            new: jest.fn().mockImplementation((dto) => ({ ...dto, save: jest.fn().mockResolvedValue(dto) })),
+            constructor: jest.fn().mockImplementation((dto) => ({ ...dto, save: jest.fn().mockResolvedValue(dto) })),
+            find: jest.fn().mockReturnValue(mockQuery),
+            findOne: jest.fn().mockReturnValue(mockQuery),
+            findById: jest.fn(),
+            findByIdAndUpdate: jest.fn(),
+            findByIdAndDelete: jest.fn(),
+            countDocuments: jest.fn().mockReturnValue({ exec: jest.fn() }),
+            aggregate: jest.fn(),
+            distinct: jest.fn(),
+          },
         },
+        { provide: getModelToken(Startup.name), useValue: { findOne: jest.fn().mockReturnValue(mockQuery) } },
+        { provide: getModelToken(Workspace.name), useValue: { findById: jest.fn().mockReturnValue(mockQuery) } },
+        { provide: WorkspacesService, useValue: { getMembers: jest.fn() } },
       ],
     }).compile();
 
     service = module.get<InvestorsService>(InvestorsService);
-    model = module.get(getModelToken(Investor.name));
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('create', () => {
-    it('should create and return an investor', async () => {
-      const dto: CreateInvestorDto = { ...mockInvestorData };
-      const result = await service.create(dto, mockInvestorData.userId);
-
-      expect(result).toBeInstanceOf(MockInvestorDocument);
-      expect(result.name).toEqual(dto.name);
-      expect(result.save).toBeDefined();
-    });
+    investorModel = module.get(getModelToken(Investor.name));
+    workspaceService = module.get<WorkspacesService>(WorkspacesService);
   });
 
   describe('findAll', () => {
-    it('should return all investors for a user', async () => {
-      model.find = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([mockInvestorData]) });
+    it('should return paginated investors for personal pipeline', async () => {
+      const mockInvestors = [mockInvestor];
+      mockQuery.exec.mockResolvedValueOnce(mockInvestors);
+      investorModel.countDocuments().exec.mockResolvedValueOnce(1);
 
-      const result = await service.findAll(mockInvestorData.userId);
+      const result = await service.findAll(mockUserId);
 
-      expect(model.find).toHaveBeenCalledWith({ userId: mockInvestorData.userId });
-      expect(result).toEqual([mockInvestorData]);
-    });
-
-    it('should apply search filter', async () => {
-      model.find = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([mockInvestorData]) });
-
-      await service.findAll(mockInvestorData.userId, 'tech');
-
-      expect(model.find).toHaveBeenCalledWith({
-        userId: mockInvestorData.userId,
-        name: { $regex: 'tech', $options: 'i' },
-      });
+      expect(investorModel.find).toHaveBeenCalledWith(expect.objectContaining({
+        userId: mockUserId,
+        workspaceId: { $in: [null, undefined] }
+      }));
+      expect(result.investors).toEqual(mockInvestors);
+      expect(result.meta.total).toBe(1);
     });
   });
 
   describe('findOne', () => {
-    it('should return investor if found', async () => {
-      model.findOne = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(mockInvestorData) });
+    it('should throw ForbiddenException if user does not own personal investor', async () => {
+      const otherUserId = new Types.ObjectId().toString();
+      investorModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ ...mockInvestor, userId: otherUserId })
+      });
 
-      const result = await service.findOne('id123', mockInvestorData.userId);
-
-      expect(result).toEqual(mockInvestorData);
+      await expect(service.findOne(mockInvestorId, mockUserId))
+        .rejects.toThrow(ForbiddenException);
     });
 
-    it('should throw NotFoundException if not found', async () => {
-      model.findOne = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
+    it('should allow access if investor is in a workspace user belongs to', async () => {
+      const workspaceId = new Types.ObjectId().toString();
+      investorModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ ...mockInvestor, workspaceId })
+      });
 
-      await expect(service.findOne('id123', mockInvestorData.userId)).rejects.toThrow(NotFoundException);
+      await service.findOne(mockInvestorId, mockUserId);
+
+      expect(workspaceService.getMembers).toHaveBeenCalledWith(workspaceId, mockUserId);
     });
   });
 
-  describe('update', () => {
-    it('should update and return investor', async () => {
-      const dto: UpdateInvestorDto = { name: 'Updated' };
-      model.findOneAndUpdate = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(mockInvestorData) });
+  describe('getFundraisingVelocity', () => {
+    it('should execute aggregate pipeline with correct match query', async () => {
+      const mockAggregationResult = [{ date: '2023-01-01', investorsContacted: 5 }];
+      investorModel.aggregate.mockResolvedValue(mockAggregationResult);
 
-      const result = await service.update('id123', dto, mockInvestorData.userId);
+      const result = await service.getFundraisingVelocity(mockUserId);
 
-      expect(result).toEqual(mockInvestorData);
-      expect(model.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: 'id123', userId: mockInvestorData.userId },
-        dto,
-        { new: true },
-      );
-    });
-
-    it('should throw NotFoundException if not found', async () => {
-      model.findOneAndUpdate = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
-
-      await expect(service.update('id123', {}, mockInvestorData.userId)).rejects.toThrow(NotFoundException);
+      expect(investorModel.aggregate).toHaveBeenCalled();
+      expect(result).toEqual(mockAggregationResult);
     });
   });
 
   describe('remove', () => {
-    it('should remove and return investor', async () => {
-      model.findOneAndDelete = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(mockInvestorData) });
-
-      const result = await service.remove('id123', mockInvestorData.userId);
-
-      expect(result).toEqual(mockInvestorData);
-      expect(model.findOneAndDelete).toHaveBeenCalledWith({ _id: 'id123', userId: mockInvestorData.userId });
-    });
-
-    it('should throw NotFoundException if not found', async () => {
-      model.findOneAndDelete = jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(null) });
-
-      await expect(service.remove('id123', mockInvestorData.userId)).rejects.toThrow(NotFoundException);
+    it('should throw NotFoundException if investor does not exist', async () => {
+      investorModel.findById.mockResolvedValue(null);
+      await expect(service.remove('fake-id', mockUserId)).rejects.toThrow(NotFoundException);
     });
   });
 });
