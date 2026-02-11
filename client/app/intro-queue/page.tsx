@@ -16,9 +16,6 @@ import {
 import { useRouter } from 'next/navigation';
 import { useToast } from '../components/Toast';
 
-/**
- * Status Badge Component
- */
 interface StatusBadgeProps {
   status: IntroStatus;
 }
@@ -43,23 +40,19 @@ export default function IntroQueuePage() {
   const router = useRouter();
   const { showToast } = useToast();
 
-  // Data States
   const [intros, setIntros] = useState<IntroQueue[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Buffer states for editing
   const [draftContent, setDraftContent] = useState('');
   const [investorEmail, setInvestorEmail] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   
-  // Loading state for specific buttons
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   const loadIntros = useCallback(async (query: string, page: number) => {
@@ -85,7 +78,6 @@ export default function IntroQueuePage() {
 
   const activeIntro = intros.find(i => i._id === expandedId);
 
-  // Dirty-check: Only show Save Changes if the content or email actually changed
   const hasContentChanges = activeIntro && (
     draftContent !== activeIntro.generatedIntro || 
     investorEmail !== activeIntro.investorEmail
@@ -111,7 +103,6 @@ export default function IntroQueuePage() {
     try {
       await updateIntroContent(id, { generatedIntro: draftContent, investorEmail });
       showToast("Intro content updated successfully", "success");
-      // Refresh local state without full reload
       setIntros(intros.map(i => i._id === id ? { ...i, generatedIntro: draftContent, investorEmail } : i));
     } catch (err: any) {
       showToast(err.message || "Update failed", "error");
@@ -148,7 +139,7 @@ export default function IntroQueuePage() {
     try {
       await sendIntroRequest(id);
       showToast("Consent request sent to founder and investor.", "success");
-      loadIntros(search, currentPage); // Status changes to 'investor_approval_requested'
+      loadIntros(search, currentPage);
       setExpandedId(null);
     } catch (err: any) {
       showToast(err.message || "Failed to send request.", "error");
@@ -189,10 +180,8 @@ export default function IntroQueuePage() {
 
         {/* Table/List Container */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-          {/* Horizontal Scroll Wrapper */}
           <div className="overflow-x-auto custom-scrollbar">
-            <div className="min-w-[800px]"> {/* Ensures table doesn't collapse too small */}
-              {/* Updated Grid: 6 columns now */}
+            <div className="min-w-[800px]">
               <div className="grid grid-cols-6 px-6 py-4 text-[11px] uppercase tracking-widest font-bold text-gray-500 border-b border-gray-800 bg-gray-950">
                 <div>Startup</div>
                 <div>Founder</div>
@@ -210,7 +199,6 @@ export default function IntroQueuePage() {
                 ) : (
                   intros.map((intro) => (
                     <div key={intro._id} className="group">
-                      {/* Row: Collapsed */}
                       <div
                         onClick={() => handleToggleExpand(intro)}
                         className="grid grid-cols-6 px-6 py-5 items-center cursor-pointer hover:bg-[#11141A] transition"
@@ -233,7 +221,7 @@ export default function IntroQueuePage() {
                         </div>
                       </div>
 
-                      {/* Expanded Detail View - Spans full width of the scrollable area */}
+                      {/* Expanded Detail View */}
                       {intro._id === expandedId && (
                         <div className="px-6 pb-8 pt-2 bg-gray-800 border-t border-gray-800">
                           <div className="max-w-4xl">

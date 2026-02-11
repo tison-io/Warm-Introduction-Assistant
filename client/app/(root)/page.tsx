@@ -13,12 +13,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Warmly Intro Assistant",
     description:
-      "Automate founder-investor introductions for your community with AI.",
+      "Reduce time spent on making manual introductions to investors.",
     url: "https://warmly-intro-assistant.vercel.app",
     siteName: "Warmly Intro Assistant",
     images: [
       {
-        url: "https://warmly-intro-assistant.vercel.app/og-image.jpg",
+        url: "https://warmly-intro-assistant.vercel.app/og-image.png",
         width: 1200,
         height: 630,
         alt: "Warmly Intro Assistant - AI for investor introductions",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     description:
       "Automate founder-investor introductions for your community with AI.",
     images: [
-      "https://warmly-intro-assistant.vercel.app/og-image.jpg",
+      "https://warmly-intro-assistant.vercel.app/og-image.png",
     ],
   },
 };
@@ -40,21 +40,12 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#010204]">
-        {/* 1. Main Hook */}
         <Hero />
-        
-        {/* 2. Grid of features */}
         <section id="features">
           <Features />
         </section>
-
-        {/* 3. Step-by-step process (The new section from your images) */}
         <Workflow />
-
-        {/* 4. Final call to action */}
         <CTASection />
-        
-        {/* 5. Site footer */}
         <Footer />
     </main>
   );

@@ -19,70 +19,33 @@
 
 > ⚠️ The backend API may take a few seconds to respond on first request due to cold starts.
 
-A platform that connects startups with investors through warm introductions, making fundraising more personal and effective.
+A specialized platform designed for community owners that automates the tedious process of manually crafting and managing introductions between founders and investors.
 
- **Quick Overview**
+**🚩 The Core Problem**
 
-- Warm Introduction Assistant is a full-stack platform that helps startup founders get warm introductions to investors instead of cold outreach, using structured profiles, automated intro workflows, and an AI-powered transform engine.
+- Community owners often act as the "bottleneck" in fundraising. Manually drafting emails, checking preferences, and following up on double opt-ins takes hours of manual labor. This tool acts as an AI-powered connector, reducing manual work by up to 80%.
 
-### Who it’s for
-
-1. 🚀 Startup founders seeking to raise capital for their statups and managing investor outreach
-
-2. 💼 Investors reviewing startups and managing their deal pipeline
-
-
-## What It Does
-
-**For Startups:**
-- Create detailed company profiles with pitch decks and descriptive blurbs
-- Browse and connect with relevant investors
-- Add the relevant investor profiles
-- Get warm introductions for investor through transform engine
-- Queue intros and send automated mails to the respective investors
-- Set follow-up dates for the sent intros
-- Set reminders for investor meetings
-
-**For Investors:**
-- Discover promising startups in your investment areas
-- Review detailed company information and metrics in your preferred intro format
-- Connect with founders
-- Manage your investment pipeline efficiently
-
-### Why it matters
-
-- Replaces cold emails with personalized, structured warm introductions
-
-- Streamlines fundraising workflows with reminders, analytics, and automated mails
-
-- Demonstrates a real-world SaaS architecture with AI, streaming UI, and scalable backend design
+**💡 The Solution**
+This tool acts as an AI-powered connector, streamlining the transition from a founder's request to a successful intro, reducing manual community owner work by up to 80%.
 
 ## Key Features
 
-### 🏢 **Startup Management**
-- Company profile creation with name, blurb(description), and pitch link
-- Funding stage and amount tracking
-- Industry and location categorization
+### 🏢 **Ecosystem Management**
+- **Startup Profiles**: Receive founder requests and store their details e.g., name, email, startup blurb, pitch deck, and their investor target tags.
+- **Investor CRM**: Maintain a private network of investors with specific investment preferences and intro styles
 
-### 💼 **Investor Discovery**
-- Browse investor profiles with investment preferences
-- Filter by industry, stage, and location
-- View investment history and portfolio companies
-- Contact information and social profiles
-- Create investor profiles with the compiled details
 
 ### **Transform Engine**
 - Uses template rules(i.e., max 300 chars, 3-bullet lines and email) to format blurb to investor preference
 - Includes key traction points
 
-### **Intro-queue management**
-- Send automated mails containing transformed intros to the respective investors
-- Set follow-up dates on sent intros to track progress
+### **Automated Intro-queue**
+- **Consent Management**: Built-in Double Opt-in workflow. No more "surprising" investors with unwanted mails
+- **Consent Management**: Once consent is approved by both founder and investor, the final intro mail is sent to both parties simultaneously
+- **Follow-up**: Set follow-up dates on sent intros to track progress
 
-### 🔔 **Smart Reminders**
-- Automated follow-up reminders
-- Introduction status updates
-- Customizable reminder schedules
+### 🔔 **Smart Tracking**
+- **Follow-up Reminders**: Automated alerts community owner to follow up on an intro based on follow-up date set.
 
 ### 🤖 **AI-Powered Chatbot**
 - Get guidance on investor conversations
@@ -91,10 +54,9 @@ A platform that connects startups with investors through warm introductions, mak
 - Real-time streaming responses with typing effect
 
 ### 📊 **Dashboard & Analytics**
-- Overview of all introductions and their status
-- Upcoming meetings and reminders
-- Progress tracking for fundraising goals
-- Activity timeline and notifications
+- Overview of founder requests
+- Smart reminders
+- Activity logsof intro outcomes
 
 ## Technology Stack
 
@@ -108,7 +70,7 @@ A platform that connects startups with investors through warm introductions, mak
 - Node.js with NestJS framework
 - Enforced Typescript
 - MongoDB with Mongoose ODM
-- JWT authentication
+- JWT authentication + Google OAuth
 - RESTful API design
 
 **AI Integration:**
@@ -177,6 +139,12 @@ BREVO_PASSWORD=your_brevo_smtp_password
 BREVO_FROM_EMAIL=your_verified_sender_email@example.com
 BREVO_API_KEY=xkeysib-your_api_key
 BREVO_FROM_NAME="Warm Introduction Assistant"
+
+# Stripe Payments
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_CURRENCY=usd
 ```
 
 4. **Run the application**
@@ -197,26 +165,6 @@ npm run dev
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:4000
 
-## Features Overview
-
-### Authentication & Profiles
-- User registration
-- Secure JWT-based authentication & OAuth(Google login)
-- Country code support for international users
-
-### Introduction Workflow
-1. **Discovery** - Add your startup and find relevant investors
-2. **Connection** - Request warm introductions from the transform engine
-3. **Introduction** - Automated emails of intros to investors
-4. **Follow-up** - Set follow-up due date and get timely in-app reminders
-5. **Meeting** - Schedule and manage investor meetings
-
-### AI Assistant
-- Context-aware responses about fundraising
-- Guidance on investor conversations
-- Best practices for startup pitching
-- Real-time streaming responses
-
 ## API Endpoints
 
 ### Authentication(Founders)
@@ -225,9 +173,10 @@ npm run dev
 - `GET /founder/me` - Get user profile
 - `PATCH /founder/profile` - Update user profile
 
+
 ### Startups
-- `GET /startups` - List all startups
-- `POST /startups` - Create startup profile
+- `GET /startups` - List all founder requests
+- `POST /startups` - Create founder request
 - `GET /startups/:id` - Get startup details
 - `PATCH /startups/:id` - Update startup
 - `DELETE /startups/:id` - Delete startup
@@ -243,9 +192,10 @@ npm run dev
 - `POST /intros/transform` - Send blurb and preffered format to transform engine
 - `POST /intros/queue` -  Queue a new intro   
 - `GET /intros/my-queue` - List all your personal intro-queues
+- `PATCH /intros/:id` - Update intro
 - `PATCH /intros/:id/status` - Update intro status
-- `POST /intros/:id/request-consent` - Send consent mail to investor
-- `Post /intros/:id/approve` - Investor approves to receive an intro mail then the mail is sent to the investor
+- `POST /intros/:id/request-consent` - Send the double opt-in email to investor and founder to ask if they want the intro
+- `Post /intros/:id/approve` - Triggered when the investor and founder agrees; sends the final warm intro to both parties
 
 ### Reminders
 - `GET /reminders` - List personal reminders
@@ -277,4 +227,4 @@ For support and questions:
 
 ---
 
-**Built with passion for the startup ecosystem**
+**Built with passion for the startup ecosystem to help community owners scale thir impact.**
