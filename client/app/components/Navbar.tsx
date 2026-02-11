@@ -50,11 +50,8 @@ export default function Navbar() {
     router.push('/');
   };
 
-  const isDashboardPage = pathname?.startsWith('/dashboard') || 
-                          pathname?.startsWith('/settings') || 
-                          pathname?.startsWith('/profile');
+  const isDashboardPage = pathname?.startsWith('/dashboard') || pathname?.startsWith('/settings') || pathname?.startsWith('/profile');
 
-  // Text-only sunset gradient hover logic
   const navLinkStyles = `
     relative text-sm font-medium text-gray-400 transition-all duration-300
     hover:text-transparent hover:bg-clip-text 
@@ -62,7 +59,7 @@ export default function Navbar() {
   `;
 
   return (
-    <nav className="relative flex items-center justify-between px-8 h-20 bg-[#010204] border-b border-white/5 sticky top-0 z-50 overflow-hidden">
+    <nav className="sticky flex items-center justify-between px-8 h-20 bg-[#010204] border-b border-white/5 top-0 z-50 overflow-hidden">
       
       {/* Left side blue gradient glow */}
       <div className="absolute left-[-50px] top-[-50px] w-[250px] h-[200px] bg-blue-600/20 blur-[80px] rounded-full pointer-events-none" />
@@ -97,7 +94,7 @@ export default function Navbar() {
               </Link>
             )}
             <Link href="/dashboard">
-              <button className="bg-gradient-to-r from-[#2563eb] to-[#3b82f6] text-white px-6 py-2 rounded-full text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-blue-600/20">
+              <button className="bg-linear-to-r from-[#2563eb] to-[#3b82f6] text-white px-6 py-2 rounded-full text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-blue-600/20">
                 Dashboard
               </button>
             </Link>
@@ -111,7 +108,7 @@ export default function Navbar() {
               Log in
             </Link>
             <Link href="/signup">
-              <button className="bg-gradient-to-r from-[#2563eb] to-[#3b82f6] text-white px-7 py-2.5 rounded-full text-sm font-bold hover:scale-105 transition-all shadow-lg shadow-blue-500/20">
+              <button className="bg-linear-to-r from-[#2563eb] to-[#3b82f6] text-white px-7 py-2.5 rounded-full text-sm font-bold hover:scale-105 transition-all shadow-lg shadow-blue-500/20">
                 Get Started
               </button>
             </Link>

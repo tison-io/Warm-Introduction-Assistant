@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const botAvatar = "/chatbot.png";
 const userAvatar = "https://ui-avatars.com/api/?name=User&background=1e293b&color=fff";
@@ -104,11 +104,10 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
   return (
     <div className="fixed bottom-24 right-6 w-[340px] h-[520px] bg-[#010204]/90 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] rounded-3xl flex flex-col z-50 overflow-hidden backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
       
-      {/* Background Radiance Effect */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-blue-600/10 blur-[60px] pointer-events-none" />
 
       {/* Header */}
-      <div className="relative p-4 flex flex-col items-center border-b border-white/[0.05] bg-white/[0.02]">
+      <div className="relative p-4 flex flex-col items-center border-b border-white/5 bg-white/2">
         <button onClick={onClose} className="absolute top-4 right-5 text-slate-500 hover:text-white transition-colors">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
@@ -119,7 +118,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-[0.1em]">Online</span>
+            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Online</span>
           </div>
         </div>
       </div>
@@ -134,7 +133,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
                 <button
                   key={idx}
                   onClick={() => handleSuggestion(s)}
-                  className="w-full text-center p-3 text-[12px] text-slate-300 bg-white/[0.03] border border-white/5 rounded-2xl hover:bg-white/[0.08] hover:border-blue-500/30 transition-all"
+                  className="w-full text-center p-3 text-[12px] text-slate-300 bg-white/3 border border-white/5 rounded-2xl hover:bg-white/8 hover:border-blue-500/30 transition-all"
                 >
                   {s}
                 </button>
@@ -162,7 +161,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white/[0.02] border-t border-white/[0.05]">
+      <div className="p-4 bg-white/2 border-t border-white/5">
         <div className="relative flex items-center bg-[#13161C]/50 border border-white/10 rounded-2xl px-3 py-1.5 focus-within:border-blue-500/40 transition-all">
           <input
             ref={inputRef}

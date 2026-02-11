@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { Zap, Users, BarChart3, Rocket, Target, ShieldCheck } from 'lucide-react';
+import { Zap, Rocket, Bell, ListOrdered, Filter, Wand } from 'lucide-react';
 
 const FeatureCard: React.FC<{ 
   icon: React.ReactNode, 
@@ -21,7 +21,6 @@ const FeatureCard: React.FC<{
         return () => observer.disconnect();
     }, []);
 
-    // Standardizing colors to match the Warm Sky palette
     const bgColors: Record<string, string> = {
         purple: "bg-purple-500/10 text-purple-400 border-purple-500/20",
         blue: "bg-blue-600/10 text-blue-500 border-blue-500/20",
@@ -60,19 +59,17 @@ const FeatureCard: React.FC<{
 const FEATURES = [
     { icon: <Zap size={22} />, title: "AI-Powered Personalization", description: "Our AI analyzes investor profiles and crafts intros that speak directly to their investment thesis.", color: "purple" },
     { icon: <Rocket size={22} />, title: "10x Faster Outreach", description: "What used to take days now takes minutes. Scale your fundraising without sacrificing quality.", color: "blue" },
-    { icon: <Target size={22} />, title: "Smart Investor Matching", description: "Automatically find investors who are the perfect fit for your startup's stage and sector.", color: "pink" },
-    { icon: <BarChart3 size={22} />, title: "Analytics Dashboard", description: "Track open investor outreach, intro success rate, and intro-outcome logs. Know exactly what's working.", color: "green" },
-    { icon: <Users size={22} />, title: "Team Collaboration", description: "Coordinate outreach across your funding team and speed up your fundraising journey.", color: "orange" },
-    { icon: <ShieldCheck size={22} />, title: "Relationship CRM", description: "Keep track of every interaction, follow-up, and meeting in one unified workspace.", color: "blue" },
+    { icon: <Wand size={22} />, title: "3-step Intro Wizard", description: "Select a founer request, pick your investors with smart filters, review details, and hit generate. Done in under a minute.", color: "pink" },
+    { icon: <ListOrdered size={22} />, title: "Intro-Queue Management", description: "All generated intros land in a centralized queue. Review, edit, and send them when you're ready; on your schedule.", color: "green" },
+    { icon: <Bell size={22} />, title: "Follow-up reminders", description: "Automated in-app reminders ensure no intro falls through the cracks. Stay on top of the connection you make.", color: "orange" },
+    { icon: <Filter size={22} />, title: "Smart Filters & search", description: "Filter investors by tags, searxh by name, and quickly narrow down the perfect match for every founder request.", color: "blue" },
 ];
 
 const Features: React.FC = () => {
     return (
         <section className="relative min-h-screen flex items-center justify-center py-32 overflow-hidden bg-[#010204]">
             
-            {/* --- WARM SKY RADIANCE --- */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                {/* Blue Radiance (Right Side to contrast the Hero) */}
                 <div 
                     className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] rounded-full opacity-20"
                     style={{
@@ -80,7 +77,6 @@ const Features: React.FC = () => {
                         filter: 'blur(100px)',
                     }}
                 />
-                {/* Purple Radiance (Left Side) */}
                 <div 
                     className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] rounded-full opacity-15"
                     style={{
@@ -91,8 +87,6 @@ const Features: React.FC = () => {
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-8 md:px-12">
-                
-                {/* Header Section */}
                 <div className="text-center mb-24">
                     <h3 className="text-blue-500 text-[11px] font-bold uppercase tracking-[0.4em] mb-4">
                         Powerful Features
@@ -100,7 +94,7 @@ const Features: React.FC = () => {
                     <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tighter">
                         Everything You Need to {" "}
                         <span className="relative inline-block">
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 animate-shimmer bg-[length:200%_auto]">
+                            <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 via-cyan-400 to-blue-500 animate-shimmer bg-size-[200%_auto]">
                                 Connect
                             </span>
                         </span>
