@@ -85,9 +85,16 @@ export default function GeneratedIntroPage() {
     const handleSave = async () => {
         if (isApiLoading || isSaving) return;
         setIsSaving(true);
+
+        const formatTags = (tagString: string) => 
+        tagString ? tagString.split(',').map(t => t.trim()).filter(Boolean) : [];
+
         try {
             await queueIntroApi({
                 ...details,
+                startupBlurb: details.startupBlurb,
+                startupTags: formatTags(details.startupTags),
+                investorTags: formatTags(details.investorTags),
                 preferredIntroFormat: details.format,
                 introPreferencesText: details.prefText,
                 generatedIntro: displayedIntro,

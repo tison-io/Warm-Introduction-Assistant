@@ -10,7 +10,7 @@ import {
   updateIntroContent 
 } from '../lib/intro-api';
 import { 
-  ChevronUp, ChevronDown, Plus, Loader2, Mail, Search, 
+  ChevronUp, ChevronDown, Plus, Pencil, Loader2, Mail, Search, 
   ChevronLeft, ChevronRight, ArrowRight, Trash2, Save, Calendar 
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -51,6 +51,7 @@ export default function IntroQueuePage() {
 
   const [draftContent, setDraftContent] = useState('');
   const [investorEmail, setInvestorEmail] = useState('');
+  const [investorName, setInvestorName] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -80,7 +81,8 @@ export default function IntroQueuePage() {
 
   const hasContentChanges = activeIntro && (
     draftContent !== activeIntro.generatedIntro || 
-    investorEmail !== activeIntro.investorEmail
+    investorEmail !== activeIntro.investorEmail ||
+    investorName !== activeIntro.investorName
   );
 
   const handleToggleExpand = (intro: IntroQueue) => {
@@ -90,6 +92,7 @@ export default function IntroQueuePage() {
       setExpandedId(intro._id);
       setDraftContent(intro.generatedIntro);
       setInvestorEmail(intro.investorEmail);
+      setInvestorName(intro.investorName);
       setFollowUpDate(
         intro.followUpDueDate 
           ? new Date(intro.followUpDueDate).toISOString().split('T')[0] 
@@ -101,9 +104,9 @@ export default function IntroQueuePage() {
   const handleUpdateContent = async (id: string) => {
     setIsProcessing('saving');
     try {
-      await updateIntroContent(id, { generatedIntro: draftContent, investorEmail });
+      await updateIntroContent(id, { generatedIntro: draftContent, investorEmail, investorName });
       showToast("Intro content updated successfully", "success");
-      setIntros(intros.map(i => i._id === id ? { ...i, generatedIntro: draftContent, investorEmail } : i));
+      setIntros(intros.map(i => i._id === id ? { ...i, generatedIntro: draftContent, investorEmail, investorName } : i));
     } catch (err: any) {
       showToast(err.message || "Update failed", "error");
     } finally {
@@ -225,28 +228,43 @@ export default function IntroQueuePage() {
                       {intro._id === expandedId && (
                         <div className="px-6 pb-8 pt-2 bg-gray-800 border-t border-gray-800">
                           <div className="max-w-4xl">
-                             {/* Flow Section */}
-                              <div className="flex items-center justify-between gap-4 mb-8 p-4 bg-[#161920] rounded-xl border border-gray-700/50 mt-4">
-                              <div className="flex-1">
-                                <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">From (Founder)</label>
-                                <div className="text-sm font-medium text-white">{intro.founderName}</div>
-                                <div className="text-xs text-gray-500">{intro.founderEmail}</div>
+                            <div className="flex items-center justify-between gap-8 mb-8 p-5 bg-[#161920] rounded-xl border border-gray-700/50 mt-4 w-[500px] ml-0">
+                              <div className="shrink-0 min-w-[140px]">
+                                <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">Founder</label>
+                                <div className="text-sm font-medium text-white truncate">{intro.founderName}</div>
+                                <div className="text-xs text-gray-500 truncate">{intro.founderEmail}</div>
                               </div>
-                              <ArrowRight className="text-blue-600" size={20} />
-                              <div className="flex-1 text-right">
-                                <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">To (Investor)</label>
-                                <div className="text-sm font-medium text-white">{intro.investorName}</div>
-                                <input 
-                                  value={investorEmail} 
-                                  onChange={(e) => setInvestorEmail(e.target.value)}
-                                  className="w-full bg-transparent text-right text-sm font-medium text-blue-400 outline-none border-b border-transparent transition-all duration-200 group-hover:opacity-80 focus:opacity-100 focus:border-indigo-500"
-                                />
+
+                              <div className="h-8 w-px bg-gray-800 hidden md:block" />
+
+                              <div className="flex-1 text-right min-w-[180px]">
+                                <label className="text-[10px] uppercase text-gray-500 font-bold block mb-1">Investor</label>
+                                
+                                <div className="relative group/field inline-block w-full">
+                                  <input 
+                                    value={investorName} 
+                                    onChange={(e) => setInvestorName(e.target.value)}
+                                    placeholder="Investor Name"
+                                    className="w-full bg-transparent text-right text-sm font-medium text-white outline-none border-b border-transparent hover:border-gray-700/50 focus:border-indigo-500 transition-all pr-6"
+                                  />
+                                  <Pencil size={12} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-600 opacity-0 group-hover/field:opacity-100 transition-opacity pointer-events-none" />
+                                </div>
+
+                                <div className="relative group/field inline-block w-full mt-1">
+                                  <input 
+                                    value={investorEmail} 
+                                    onChange={(e) => setInvestorEmail(e.target.value)}
+                                    placeholder="investor@email.com"
+                                    className="w-full bg-transparent text-right text-sm font-medium text-blue-400 outline-none border-b border-transparent hover:border-gray-700/50 focus:border-indigo-500 transition-all pr-6"
+                                  />
+                                  <Pencil size={12} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-600 opacity-0 group-hover/field:opacity-100 transition-opacity pointer-events-none" />
+                                </div>
                               </div>
                             </div>
 
                             <div className="space-y-6">
                               <div>
-                                <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block">Intro Email Content</label>
+                                <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block">Generated Intro Content</label>
                                 <textarea
                                   className="w-full bg-[#161920] border border-gray-700 rounded-lg p-4 text-sm text-gray-300 focus:ring-1 focus:ring-indigo-500 outline-none leading-relaxed"
                                   rows={6}
@@ -288,14 +306,20 @@ export default function IntroQueuePage() {
                                     Save Changes
                                   </button>
                                 )}
-                                <button
-                                  disabled={isProcessing === 'sending'}
-                                  onClick={() => handleSendIntro(intro._id)}
-                                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition"
-                                >
-                                  {isProcessing === 'sending' ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
-                                  Send Consent Email
-                                </button>
+                                {intro.status === 'queued' && (
+                                  <button
+                                    disabled={isProcessing === 'sending'}
+                                    onClick={() => handleSendIntro(intro._id)}
+                                    className="bg-blue-600 hover:opacity-95 text-white px-6 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition disabled:opacity-50"
+                                  >
+                                    {isProcessing === 'sending' ? (
+                                      <Loader2 size={16} className="animate-spin" />
+                                    ) : (
+                                      <Mail size={16} />
+                                    )}
+                                    Send Consent Email
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>

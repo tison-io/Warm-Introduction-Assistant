@@ -26,9 +26,12 @@ export interface TransformIntroResponse {
 export interface QueueIntroDto {
     startupId: string;
     startupName: string;
+    startupBlurb: string;
+    startupTags: string[];
     investorId: string;
     investorName: string;
     investorEmail: string;
+    investorTags: string[];
     founderId: string;
     founderName: string;
     founderEmail: string;

@@ -14,10 +14,13 @@ export interface Intro {
 export interface Reminder {
   _id: string;
   founderId: string;
-  introId: Intro;
+  introId: string;
+  startupName: string;  
+  investorName: string; 
   date: string;
-  status: string;
+  status: 'queued' | 'sent' | 'completed';
+  isOverdue?: boolean;    
+  daysRemaining?: number;  
   createdAt: string;
   updatedAt: string;
-  isCompleted?: boolean;
 }

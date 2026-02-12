@@ -11,6 +11,15 @@ export class IntroQueue {
     @Prop({ required:true })
     startupName: string;
 
+    @Prop()
+    startupBlurb: string;
+
+    @Prop({ type: [String], default: [] })
+    startupTags: string[];
+
+    @Prop({ type: [String], default: [] })
+    investorTags: string[];
+
     @Prop({ required: true })
     founderName: string;
 

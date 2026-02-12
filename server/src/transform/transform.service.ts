@@ -175,6 +175,10 @@ export class TransformService {
       throw new BadRequestException('Intro must be queued to request consent.');
     }
 
+    const matchingTags = intro.startupTags.filter(tag => 
+      intro.investorTags.some(iTag => iTag.toLowerCase() === tag.toLowerCase())
+    );
+
     const recipients = [
       { email: intro.investorEmail, name: intro.investorName },
       { email: intro.founderEmail, name: intro.founderName }
@@ -182,15 +186,12 @@ export class TransformService {
 
     const approvalUrl = `${process.env.FRONTEND_URL}/approve-intro?introId=${intro._id}`;
 
-    const consentMessage = `
-      I was just looking through our network and noticed a great fit. You both share a deep focus on <strong>${intro.startupName}</strong> and its impact on the industry. I believe there's some significant synergy regarding your current goals. 
-    `;
-
     await this.mailService.sendConsentEmail({
       recipients,
       otherPersonName: intro.investorName,
       startupName: intro.startupName,
-      consentBody: consentMessage,
+      startupBlurb: intro.startupBlurb,
+      matchingTags: matchingTags,
       approvalUrl: approvalUrl,
     });
 
@@ -340,6 +341,8 @@ export class TransformService {
           intro.founderId.toString(), 
           intro._id.toString(),
           followUpDueDate,
+          intro.startupName,
+          intro.investorName,
           intro.workspaceId?.toString()
         );
       }
@@ -351,15 +354,28 @@ export class TransformService {
     return intro;
   }
 
-  async updateIntro( introId: string, userId: string, updateData: {investorEmail?: string; generatedIntro?: string }) {
+  async updateIntro( introId: string, userId: string, updateData: {investorEmail?: string; investorName?: string; generatedIntro?: string }) {
     const intro = await this.validateAccess(introId, userId, 'modify');
-    if(updateData.investorEmail) {
+    if(updateData.investorEmail || updateData.investorName) {
+      const investorUpdate: any = {};
+    
+      if (updateData.investorEmail) {
+        const cleanEmail = updateData.investorEmail.toLowerCase().trim();
+        investorUpdate.email = cleanEmail;
+        intro.investorEmail = cleanEmail;
+      }
+      
+      if (updateData.investorName) {
+        const cleanName = updateData.investorName.trim();
+        investorUpdate.name = cleanName;
+        intro.investorName = cleanName;
+      }
+
       await this.investorModel.findByIdAndUpdate(
         intro.investorId,
-        { email: updateData.investorEmail.toLowerCase().trim() },
-        {new: true}
+        investorUpdate,
+        { new: true }
       );
-      intro.investorEmail = updateData.investorEmail.toLowerCase().trim();   
     }
 
     if (updateData.generatedIntro !== undefined) {

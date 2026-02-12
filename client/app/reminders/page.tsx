@@ -7,11 +7,10 @@ import {
   fetchReminders,
   markReminderCompleted,
 } from '../lib/reminder-api';
-import { Trash, Loader2, Check, Bell, Calendar, ArrowLeft } from 'lucide-react';
+import { Trash, Loader2, Check, Bell, Calendar } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import Link from 'next/link';
 
-// --- Helpers ---
 const isToday = (someDate: Date): boolean => {
   const today = new Date();
   return (
@@ -29,7 +28,6 @@ const differenceInDays = (targetDate: Date): number => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-// --- Sub-components ---
 const DueBadge = ({ date }: { date: Date }) => {
   const diff = differenceInDays(date);
   if (diff > 365) return null;
@@ -142,48 +140,60 @@ export default function RemindersPage({ workspaceId }: { workspaceId?: string })
 
               return (
                 <div 
-                key={reminder._id}
-                className="bg-gray-800 border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-indigo-500/30 transition-all group"
-              >
-                <Link 
-                  href={`/intro-queue`}
-                  className="space-y-2 flex-1 group/link"
+                  key={reminder._id}
+                  className={`bg-gray-800 border p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all group `}
                 >
-                  <div className="flex items-center gap-3">
-                    <p className="text-slate-400 text-sm">
-                      Follow up on intro to <span className="text-slate-200 font-medium">{reminder.introId?.startupName || 'Project'}</span>
-                    </p>
-                    <DueBadge date={dueDate} />
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                    <Calendar size={12} />
-                    Due: {dueDate.toISOString().split('T')[0]}
-                  </div>
-                </Link>
+                  <Link 
+                    href={`/intro-queue`}
+                    className="space-y-2 flex-1 group/link"
+                  >
+                    <div className="flex flex-wrap items-center gap-3">
+                      <p className="text-slate-400 text-sm">
+                        Follow up with <span className="text-slate-200 font-semibold">{reminder.investorName}</span> 
+                        {" "}regarding <span className="text-slate-200 font-medium">{reminder.startupName}</span>
+                      </p>
+                      <DueBadge date={dueDate} />
+                      
+                      {reminder.status === 'queued' && (
+                        <span className="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                          Scheduled
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+                      <Calendar size={12} />
+                      Scheduled: {dueDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  </Link>
 
-                <div className="flex items-center gap-3 self-end md:self-center shrink-0">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleComplete(reminder._id);
-                    }}
-                    disabled={isProcessing}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
-                  >
-                    {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                    Mark Done
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleDelete(reminder._id);
-                    }}
-                    className="p-2 bg-slate-900/50 border border-slate-800 text-slate-400 hover:text-rose-500 hover:border-rose-500/50 rounded-xl transition-all"
-                  >
-                    <Trash size={18} />
-                  </button>
+                  <div className="flex items-center gap-3 self-end md:self-center shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleComplete(reminder._id);
+                      }}
+                      disabled={isProcessing}
+                      className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all disabled:opacity-50 ${
+                        reminder.status === 'sent' 
+                          ? 'bg-rose-600 hover:bg-rose-500 text-white' 
+                          : 'bg-blue-600 hover:opacity-95 text-white'
+                      }`}
+                    >
+                      {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                      {reminder.status === 'sent' ? 'Complete Follow-up' : 'Mark Done Early'}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDelete(reminder._id);
+                      }}
+                      className="p-2 bg-slate-900/50 border border-slate-800 text-slate-400 hover:text-rose-500 hover:border-rose-500/50 rounded-xl transition-all"
+                    >
+                      <Trash size={18} />
+                    </button>
+                  </div>
                 </div>
-              </div>
               );
             })}
           </div>

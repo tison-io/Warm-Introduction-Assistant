@@ -87,12 +87,22 @@ export class MailService {
   async sendConsentEmail(options: {
     recipients: { email: string; name: string }[];
     startupName: string;
+    startupBlurb: string;
+    matchingTags: string[];
     otherPersonName: string;
-    consentBody: string;
     approvalUrl: string;
   }) {
-    const { recipients, startupName, consentBody, approvalUrl } = options;
+    const { recipients, startupName, startupBlurb, matchingTags, approvalUrl } = options;
 
+    let sharedInterestHtml = '';
+    if (matchingTags && matchingTags.length > 0) {
+      const formattedTags = matchingTags.join(', ');
+      sharedInterestHtml = `
+        <p style="background-color: #f0f7ff; border-left: 4px solid #0347D2; padding: 12px; color: #0347D2; font-size: 14px;">
+          You both share a deep focus on <strong>${formattedTags}</strong> and its impact on the industry.
+        </p>`;
+    }
+    
     const validRecipients = recipients.filter(r => r.email && r.email.includes('@'));
 
     if (validRecipients.length === 0) {
@@ -118,26 +128,30 @@ export class MailService {
 
     sendSmtpEmail.htmlContent = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-        <div style="padding: 20px;">
-          <p>Hi there,</p>
-          <p>${consentBody}</p>
-          <p>If you're open to this connection, click the button below and I'll send over the formal intro. If you're too busy right now, no worries at all!</p>
-        </div>
+      <div style="padding: 20px;">
+        <p>Hi there,</p>
         
-        <div style="background-color: #f4f7ff; border-top: 2px solid #0347D2; padding: 24px; text-align: center;">
-          <p style="margin-top: 0; font-size: 14px; color: #555; font-weight: bold;">Warm Intro Assistant</p>
-          <p style="font-size: 12px; color: #777; margin-bottom: 20px;">This request was generated to save you time. Please confirm your interest below:</p>
-          
-          <a href="{{params.personalizedUrl}}" 
-            style="background-color: #0347D2; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; box-shadow: 0 2px 4px rgba(3, 71, 210, 0.2);">
-            Confirm & Approve Intro
-          </a>
-          
-          <p style="font-size: 11px; color: #999; margin-top: 20px;">
-            By clicking approve, the community manager will be notified to finalize the introduction thread.
-          </p>
+        <p>I'd like to propose an introduction to <strong>${startupName}</strong>.</p>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 6px; font-style: italic; color: #555; border: 1px solid #eee;">
+          "${startupBlurb}"
         </div>
+
+        ${sharedInterestHtml}
+
+        <p>If you're open to this connection, click the button below and I'll send over the formal intro.</p>
       </div>
+      
+      <div style="background-color: #f4f7ff; border-top: 2px solid #0347D2; padding: 24px; text-align: center;">
+        <a href="{{params.personalizedUrl}}" 
+          style="background-color: #0347D2; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Confirm & Approve Intro
+        </a>
+        <p style="font-size: 11px; color: #999; margin-top: 20px;">
+          Warm Intro Assistant • Context-aware networking
+        </p>
+      </div>
+    </div>
     `;
 
     return await this.brevoApi.sendTransacEmail(sendSmtpEmail);
@@ -164,13 +178,14 @@ export class MailService {
 
     sendSmtpEmail.subject = `Intro: ${founderName} (${startupName}) <> ${investorName}`;
 
+    
     sendSmtpEmail.htmlContent = `
-      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px;">
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
         <p>Hi ${founderName} and ${investorName},</p>
         
         <p>I'm pleased to connect you both! As we discussed, you both expressed interest in this introduction.</p>
         
-        <div style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #0347D2; margin: 20px 0;">
+        <div style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #0347D2; margin: 20px 0; border-radius: 0 4px 4px 0;">
           <h4 style="margin-top: 0; color: #0347D2;">The Context</h4>
           <p style="font-style: italic;">${generatedIntro}</p>
         </div>
@@ -180,9 +195,31 @@ export class MailService {
           <p><strong>${investorName}:</strong> An experienced partner looking for innovative startups like ${startupName}.</p>
         </div>
 
-        <p>I'll let you two take it on from here!.</p>
-      </div>
-    `;
+        <p>I'll let you two take it on from here!</p>
+
+        <div style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #f4f4f4;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+            <tr>
+              <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+                <p style="margin: 0; font-size: 11px; color: #999; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Founder Contact</p>
+                <p style="margin: 6px 0 2px 0; font-size: 15px; color: #333; font-weight: 700;">${founderName}</p>
+                <p style="margin: 0; font-size: 13px; color: #0347D2; font-weight: 500;">${founderEmail}</p>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: #777; font-style: italic;">${startupName}</p>
+              </td>
+              <td style="width: 50%; vertical-align: top; padding-left: 10px; border-left: 1px solid #eee;">
+                <p style="margin: 0; font-size: 11px; color: #999; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">Investor Contact</p>
+                <p style="margin: 6px 0 2px 0; font-size: 15px; color: #333; font-weight: 700;">${investorName}</p>
+                <p style="margin: 0; font-size: 13px; color: #0347D2; font-weight: 500;">${investorEmail}</p>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f9f9f9; padding-top: 10px;">
+          <p style="font-size: 10px; color: #ccc; text-transform: uppercase;">Warm Intro Assistant • Double Opt-In Verified</p>
+        </div>
+      </div> `
+    ;
 
     /* // Move the community manager to BCC
     sendSmtpEmail.bcc = [{ email: this.brevoFromEmail, name: this.brevoFromName }];  To add this later*/

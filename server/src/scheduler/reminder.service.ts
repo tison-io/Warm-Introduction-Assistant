@@ -17,34 +17,47 @@ export class ReminderService {
       ) {}
 
       async findAllByUser(userId: string, workspaceId?: string) {
-            const now = new Date();
+            const queryDate = new Date();
             let query: any;
 
             if (workspaceId) {
                   await this.workspaceService.getMembers(workspaceId, userId);
                   query = {
                         workspaceId: new Types.ObjectId(workspaceId),
-                        date: { $lte: now },
-                        status: 'sent',
+                        status: { $in: ['queued', 'sent'] },
                   };
             } else {
                   query = {
-                  founderId: new Types.ObjectId(userId),
-                  workspaceId: null,
-                  date: { $lte: now },
-                  status: 'sent' 
+                        founderId: new Types.ObjectId(userId),
+                        workspaceId: null,
+                        status: { $in: ['queued', 'sent'] } 
                   };
             }
 
-            return this.reminderModel
+            const reminders = await this.reminderModel
                   .find(query)
-                  .sort({ createdAt: -1 })
+                  .sort({ date: 1 })
                   .populate({
                         path: 'introId',
-                        select: 'startupName investorName startupId investorId generatedIntro followUpDueDate',
+                        select: 'startupName investorName followUpDueDate',
                   })
                   .exec();
 
+            const currentDate = new Date(); 
+            
+            return reminders.map(reminder => {
+                  const reminderDate = new Date(reminder.date);
+                  const isOverdue = reminderDate <= currentDate;
+                  const diffTime = reminderDate.getTime() - currentDate.getTime();
+                  const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                  return {
+                        ...reminder.toObject(),
+                        isOverdue,
+                        daysRemaining,
+                        contextStatus: isOverdue ? 'overdue' : 'upcoming'
+                  };
+            });
       }
 
       @Cron(CronExpression.EVERY_MINUTE)
@@ -69,12 +82,21 @@ export class ReminderService {
       });
       }
 
-      async createReminder(ownerId: string, introId: string, date: Date,workspaceId?: string) {
+      async createReminder(
+            ownerId: string, 
+            introId: string, 
+            date: Date, 
+            startupName: string, 
+            investorName: string, 
+            workspaceId?: string
+      ) {
             const reminder = new this.reminderModel({
                   founderId: new Types.ObjectId(ownerId),
                   introId: new Types.ObjectId(introId),
                   workspaceId: workspaceId ? new Types.ObjectId(workspaceId) : null,
                   date,
+                  startupName, 
+                  investorName, 
                   status: 'queued'
             });
             return reminder.save();

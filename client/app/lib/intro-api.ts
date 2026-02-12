@@ -50,7 +50,7 @@ export async function fetchIntrosByFounder(workspaceId?: string, search?: string
 
 export async function updateIntroContent(
     introId: string,
-    payload: { investorEmail?: string; generatedIntro?: string }
+    payload: { investorEmail?: string; investorName?: string; generatedIntro?: string }
 ): Promise<IntroQueue> {
     const response = await fetch(`${INTRO_ENDPOINT}/${introId}`, {
         method: 'PATCH',
