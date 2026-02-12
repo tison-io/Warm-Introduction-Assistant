@@ -198,6 +198,7 @@ function IntroWizardContent() {
                         {/* --- STEP 1: FOUNDERS --- */}
                         {currentStep === 0 && (
                             <div className="flex flex-col h-full space-y-6">
+                                <h2 className="text-xl font-bold text-white">Chose A Request to continue</h2>
                                 <div className="bg-blue-600/5 border border-blue-500/20 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -260,7 +261,7 @@ function IntroWizardContent() {
                         {currentStep === 1 && (
                             <div className="flex flex-col h-full space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-bold text-white">Target Investor</h2>
+                                    <h2 className="text-xl font-bold text-white">Pick An Investor to Continue</h2>
                                     <button 
                                         onClick={() => setShowCreateForm(!showCreateForm)}
                                         className="flex items-center gap-2 text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors"
@@ -311,7 +312,6 @@ function IntroWizardContent() {
                                                             : ''
                                                         }`}
                                                     >
-                                                        {/* Ensure compact prop is passed if you want the exact same height as founders */}
                                                         <InvestorCard investor={inv} isSelected={wizardData.investor?._id === inv._id} />
                                                     </div>
                                                 ))
@@ -329,7 +329,6 @@ function IntroWizardContent() {
                                                 <button disabled={currentPage === totalPages || isLoading} onClick={() => setCurrentPage(p => p + 1)} className="p-2 bg-white/5 rounded-lg border border-white/10 text-gray-400 disabled:opacity-20 hover:text-white"><ChevronRight size={18}/></button>
                                             </div>
                                             <div className="flex gap-4">
-                                                {/* Back button added here to return to step 0 */}
                                                 <button 
                                                     onClick={() => { setCurrentStep(0); setSearchTerm(""); }} 
                                                     className="px-6 py-3 text-gray-400 hover:text-white font-bold transition-colors"

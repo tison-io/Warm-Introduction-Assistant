@@ -107,58 +107,128 @@ export default function GeneratedIntroPage() {
             <div className="min-h-screen bg-[#0a0b1e] text-white pt-12 pb-12">
                 <div className="max-w-6xl mx-auto px-6">
                     <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors">
-                        <ArrowLeft className="w-4 h-4" /> Back to Review
+                        <ArrowLeft className="w-4 h-4" /> Back
                     </button>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-3 items-start">
                         
-                        {/* LEFT CONTAINER: Input Details */}
+                        {/* LEFT CONTAINER*/}
                         <div className="bg-[#111327] border border-gray-800 rounded-2xl p-8 space-y-6 shadow-xl h-[600px] flex flex-col">
-                            <div className="flex items-center gap-2 text-indigo-400 font-semibold mb-2">
-                                <Sparkles className="w-5 h-5" />
-                                <span>Match Context</span>
+                            <div className="flex items-center gap-2 text-white font-semibold mb-2">
+                                <span>Intro Details</span>
                             </div>
                             
-                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-6">
-                                {/* Founder & Startup Header */}
-                                <div className="p-4 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
-                                    <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">From: {details.founderName}</label>
-                                    <p className="text-lg font-bold text-white leading-tight">{details.startupName}</p>
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                        {details.startupTags.split(',').map((tag, i) => (
-                                            <span key={i} className="text-[10px] px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20 uppercase">{tag}</span>
-                                        ))}
+                            <div className="pt-3 border-t border-white/5">
+                                <div className="p-5 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 backdrop-blur-sm mb-3">
+                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-4">
+                                        <label className="text-[10px] tracking-[0.15em] text-indigo-400 uppercase font-black opacity-80 shrink-0">
+                                        Founder Details
+                                        </label>
+
+                                        {details.pitchLink && (
+                                        <>
+                                            <div className="w-px h-3 bg-white/10"></div>
+                                            <div className="flex items-center gap-2">
+                                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider shrink-0">
+                                                Pitch Link:
+                                            </span>
+                                            <a 
+                                                href={details.pitchLink} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                className="flex items-center gap-1.5 text-indigo-400 text-[11px] font-medium hover:text-indigo-300 transition-colors truncate max-w-[200px]"
+                                            >
+                                                <LinkIcon size={12} /> 
+                                                <span className="truncate italic underline">View Pitch Link</span>
+                                            </a>
+                                            </div>
+                                        </>
+                                        )}
+                                    </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Name</span>
+                                            <p className="text-sm text-white font-semibold leading-none">{details.founderName}</p>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Email</span>
+                                            <p className="text-sm text-white font-semibold leading-none truncate">{details.founderEmail}</p>
+                                        </div>
+
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Startup</span>
+                                            
+                                            <div className="flex items-center gap-3">
+                                                <p className="text-sm text-white font-semibold leading-none shrink-0">
+                                                {details.startupName}
+                                                </p>
+
+                                                <div className="w-px h-4 bg-white/10"></div>
+
+                                                <div className="flex flex-wrap gap-2">
+                                                {details.startupTags.split(',').map((tag, i) => (
+                                                    <span 
+                                                    key={i} 
+                                                    className="text-[9px] px-2.5 py-1 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20 uppercase font-bold tracking-tight whitespace-nowrap"
+                                                    >
+                                                    {tag.trim()}
+                                                    </span>
+                                                ))}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Investor Target */}
-                                <div>
-                                    <label className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-2">Recipient</label>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                                            <User className="w-5 h-5 text-purple-400" />
+                                {/* RIGHT CONTAINER*/}
+                                <div className="p-5 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 backdrop-blur-sm">
+                                    <label className="text-[10px] tracking-[0.15em] text-indigo-400 block mb-4 uppercase font-black opacity-80">
+                                        Investor Details
+                                    </label>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Name</span>
+                                            <p className="text-sm text-white font-semibold leading-none">{details.investorName}</p>
                                         </div>
-                                        <div>
-                                            <p className="font-medium text-white">{details.investorName}</p>
-                                            <p className="text-xs text-gray-400">{details.investorEmail}</p>
+
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Email</span>
+                                            <p className="text-sm text-white font-semibold leading-none truncate">{details.investorEmail}</p>
+                                        </div>
+
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <div className="flex items-center gap-3">
+                                                <p className="text-[12px] text-gray-500 uppercase font-bold tracking-wider block">
+                                                    Tags
+                                                </p>
+
+                                                <div className="w-px h-4 bg-white/10"></div>
+
+                                                <div className="flex flex-wrap gap-2">
+                                                {details.investorTags.split(',').map((tag, i) => (
+                                                    <span 
+                                                    key={i} 
+                                                    className="text-[9px] px-2.5 py-1 bg-indigo-500/10 text-indigo-300 rounded-full border border-indigo-500/20 uppercase font-bold tracking-tight whitespace-nowrap"
+                                                    >
+                                                    {tag.trim()}
+                                                    </span>
+                                                ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Pitch Link */}
-                                {details.pitchLink && (
-                                    <div>
-                                        <label className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-1">Attached Deck</label>
-                                        <div className="flex items-center gap-2 text-indigo-400 text-sm italic underline truncate">
-                                            <LinkIcon size={14} /> {details.pitchLink}
-                                        </div>
-                                    </div>
-                                )}
-
                                 {/* Startup Blurb */}
-                                <div>
-                                    <label className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-2">Reference Blurb</label>
-                                    <div className="text-gray-400 text-xs leading-relaxed bg-[#0a0b1e]/30 p-4 rounded-lg border border-gray-800/50 italic">
+                                <div className="mt-4">
+                                    <label className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-2">
+                                        Startup Blurb
+                                    </label>
+                                    <div className="text-gray-400 text-xs leading-relaxed bg-[#0a0b1e]/30 p-4 rounded-lg border border-gray-800/50 italic h-32 overflow-y-auto custom-scrollbar">
                                         "{details.startupBlurb}"
                                     </div>
                                 </div>
@@ -168,8 +238,8 @@ export default function GeneratedIntroPage() {
                         {/* RIGHT CONTAINER: AI Preview */}
                         <div className="bg-[#111327] border border-gray-800 rounded-2xl p-8 h-[600px] flex flex-col shadow-xl">
                             <div className="flex justify-between items-center mb-4">
-                                <div className="flex items-center gap-2 text-indigo-400 font-semibold">
-                                    <Sparkles className="w-5 h-5" />
+                                <div className="flex items-center gap-2 text-white font-semibold">
+                                    <Sparkles className="w-5 h-5 text-indigo-600" />
                                     <span>AI Generated Draft</span>
                                 </div>
                                 
@@ -203,10 +273,10 @@ export default function GeneratedIntroPage() {
                                 <button
                                     onClick={handleSave}
                                     disabled={isApiLoading || isSaving}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/10"
+                                    className="w-full bg-blue-600 hover:opacity-95 disabled:bg-gray-800 disabled:text-gray-600 text-white font-bold py-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/10"
                                 >
-                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                    {isApiLoading ? 'Processing...' : 'Save & Close'}
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : ''}
+                                    {isApiLoading ? 'Processing...' : 'Save to Queue'}
                                 </button>
                             </div>
                         </div>
@@ -250,7 +320,7 @@ export default function GeneratedIntroPage() {
                                     onClick={() => router.back()}
                                     className="cursor-pointer flex items-center justify-center gap-2 w-full py-2 text-slate-500 hover:text-white transition-colors mt-4 text-sm"
                                 >
-                                    Go Back
+                                    Back
                                 </button>
                             </div>
                         </div>

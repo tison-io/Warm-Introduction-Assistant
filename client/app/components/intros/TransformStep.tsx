@@ -1,6 +1,6 @@
 'use client';
 
-import { Wand2, ArrowLeft, ExternalLink, User, Rocket, Mail, Tag } from 'lucide-react';
+import { ArrowLeft, ExternalLink, User, Rocket, Mail } from 'lucide-react';
 import { IntroFormat } from '@/app/types/transform';
 import { Startup } from '@/app/types/startup';
 import { Investor } from '@/app/types/investor';
@@ -56,10 +56,9 @@ export default function TransformStep({ startup, investor, onSuccess, onBack }: 
     return (
         <div className="flex flex-col h-full space-y-8 animate-in fade-in slide-in-from-bottom-4">
             <header>
-                <h2 className="text-2xl font-bold text-white mb-2">Review & Confirm</h2>
-                <p className="text-gray-400">
-                    Double-check the profiles. Clicking transform will send these details to the AI engine to draft your intro.
-                </p>
+                <h2 className="text-xl font-bold text-white">
+                    Review both profiles before heading to the AI Writer
+                </h2>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -72,13 +71,13 @@ export default function TransformStep({ startup, investor, onSuccess, onBack }: 
                     
                     <div className="space-y-4">
                         <div>
-                            <label className="text-[10px] tracking-widest text-gray-500 block mb-1 uppercase font-bold opacity-70">Startup Entity</label>
+                            <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">Startup Details</label>
                             <p className="text-white font-semibold text-lg">{startup.name}</p>
                         </div>
 
                         {/* Startup Tags */}
                         <div>
-                            <label className="text-xs text-gray-500 block mb-2 uppercase font-semibold">Startup Tags</label>
+                            <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">Startup Tags</label>
                             <div className="flex flex-wrap gap-2">
                                 {startup.tags && startup.tags.length > 0 ? (
                                     startup.tags.map((tag, idx) => (
@@ -93,7 +92,7 @@ export default function TransformStep({ startup, investor, onSuccess, onBack }: 
                         </div>
 
                         <div className="pt-3 border-t border-white/5">
-                            <label className="text-[10px] tracking-widest text-gray-500 block mb-2 uppercase font-bold opacity-70">Founder</label>
+                            <label className="text-[10px] tracking-widest text-gray-400 block mb-2 uppercase font-bold opacity-70">Founder Details</label>
                             <div className="bg-white/5 rounded-xl p-3 border border-white/5 flex flex-col gap-2">
                                 <div className="flex items-center gap-2">
                                     <User size={14} className="text-blue-400" />
@@ -107,12 +106,19 @@ export default function TransformStep({ startup, investor, onSuccess, onBack }: 
                         </div>
 
                         <div>
-                            <label className="text-xs text-gray-500 block mb-1 uppercase font-semibold">Pitch Deck</label>
+                            <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">Pitch Deck</label>
                             {startup.pitchLink ? (
-                                <span className="inline-flex items-center gap-1.5 text-blue-400 text-sm font-medium">
-                                    Deck Attached <ExternalLink size={14} />
-                                </span>
-                            ) : <p className="text-gray-600 text-sm italic">No deck provided</p>}
+                                <a 
+                                href={startup.pitchLink} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="inline-flex items-center gap-1.5 text-blue-400 text-sm font-medium hover:text-blue-300 transition-colors cursor-pointer no-underline"
+                                >
+                                View Pitch Link <ExternalLink size={14} />
+                                </a>
+                            ) : (
+                                <p className="text-gray-600 text-sm italic">No Pitch link provided</p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -125,22 +131,18 @@ export default function TransformStep({ startup, investor, onSuccess, onBack }: 
                     </div>
                     
                     <div className="space-y-4">
-                        <div className="flex justify-between">
-                            <div>
-                                <label className="text-xs text-gray-500 block mb-1 uppercase font-semibold">Name</label>
-                                <p className="text-white font-medium">{investor.name}</p>
+                        <div className='flex'>
+                            <div className="w-48">
+                                <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">Name</label>
+                                <p className="text-white font-semibold text-[16px]">{investor.name}</p>
                             </div>
-                            <div className="text-right">
-                                <label className="text-xs text-gray-500 block mb-1 uppercase font-semibold">Format</label>
-                                <span className="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[11px] font-bold">
-                                    {investor.preferred_intro_format?.toUpperCase() || 'EMAIL'}
-                                </span>
+                            <div>
+                                <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">Email</label>
+                                <p className="text-white font-semibold text-[16px] truncate">{investor.email}</p>
                             </div>
                         </div>
-
-                        {/* Investor Tags */}
                         <div>
-                            <label className="text-xs text-gray-500 block mb-2 uppercase font-semibold">Investor Tags</label>
+                            <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">Investor Tags</label>
                             <div className="flex flex-wrap gap-2">
                                 {investor.tags && investor.tags.length > 0 ? (
                                     investor.tags.map((tag, idx) => (
@@ -153,18 +155,23 @@ export default function TransformStep({ startup, investor, onSuccess, onBack }: 
                                 )}
                             </div>
                         </div>
-
                         <div>
-                            <label className="text-xs text-gray-500 block mb-1 uppercase font-semibold">Target Email</label>
-                            <p className="text-white font-medium truncate">{investor.email}</p>
+                            <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">Intro Style</label>
+                            <span className="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[11px] font-bold">
+                                {investor.preferred_intro_format?.toUpperCase() || 'EMAIL'}
+                            </span>
                         </div>
 
+                        {investor.intro_preferences_text && (
                         <div>
-                            <label className="text-xs text-gray-500 block mb-1 uppercase font-semibold">AI Guidance</label>
+                            <label className="text-[10px] tracking-widest text-gray-400 block mb-1 uppercase font-bold opacity-70">
+                            Intro Preference
+                            </label>
                             <p className="text-gray-300 text-sm italic border-l-2 border-white/10 pl-3 line-clamp-3">
-                                {investor.intro_preferences_text || "Standard optimization"}
+                            {investor.intro_preferences_text}
                             </p>
                         </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -181,9 +188,8 @@ export default function TransformStep({ startup, investor, onSuccess, onBack }: 
                 
                 <button
                     onClick={handleProceedToGenerator}
-                    className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-12 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full md:w-auto bg-blue-600 hover:opacity-95 text-white font-bold py-4 px-12 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                    <Wand2 size={20} />
                     <span>Generate Intro Draft</span>
                 </button>
             </div>

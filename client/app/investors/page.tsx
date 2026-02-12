@@ -96,7 +96,7 @@ const InvestorListPage = () => {
                   <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">No.</th>
                   <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Investor</th>
                   <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Tags</th>
-                  <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Format</th>
+                  <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">Intro Style</th>
                   <th className="px-6 py-5 text-right text-xs font-bold uppercase tracking-widest text-slate-500">Actions</th>
                 </tr>
               </thead>

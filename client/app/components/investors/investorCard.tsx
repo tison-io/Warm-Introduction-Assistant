@@ -1,6 +1,6 @@
 'use client';
 import { Investor } from "../../types/investor";
-import { Mail, Layout, Tag as TagIcon } from "lucide-react";
+import { Mail, Tag as TagIcon } from "lucide-react";
 
 interface Props {
   investor: Investor;
@@ -26,7 +26,6 @@ export default function InvestorCard({ investor, isSelected }: Props) {
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <div className="flex items-center gap-1.5 text-[10px] text-gray-400 bg-gray-900 px-2 py-1 rounded-md border border-gray-800">
-            <Layout size={10} className="text-blue-500" />
             {investor.preferred_intro_format}
           </div>
         </div>

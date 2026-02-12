@@ -103,7 +103,7 @@ export default function Navbar() {
           {isLoggedIn ? (
             <div className="flex items-center gap-5">
               {userTier === 'trial' && isDashboardPage && (
-                <Link href="/pricing" className="flex items-center gap-2 text-xs font-bold text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                <Link href="/pricing" className="flex items-center gap-2 text-xs font-bold text-amber-500 bg-amber-500/10 hover:opacity-95 px-3 py-1 rounded-full border border-amber-500/20">
                   <Zap size={12} fill="currentColor" /> Upgrade
                 </Link>
               )}

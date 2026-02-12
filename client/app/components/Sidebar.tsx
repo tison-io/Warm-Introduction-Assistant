@@ -33,6 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
   const pathname = usePathname();
   const router = useRouter();
   const [userTier, setUserTier] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("User");
 
   useEffect(() => {
     const fetchTier = async () => {
@@ -42,12 +43,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
       try {
         const profile = await getFounderProfile();
         setUserTier(profile.tier || "trial");
+        setUserName(profile.name || "Founder");
       } catch (e) {
         console.error("Failed to fetch user tier in Sidebar", e);
         const userData = localStorage.getItem('user');
         if (userData) {
           const user = JSON.parse(userData);
           setUserTier(user.tier);
+          setUserName(user.name || "Founder");
         }
       }
     };
@@ -134,31 +137,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
               })}
             </ul>
           </nav>
-
-          {!isCollapsed && userTier === 'trial' && (
-            <div className="mt-3 px-2">
-              <div className="relative p-4 rounded-2xl bg-linear-to-r from-[#7b78ff] to-[#4d91ff] overflow-hidden shadow-xl border border-white/10 group">
-                <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
-                
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap size={16} className="text-yellow-400 fill-yellow-400" />
-                    <span className="text-xs font-bold text-white uppercase tracking-wider">Trial Plan</span>
-                  </div>
-                  <Link 
-                    href="/pricing"
-                    className="block w-full py-2 px-3 bg-white text-indigo-600 text-center text-xs font-bold rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
-                  >
-                    Upgrade Now
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer Buttons */}
-        <div className={`space-y-3 pt-4 px-4 border-t border-white/10 ${isCollapsed ? "flex flex-col items-center" : ""}`}>
+        <div className={`space-y-3 pt-4 px-4 border-t border-white/10 ${isCollapsed ? "flex flex-col items-center" : ""}`}>     
+          {!isCollapsed && (
+            <div className="flex items-center justify-between p-2 rounded-xl mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-white text-xs font-bold truncate">{userName}</span>
+                  <span className="text-gray-400 text-[10px] capitalize tracking-wider">{userTier} plan</span>
+                </div>
+              </div>
+              
+              {userTier === 'trial' && (
+                <Link 
+                  href="/pricing"
+                  className="flex items-center gap-2 text-xs font-bold text-amber-500 bg-amber-500/10 hover:opacity-95 px-3 py-1 rounded-full border border-amber-500/20"
+                >
+                  Upgrade
+                </Link>
+              )}
+            </div>
+          )}
+
           <Link 
             href="/settings" 
             onClick={() => isMobile && setIsCollapsed(true)}
