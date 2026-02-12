@@ -84,7 +84,7 @@ export default function DashboardPage() {
                 totalIntros: introsResponse.meta?.total || introsData.length,
                 pendingFollowUps: pendingCount,
                 myInvestors: investorsResponse.meta?.total || investorsData.length,
-                remindersDue: reminders.filter(r => (isToday(new Date(r.date)) || differenceInDays(new Date(r.date)) < 0) && r.introId?.status !== 'completed').length,
+                remindersDue: reminders.filter(r => r.status === 'sent').length,
                 executionRate: rate,
                 completedIntros: completedCount,
                 latestIntros: introsData.slice(0, 3),
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="space-y-3 overflow-y-auto grow custom-scrollbar">
                             {(() => {
-                            const activeReminders = data.reminders.filter(r => r.introId?.status !== 'completed');
+                            const activeReminders = data.reminders.filter(r => r.status !== 'completed');
 
                             if (activeReminders.length === 0) {
                                 return (
@@ -238,7 +238,7 @@ export default function DashboardPage() {
                                     <Check size={14} className="text-indigo-500 scale-0 group-hover:scale-100 transition-transform" />
                                     </button>
                                     <div className="min-w-0">
-                                    <p className="text-sm font-medium text-slate-200 truncate">{reminder.introId?.investorName}</p>
+                                    <p className="text-sm font-medium text-slate-200 truncate">{reminder.investorName}</p>
                                     <p className="text-[11px] text-slate-500">Follow up due</p>
                                     </div>
                                 </div>
