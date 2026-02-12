@@ -163,7 +163,6 @@ export default function InvestorForm({ initialData, workspaceId, isEdit, onSubmi
           rows={3} 
           className={inputClasses} 
           placeholder="e.g. Needs a blurb, prefers warm intros..."
-          required
         />
       </div>
 

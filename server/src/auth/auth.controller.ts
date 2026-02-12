@@ -21,20 +21,27 @@ export class AuthController {
     @UseGuards(AuthGuard('google'))
     async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
         const founder = req.user as FounderDocument;
-
         const tokenPayload = this.authService.generateJwt(founder);
 
         const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-        
+
         const callbackUrl = (req.query.state as string) || '/dashboard'
+
         res.cookie('jwt', tokenPayload.token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 86400000, 
         });
 
-        return res.redirect(
-            `${frontendUrl}/login/success?token=${tokenPayload.token}&callbackUrl=${encodeURIComponent(callbackUrl)}`
-        );
+        const params = new URLSearchParams({
+            token: tokenPayload.token,
+            id: tokenPayload.user.id.toString(),
+            name: tokenPayload.user.name,
+            email: tokenPayload.user.email,
+            tier: tokenPayload.user.tier || 'trial',
+            callbackUrl: callbackUrl
+        });
+
+        return res.redirect(`${frontendUrl}/login/success?${params.toString()}`);
     }
 }

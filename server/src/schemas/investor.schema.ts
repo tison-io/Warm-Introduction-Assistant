@@ -23,8 +23,8 @@ export class Investor {
   @Prop({ required: true })
   preferred_intro_format: string;
 
-  @Prop({ required: true })
-  intro_preferences_text: string;
+  @Prop()
+  intro_preferences_text?: string;
 
   @Prop()
   notes?: string;

@@ -28,6 +28,7 @@ export class AuthService {
                 googleId: profile.googleId,
                 email:profile.email,
                 name:profile.name,
+                tier: 'trial',
             });
         }
 
@@ -36,17 +37,15 @@ export class AuthService {
 
     generateJwt(user: FounderDocument) {
         const payload = { userId: user._id, email: user.email };
-
         const token = this.jwtService.sign(payload);
-
         return{ 
             token,
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                tier: user.tier,
             }
         }
     }
-
-}
+} 

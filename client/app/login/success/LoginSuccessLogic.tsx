@@ -12,8 +12,12 @@ export default function LoginSuccessLogic() {
 
     useEffect(() => {
         const token = searchParams.get('token');
-        const error = searchParams.get('error');
+        const id = searchParams.get('id');
+        const name = searchParams.get('name');
+        const email = searchParams.get('email');
+        const tier = searchParams.get('tier');
         const callbackUrl = searchParams.get('callbackUrl');
+        const error = searchParams.get('error');
 
         if (error) {
             setStatusMessage(`login failed: ${error}`);
@@ -23,13 +27,25 @@ export default function LoginSuccessLogic() {
             return;
         }
 
-        if (token) {
+        if (token && id) {
+            const expiryTime = Date.now() + (3 * 60 * 60 * 1000);
+
             localStorage.setItem('token', token);
+            localStorage.setItem('auth_expiry', expiryTime.toString());
+
+            const userData = {
+                id,
+                name,
+                email,
+                tier: tier || 'trial'
+            };
+            localStorage.setItem('user', JSON.stringify(userData));
             setStatusMessage("login successful! redirecting..."); 
+            
             window.dispatchEvent(new Event(AUTH_EVENT));
             router.push(callbackUrl || '/dashboard');
         } else {
-            setStatusMessage("login failed. no authentication data received.");
+            setStatusMessage("login failed. incomplete authentication data.");
             setTimeout(() => {
                 router.push('/login?error=social_auth_failed');
             }, 3000);
@@ -38,7 +54,6 @@ export default function LoginSuccessLogic() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen auth-page-container">
-            {/* Keeping the background consistent during the redirect */}
             <style dangerouslySetInnerHTML={{ __html: `
                 .auth-page-container {
                     background-color: #070911;

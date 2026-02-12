@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CreateStartupDto, Startup, VALID_TAGS } from "../../types/startup";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, AlertCircle } from "lucide-react";
 
 interface Props {
     founderId: string;
@@ -37,8 +37,14 @@ export default function StartupForm({ founderId, onSubmit, submitLabel, initialD
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const isBlurbValid = formData.blurb.length >= 50;
+    const isTagsValid = selectedTags.length >= 3 && selectedTags.length <= 6;
+    const canSubmit = isBlurbValid && isTagsValid && !isSubmitting;
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        if (!canSubmit) return;
+        
         setIsSubmitting(true);
         try {
             await onSubmit({ 
@@ -46,17 +52,13 @@ export default function StartupForm({ founderId, onSubmit, submitLabel, initialD
                 tags: selectedTags, 
                 founderId 
             });
-            
-            // Clear form on success
             setFormData(initialFormState);
             setSelectedTags([]);
-            
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    // focus:ring updated to blue-500
     const inputClasses = "w-full p-3 bg-[#1c212c] border border-gray-800 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-500";
     const labelClasses = "block text-sm font-semibold text-gray-400 mb-2";
 
@@ -79,13 +81,31 @@ export default function StartupForm({ founderId, onSubmit, submitLabel, initialD
             </div>
 
             <div>
-                <label className={labelClasses}>Startup Blurb</label>
-                <textarea name="blurb" value={formData.blurb} onChange={handleChange} required rows={4} className={inputClasses} placeholder="Describe your product..." />
+                <div className="flex justify-between items-end mb-2">
+                    <label className="text-sm font-semibold text-gray-400">Startup Blurb</label>
+                    <span className={`text-[10px] font-bold ${isBlurbValid ? 'text-green-500' : 'text-blue-500'}`}>
+                        {formData.blurb.length} / 50 characters min
+                    </span>
+                </div>
+                <textarea 
+                    name="blurb" 
+                    value={formData.blurb} 
+                    onChange={handleChange} 
+                    required 
+                    rows={4} 
+                    className={`${inputClasses} ${!isBlurbValid && formData.blurb.length > 0 ? 'border-blue-700/50' : ''}, custom-scrollbar`}
+                    placeholder="Describe your product, traction, and what you're looking for..." 
+                />
+                {!isBlurbValid && formData.blurb.length > 0 && (
+                    <p className="flex items-center gap-1.5 mt-2 text-blue-500 text-xs">
+                        <AlertCircle size={12} /> Needs at least {50 - formData.blurb.length} more characters
+                    </p>
+                )}
             </div>
 
             <div>
                 <label className={labelClasses}>Pitch Deck URL</label>
-                <input name="pitchLink" type="url" value={formData.pitchLink} onChange={handleChange} required className={inputClasses} placeholder="Link to deck" />
+                <input name="pitchLink" type="url" value={formData.pitchLink} onChange={handleChange} required className={inputClasses} placeholder="https://example.com/pitch-deck" />
             </div>
 
             <div>

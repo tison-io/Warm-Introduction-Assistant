@@ -29,7 +29,7 @@ export class CreateInvestorDto {
   preferred_intro_format!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   intro_preferences_text!: string;
 
   @IsString()

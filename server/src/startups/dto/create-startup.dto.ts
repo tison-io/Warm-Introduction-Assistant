@@ -19,9 +19,6 @@ export class CreateStartupDto {
     @MinLength(50, {
         message: 'Blurb is too short.'
     })
-    @MaxLength(500, {
-        message: 'Blurb is too long. Keep it concise'
-    })
     blurb: string;
 
     @IsUrl({}, { message: 'Pitch deck must be a valid url.' })

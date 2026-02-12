@@ -147,6 +147,7 @@ export default function FounderRequestsPage() {
                     key={s._id}
                     startup={s}
                     onMakeIntro={handleStartIntro}
+                    onDeleteSuccess={fetchStartups}
                 />
                 ))}
 

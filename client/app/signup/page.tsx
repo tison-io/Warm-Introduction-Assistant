@@ -187,6 +187,21 @@ export default function SignupPage() {
               {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Sign Up"}
             </button>
 
+            <div className="flex items-center gap-3 py-2">
+              <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter whitespace-nowrap">or continue with</span>
+              <div className="flex-1 hpx bg-white/10" />
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => initiateGoogleLogin()}
+              className="w-full h-12 rounded-none flex items-center gap-3 justify-center text-sm font-bold text-blue-400 border border-white/10 bg-[#070911]/50 hover:bg-black/80 transition-colors"
+            >
+              <Image src="/google.svg" width={18} height={18} alt="Google" />
+              Sign in with Google
+            </button>
+
             <p className="text-center text-[13px] text-slate-400 pt-2">
               Already have an account? <Link href="/login" className="text-blue-400 hover:underline font-medium ml-1">Log In</Link>
             </p>

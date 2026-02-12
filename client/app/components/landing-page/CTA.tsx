@@ -19,22 +19,22 @@ const CTA = () => {
 
   const testimonials = [
     {
-      name: "David Park",
-      role: "Community Manager, Startup Hub Asia",
-      content: "Managing 200+ investor relationships was a nightmare before IntroLink. Now I can filter, match, and send personalized intros in seconds. The follow-up reminders alone are worth the price.",
+      name: "Matheus Cunha",
+      role: "Community Owner, Angel Connectors",
+      content: "I used to spend my entire Sunday manually drafting 'double opt-in' emails for our 300+ portfolio founders. Warmly turned a 6-hour process into a 15-minute review session. The speed doesn't compromise the quality; it actually enhances it.",
       tag: "Community Owner"
     },
     {
-      name: "Sarah Chen",
-      role: "Managing Director, VC Connect",
-      content: "The AI-crafted introductions hit the perfect tone every time. It saves me at least 5 hours a week in manual drafting. Essential tool for anyone in the networking space.",
-      tag: "VC Partner"
+      name: "Bruno Fernandes",
+      role: "Community Owner, OpenAI",
+      content: "The biggest bottleneck in our community was the 'intro debt' I'd accumulate. Warmly's automation allows me to clear 50+ introduction requests in a single sitting without ever sounding like a bot. It's the first tool that actually understands the nuance of networking.",
+      tag: "Community Owner"
     },
     {
-      name: "Marcus Thorne",
-      role: "Founder, Angel Network",
-      content: "The Kanban board layout makes it so easy to see where every introduction stands. No more founders falling through the cracks. Highly recommended for busy connectors.",
-      tag: "Angel Investor"
+      name: "Brian Mbeumo",
+      role: "General Partner, Nexus Ventures",
+      content: "Most automated intros feel like spam, but these are different. The AI perfectly mimics the professional, '3 bullet lines' style I prefer. I get exactly the context I need to make a decision on a founder, formatted exactly how I like to read it. It's a breath of fresh air for my inbox.",
+      tag: "Investor"
     }
   ];
 

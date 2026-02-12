@@ -1,13 +1,14 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { AUTH_EVENT } from "../lib/auth-events";
 
 const botAvatar = "/chatbot.png";
-const userAvatar = "https://ui-avatars.com/api/?name=User&background=1e293b&color=fff";
 
 const SUGGESTIONS = [
-  "How do I create an intro?",
-  "Show me my investor queue",
-  "Set a follow-up reminder",
+  "How do I get founder requests?",
+  "How do I set a follow-up reminder?",
+  "Making a new intro",
 ];
 
 type Message = {
@@ -17,12 +18,46 @@ type Message = {
 };
 
 const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [sessionId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedId = sessionStorage.getItem('chat_session_id');
+      if (savedId) return savedId;
+      const newId = "user-session-" + Date.now();
+      sessionStorage.setItem('chat_session_id', newId);
+      return newId;
+    }
+    return "user-session-default";
+  });
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('chat_history');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  const [userData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
+  });
+
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  const currentUserAvatar = userData?.name 
+    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=4F6EF7&color=fff`
+    : "https://ui-avatars.com/api/?name=User&background=1e293b&color=fff";
+
   useEffect(() => {
+    if (messages.length > 0) {
+      sessionStorage.setItem('chat_history', JSON.stringify(messages));
+    }
+
     inputRef.current?.focus();
     if (contentRef.current) {
       contentRef.current.scrollTop = contentRef.current.scrollHeight;
@@ -38,7 +73,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
         headers: { "Content-Type": "application/json", "X-API-Key": "dev-ops" },
         body: JSON.stringify({
           message: userText,
-          session_id: "user-session-" + Date.now()
+          session_id: sessionId
         }),
       });
 
@@ -124,7 +159,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
       </div>
 
       {/* Messages Area */}
-      <div ref={contentRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-5 scrollbar-hide">
+      <div ref={contentRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-5 custom-scrollbar">
         {messages.length === 0 ? (
           <div className="text-center pt-2 px-2">
             <p className="text-slate-400 text-[13px] mb-6 font-light italic">Ready to assist your introductions.</p>
@@ -144,7 +179,7 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
           messages.map((msg, idx) => (
             <div key={idx} className={`flex items-end gap-2 ${msg.from === "user" ? "flex-row-reverse" : "flex-row"}`}>
               <img 
-                src={msg.from === "user" ? userAvatar : botAvatar} 
+                src={msg.from === "user" ? currentUserAvatar : botAvatar} 
                 className="w-7 h-7 rounded-full object-cover border border-white/10 shadow-sm" 
                 alt="avatar" 
               />
@@ -185,7 +220,37 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
 };
 
 export default function ChatbotFloat() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const dashboardRoutes = [
+    '/dashboard', '/investors', '/startups', '/create-startup', 
+    '/generate-intro', '/intro-wizard', '/intro-queue', 
+    '/reminders', '/settings', '/profile', '/transform'
+  ];
+
+  const isDashboardPage = dashboardRoutes.some(route => pathname?.startsWith(route));
+
+  useEffect(() => {
+    const syncAuth = () => {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);
+    };
+
+    syncAuth();
+    window.addEventListener(AUTH_EVENT, syncAuth);
+    window.addEventListener('storage', syncAuth);
+
+    return () => {
+      window.removeEventListener(AUTH_EVENT, syncAuth);
+      window.removeEventListener('storage', syncAuth);
+    };
+  }, []);
+
+  if (!isDashboardPage || !isLoggedIn) {
+    return null;
+  }
 
   return (
     <>
@@ -194,7 +259,9 @@ export default function ChatbotFloat() {
         className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-blue-600 shadow-[0_8px_30px_rgb(37,99,235,0.4)] flex items-center justify-center transition-all hover:scale-110 z-50 border border-blue-400/20"
       >
         {isOpen ? (
-          <svg className="text-white w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          <svg className="text-white w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         ) : (
           <img src="/chatbot.png" alt="Chat" className="w-6 h-6" />
         )}

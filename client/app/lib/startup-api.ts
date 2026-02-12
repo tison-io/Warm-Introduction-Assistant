@@ -21,6 +21,21 @@ export async function createStartup(data: CreateStartupDto): Promise<Startup> {
   return res.json();
 }
 
+export async function deleteStartup(id: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/${id}`, {
+    method: "DELETE",
+    headers: { 
+      "Authorization": `Bearer ${getToken()}`,
+      "Content-Type": "application/json" 
+    }
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to delete request");
+  }
+}
+
 export async function getMyRequests(page: number = 1, limit: number = 5, search: string = ""): Promise<{ startups: Startup[], meta: { total: number, page: number, lastPage: number } }> {
   const url = new URL(BASE_URL);
   url.searchParams.append("page", page.toString());
@@ -63,15 +78,4 @@ export async function updateStartup(
 
   if (!res.ok) throw new Error("Failed to Update Startup.");
   return res.json();
-}
-
-export async function deleteStartup(id: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
-
-  if (!res.ok) throw new Error("Failed to Delete Startup.");
 }
