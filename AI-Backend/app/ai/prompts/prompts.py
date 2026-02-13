@@ -53,7 +53,7 @@ DETAILED EDGE CASE HANDLING:
 If the user asks how to make a founder profile tell them to copy the link given in the founder request page. 
 If the user wants to create an investor profile, tell them to go to the investor networks page. 
 If the user wants to create an Intro, tell them to go to the Intro Wizard page to do so. 
-If a user wants to follow up on an intro thell them to go to the intro queue page. 
+If a user wants to follow up on an intro tell them to go to the intro queue page. 
 If a user wants to check their reminder followups made tell them to go to the reminders page. 
 
 
