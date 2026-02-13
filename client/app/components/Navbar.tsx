@@ -12,6 +12,7 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState<string>("");
   const [userTier, setUserTier] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -24,11 +25,13 @@ export default function Navbar() {
         try {
           const profile = await getFounderProfile();
           setUserTier(profile.tier || "trial");
+          setUserName(profile.name || "");
         } catch (e) {
           const userData = localStorage.getItem('user');
           if (userData) {
             const user = JSON.parse(userData);
             setUserTier(user.tier);
+            setUserName(user.name || "");
           }
         }
       } else {
@@ -48,6 +51,17 @@ export default function Navbar() {
     window.dispatchEvent(new Event(AUTH_EVENT));
     setUserTier(null);
     router.push('/');
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return '??';
+    const parts = name.split(' ');
+    const validParts = parts.filter(p => p && p.toLowerCase() !== 'undefined');
+    
+    if (validParts.length === 0) return '??';
+    if (validParts.length === 1) return validParts[0].substring(0, 2).toUpperCase();
+    
+    return (validParts[0][0] + validParts[1][0]).toUpperCase();
   };
 
   const isThirdPartyPage = 
@@ -71,9 +85,7 @@ export default function Navbar() {
   );
 
   const navLinkStyles = `
-    relative text-sm font-medium text-gray-400 transition-all duration-300
-    hover:text-transparent hover:bg-clip-text 
-    hover:bg-gradient-to-br hover:from-[#d35400] hover:via-[#e67e22] hover:to-[#c0392b]
+    relative text-sm font-medium text-gray-400 transition-all duration-300 hover:text-blue-600
   `;
 
   return (
@@ -94,7 +106,6 @@ export default function Navbar() {
       {!isDashboardPage && !isThirdPartyPage && (
         <div className="hidden md:flex items-center gap-10 relative z-10">
           <Link href="/about" className={navLinkStyles}>About</Link>
-          <Link href="/contact" className={navLinkStyles}>Contact</Link>
         </div>
       )}
 
@@ -103,15 +114,17 @@ export default function Navbar() {
           {isLoggedIn ? (
             <div className="flex items-center gap-5">
               {userTier === 'trial' && isDashboardPage && (
-                <Link href="/pricing" className="flex items-center gap-2 text-xs font-bold text-amber-500 bg-amber-500/10 hover:opacity-95 px-3 py-1 rounded-full border border-amber-500/20">
+                <Link href="/pricing" className="flex items-center gap-2 text-xs font-bold text-blue-500 bg-blue-500/10 hover:opacity-95 px-3 py-1 rounded-full border border-blue-500/20">
                   <Zap size={12} fill="currentColor" /> Upgrade
                 </Link>
               )}
 
               {isDashboardPage ? (
                 <>
-                  <Link href="/settings">
-                    <User className="w-6 h-6 text-gray-400 hover:text-blue-500 transition-colors" />
+                  <Link href="/settings" className="hover:scale-105 transition-transform">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center text-blue-400 text-xs font-bold tracking-wider">
+                      {getInitials(userName)}
+                    </div>
                   </Link>
                 </>
               ) : (

@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: 'transparent' }}>
+      <body className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-white antialiased">
         <AuthGuard />
         <ConditionalNavbar />
         <DashboardLayout><ToastProvider>{children}</ToastProvider></DashboardLayout>

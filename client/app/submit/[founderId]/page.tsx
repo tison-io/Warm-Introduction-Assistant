@@ -37,8 +37,20 @@ export default function NewStartupPage() {
     const [showSuccess, setShowSuccess] = useState(false);
 
     async function handleSubmit(data: CreateStartupDto) {
+        const sanitizedData = {
+            ...data,
+            name: data.name?.trim(),
+            founderName: data.founderName?.trim(),
+            blurb: data.blurb?.trim(),
+        };
+
+        if (!sanitizedData.name || !sanitizedData.blurb) {
+            showToast("Startup name and blurb cannot be empty or just spaces.", "error");
+            return;
+        }
+
         try {
-            await createStartup(data);
+            await createStartup(sanitizedData);
             setShowSuccess(true);
         } catch (err: any) {
             showToast(err.message || "Failed to submit form", "error");

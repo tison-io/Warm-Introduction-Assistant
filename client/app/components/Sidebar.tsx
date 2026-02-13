@@ -5,11 +5,12 @@ import React, { useEffect, useState } from "react";
 import { AUTH_EVENT } from '@/app/lib/auth-events';
 import { getFounderProfile } from "../lib/founder-api";
 import { 
-  Users, Rocket, Wand2, ListOrdered, 
+  Users, Wand2, ListOrdered, 
   Settings, LogOut, ChevronLeft, ChevronRight,
   Info, LayoutGrid,
   Zap,
-  Bell
+  Bell,
+  Activity
 } from "lucide-react";
 import Image from "next/image";
 
@@ -21,7 +22,7 @@ interface SidebarProps {
 
 const menu = [
   { href: "/dashboard", label: "My Dashboard", icon: LayoutGrid},
-  { href: "/startups", label: "Founder requests", icon: Rocket },
+  { href: "/startups", label: "Founder requests", icon: Activity },
   { href: "/investors", label: "Investor network", icon: Users },
   { href: "/intro-wizard", label: "Intro Wizard", icon: Wand2 },
   { href: "/intro-queue", label: "Intro Queue", icon: ListOrdered },
@@ -153,7 +154,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
               {userTier === 'trial' && (
                 <Link 
                   href="/pricing"
-                  className="flex items-center gap-2 text-xs font-bold text-amber-500 bg-amber-500/10 hover:opacity-95 px-3 py-1 rounded-full border border-amber-500/20"
+                  className="flex items-center gap-2 text-xs font-bold text-blue-500 bg-blue-500/10 hover:opacity-95 px-3 py-1 rounded-full border border-blue-500/20"
                 >
                   Upgrade
                 </Link>

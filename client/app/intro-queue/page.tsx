@@ -115,9 +115,19 @@ export default function IntroQueuePage() {
   };
 
   const handleUpdateFollowUp = async (id: string) => {
+    if (!followUpDate) return;
+
+    const selectedDate = new Date(`${followUpDate}T00:00:00`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      showToast("Follow-up date cannot be a past date", "error");
+      return;
+    }
     setIsProcessing('date');
     try {
-      await updateIntroStatus(id, { followUpDueDate: new Date(followUpDate) });
+      await updateIntroStatus(id, { followUpDueDate: selectedDate });
       showToast("Follow-up date updated", "success");
     } catch (err: any) {
       showToast(err.message || "Failed to update date", "error");
@@ -150,6 +160,9 @@ export default function IntroQueuePage() {
       setIsProcessing(null);
     }
   };
+
+  const minDateForInput = new Date().toLocaleDateString('en-CA');
+
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-gray-100 p-8">
@@ -264,7 +277,7 @@ export default function IntroQueuePage() {
 
                             <div className="space-y-6">
                               <div>
-                                <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block">Generated Intro Content</label>
+                                <label className="text-[10px] uppercase text-gray-500 font-bold mb-2 block">Generated Intro Content - Editable</label>
                                 <textarea
                                   className="w-full bg-[#161920] border border-gray-700 rounded-lg p-4 text-sm text-gray-300 focus:ring-1 focus:ring-indigo-500 outline-none leading-relaxed"
                                   rows={6}
@@ -279,6 +292,7 @@ export default function IntroQueuePage() {
                                     <label className="text-[10px] uppercase text-indigo-400 font-bold mb-2 block">Follow-up Due Date</label>
                                     <input
                                       type="date"
+                                      min={minDateForInput}
                                       className="w-full bg-[#0A0C10] border border-gray-700 rounded-lg p-2.5 text-sm text-white outline-none focus:border-indigo-500"
                                       value={followUpDate}
                                       onChange={(e) => setFollowUpDate(e.target.value)}

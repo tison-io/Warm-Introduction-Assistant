@@ -91,7 +91,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-5 mb-10 w-full" style={getRevealStyle(0.75)}>
               <Link
                 href="/signup"
-                className="group flex items-center justify-center px-10 py-4.5 rounded-xl bg-linear-to-br from-[#d35400] via-[#e67e22] to-[#c0392b] text-white font-bold text-lg transition-all shadow-[0_0_25px_rgba(37,99,235,0.3)] hover:brightness-110 active:scale-95"
+                className="group flex items-center justify-center px-10 py-4.5 rounded-xl bg-blue-600 text-white font-bold text-lg transition-all shadow-[0_0_25px_rgba(37,99,235,0.3)] hover:brightness-110 active:scale-95"
               >
                 Start Free Trial
                 <span className="ml-2 text-xl group-hover:translate-x-1 transition-transform">&#8594;</span>
@@ -118,7 +118,7 @@ const Hero = () => {
           <img
             src="/public-network.jpeg"
             alt="People network"
-            className="w-[125%] md:scale-[1.45] max-w-none object-contain relative z-10 translate-x-20"
+            className="hidden lg:block w-[125%] md:scale-[1.45] max-w-none object-contain relative z-10 translate-x-20"
             style={{
               mixBlendMode: 'screen', 
               maskImage: 'radial-gradient(circle at 40% 50%, white 20%, transparent 85%)',

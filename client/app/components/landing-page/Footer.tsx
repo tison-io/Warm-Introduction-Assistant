@@ -45,7 +45,7 @@ const Footer = () => {
           <nav className="flex items-center gap-8 md:mt-6">
             <Link href="#" className="text-slate-400 hover:text-white transition-colors text-xs font-medium tracking-tight">Home</Link>
             <Link href="/about" className="text-slate-400 hover:text-white transition-colors text-xs font-medium tracking-tight">About Us</Link>
-            <Link href="/pricing" className="text-slate-400 hover:text-white transition-colors text-xs font-medium tracking-tight">Pricing</Link>
+            <Link href="/signup" className="text-slate-400 hover:text-white transition-colors text-xs font-medium tracking-tight">Start free trial</Link>
           </nav>
 
         </div>

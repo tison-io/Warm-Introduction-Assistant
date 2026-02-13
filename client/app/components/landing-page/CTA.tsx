@@ -124,7 +124,7 @@ const CTA = () => {
             </ul>
 
             <button  
-              className="w-full py-4 rounded-xl bg-orange-500 text-white font-bold text-lg transition-all hover:scale-[1.02] shadow-[0_15px_30px_-10px_rgba(211,84,0,0.4)] flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-xl bg-blue-600 text-white font-bold text-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
             >
               <Link href='/signup'>
                 Start your free trial

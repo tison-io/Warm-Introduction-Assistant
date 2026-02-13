@@ -18,6 +18,9 @@ type Message = {
 };
 
 const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [initStatus, setInitStatus] = useState("Waking up assistant...");
+  
   const [sessionId] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedId = sessionStorage.getItem('chat_session_id');
@@ -53,6 +56,26 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
     ? `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=4F6EF7&color=fff`
     : "https://ui-avatars.com/api/?name=User&background=1e293b&color=fff";
 
+  useEffect(() => {
+    const wakeupServer = async () => {
+      try {
+        const res = await fetch("https://warm-introduction-assistant.onrender.com", {
+          method: "GET",
+        });
+        if (res.ok) {
+          setIsInitializing(false);
+        } else {
+          setInitStatus("Server is taking a while...");
+        }
+      } catch (error) {
+        setInitStatus("Connection error. Retrying...");
+        setTimeout(wakeupServer, 5000);
+      }
+    };
+
+    wakeupServer();
+  }, []);
+  
   useEffect(() => {
     if (messages.length > 0) {
       sessionStorage.setItem('chat_history', JSON.stringify(messages));
@@ -152,69 +175,110 @@ const ChatBotBox = ({ onClose }: { onClose?: () => void }) => {
             <img src={botAvatar} alt="Bot" className="w-full h-full object-cover" />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Online</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${
+              isInitializing 
+                ? "bg-slate-500" 
+                : "bg-emerald-500 animate-pulse"
+            }`} />
+            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">
+              {isInitializing ? "Offline" : "Online"}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div ref={contentRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-5 custom-scrollbar">
-        {messages.length === 0 ? (
-          <div className="text-center pt-2 px-2">
-            <p className="text-slate-400 text-[13px] mb-6 font-light italic">Ready to assist your introductions.</p>
-            <div className="space-y-2">
-              {SUGGESTIONS.map((s, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSuggestion(s)}
-                  className="w-full text-center p-3 text-[12px] text-slate-300 bg-white/3 border border-white/5 rounded-2xl hover:bg-white/8 hover:border-blue-500/30 transition-all"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          messages.map((msg, idx) => (
-            <div key={idx} className={`flex items-end gap-2 ${msg.from === "user" ? "flex-row-reverse" : "flex-row"}`}>
-              <img 
-                src={msg.from === "user" ? currentUserAvatar : botAvatar} 
-                className="w-7 h-7 rounded-full object-cover border border-white/10 shadow-sm" 
-                alt="avatar" 
+      {isInitializing ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
+          <div className="flex items-end justify-center gap-1.5 h-10 w-full">
+            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="w-1.5 bg-blue-600 rounded-full animate-grow"
+                style={{
+                  height: '100%',
+                  animationDelay: `${i * 0.15}s`,
+                }}
               />
-              <div className={`max-w-[78%] p-3.5 text-[13px] leading-relaxed shadow-sm ${
-                msg.from === "user" 
-                ? "bg-[#4F6EF7] text-white rounded-2xl rounded-br-none" 
-                : "bg-[#2A3441] text-slate-100 rounded-2xl rounded-bl-none border border-white/5"
-              }`}>
-                {msg.text}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+            ))}
+          </div>
 
-      {/* Input Area */}
-      <div className="p-4 bg-white/2 border-t border-white/5">
-        <div className="relative flex items-center bg-[#13161C]/50 border border-white/10 rounded-2xl px-3 py-1.5 focus-within:border-blue-500/40 transition-all">
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Write a message..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            className="flex-1 bg-transparent text-white text-[13px] outline-none py-2 placeholder-slate-600"
-          />
-          <button 
-            onClick={handleSend}
-            className="ml-2 w-9 h-9 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-          </button>
+          <div className="space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              <span className="flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              </span>
+              <p className="text-white text-sm font-medium tracking-wide">
+                {initStatus}
+              </p>
+            </div>
+            
+            <p className="text-slate-500 text-xs px-8 leading-relaxed">
+              Initializing the chatbot. Please wait...
+            </p>
+          </div>
         </div>
-      </div>
+      ): (
+        <>
+          {/* Messages Area */}
+          <div ref={contentRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-5 custom-scrollbar">
+            {messages.length === 0 ? (
+              <div className="text-center pt-2 px-2">
+                <p className="text-slate-400 text-[13px] mb-6 font-light italic">Ready to assist your introductions.</p>
+                <div className="space-y-2">
+                  {SUGGESTIONS.map((s, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSuggestion(s)}
+                      className="w-full text-center p-3 text-[12px] text-slate-300 bg-white/3 border border-white/5 rounded-2xl hover:bg-white/8 hover:border-blue-500/30 transition-all"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              messages.map((msg, idx) => (
+                <div key={idx} className={`flex items-end gap-2 ${msg.from === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                  <img 
+                    src={msg.from === "user" ? currentUserAvatar : botAvatar} 
+                    className="w-7 h-7 rounded-full object-cover border border-white/10 shadow-sm" 
+                    alt="avatar" 
+                  />
+                  <div className={`max-w-[78%] p-3.5 text-[13px] leading-relaxed shadow-sm ${
+                    msg.from === "user" 
+                    ? "bg-[#4F6EF7] text-white rounded-2xl rounded-br-none" 
+                    : "bg-[#2A3441] text-slate-100 rounded-2xl rounded-bl-none border border-white/5"
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Input Area */}
+          <div className="p-4 bg-white/2 border-t border-white/5">
+            <div className="relative flex items-center bg-[#13161C]/50 border border-white/10 rounded-2xl px-3 py-1.5 focus-within:border-blue-500/40 transition-all">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Write a message..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                className="flex-1 bg-transparent text-white text-[13px] outline-none py-2 placeholder-slate-600"
+              />
+              <button 
+                onClick={handleSend}
+                className="ml-2 w-9 h-9 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

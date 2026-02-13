@@ -40,3 +40,16 @@
   }
 }
 
+@keyframes rhythmic-grow {
+  0%, 100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-grow {
+  animation: rhythmic-grow 1.2s ease-in-out infinite;
+  transform-origin: bottom;
+}

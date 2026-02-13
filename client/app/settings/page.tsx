@@ -7,6 +7,7 @@ import { Invoice } from "../types/invoice";
 import { useToast } from "../components/Toast"; 
 import { Eye, EyeClosed, ExternalLink, Crown, CreditCard, Download, ShieldCheck, Lock } from "lucide-react";
 import Link from "next/link";
+import { generateInvoicePDF } from '../lib/generate-invoice';
 
 export default function SettingsPage() {
   const { showToast } = useToast();
@@ -174,7 +175,7 @@ export default function SettingsPage() {
 
           {tab === "billing" && (
             <div className="flex flex-col gap-6">
-              <div className="bg-[#0d1117] border border-gray-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-4">
                     <div>
@@ -197,7 +198,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="bg-[#0d1117] border border-gray-800 rounded-2xl p-6 shadow-2xl">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl">
                 <div className="mb-6">
                   <h3 className="text-lg font-bold flex items-center gap-2">
                     Payment History
@@ -213,13 +214,26 @@ export default function SettingsPage() {
                     {invoices.map((inv) => (
                       <div key={inv._id} className="flex items-center justify-between p-4 rounded-xl bg-[#161b22] transition group">
                         <div className="flex items-center gap-8">
-                          <span className="text-sm font-medium text-gray-400 w-16">INV-001</span>
-                          <span className="text-sm text-gray-400">{new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <span className="text-sm font-medium text-gray-400 w-16">
+                            INV-{inv._id.slice(-6).toUpperCase()}
+                          </span>
+                          <span className="text-sm text-gray-400">
+                            {new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
                         </div>
                         <div className="flex items-center gap-6">
                           <span className="font-bold text-gray-200">${(inv.amount / 100).toFixed(2)}</span>
-                          <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-md uppercase tracking-wider border border-emerald-500/20">{inv.status}</span>
-                          <button className="text-gray-500 hover:text-white transition"><Download className="w-4 h-4" /></button>
+                          <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold rounded-md uppercase tracking-wider border border-emerald-500/20">
+                            {inv.status}
+                          </span>
+                        
+                          <button 
+                            onClick={() => generateInvoicePDF(inv, profile.name ?? "Customer")}
+                            className="text-gray-500 hover:text-white transition p-2 hover:bg-gray-800 rounded-lg"
+                            title="Download PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     ))}
