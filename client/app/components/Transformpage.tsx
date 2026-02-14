@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Copy, Check, Loader2, Sparkles, User, Mail, Tag, Link as LinkIcon, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Copy, RotateCw, Check, Loader2, Sparkles, User, Mail, Tag, Link as LinkIcon, LayoutDashboard, ShieldAlert } from 'lucide-react';
 import { transformIntroApi, queueIntroApi } from '../lib/transform-api';
 import { TransformIntroDto, QueueIntroDto } from '../types/transform';
 import { useToast } from '../components/Toast';
@@ -18,6 +18,7 @@ export default function GeneratedIntroPage() {
     const [isCopied, setIsCopied] = useState(false);
     const [displayedIntro, setDisplayedIntro] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [isRegenerating, setIsRegenerating] = useState(false);
 
     const details = {
         startupId: searchParams.get('startupId') || '',
@@ -37,39 +38,52 @@ export default function GeneratedIntroPage() {
         workspaceId: searchParams.get('workspaceId') || '',
     };
 
-    useEffect(() => {
-        if (hasTriggeredRef.current) return;
+    const fetchIntro = async (isRegen = false) => {
+        if (!details.startupId) return;
+        
+        if (isRegen) setIsRegenerating(true);
+        else setIsApiLoading(true);
 
-        const triggerTransform = async () => {
-            if (!details.startupId) return;
-            hasTriggeredRef.current = true;
-
-            const dto: TransformIntroDto = {
-                startup_id: details.startupId,
-                startup_name: details.startupName,
-                startup_pitch_link: details.pitchLink, 
-                blurb: details.startupBlurb,
-                investor_id: details.investorId,
-                investor_name: details.investorName,
-                investor_email: details.investorEmail,
-                founder_id: details.founderId,
-                investor_preference: details.format as any,
-                intro_preferences_text: details.prefText,
-            };
-
-            try {
-                const res = await transformIntroApi(dto);
-                const cleanText = res.transformed_intro.replace(/\\n/g, '\n').trim();
-                setDisplayedIntro(cleanText);
-                setIsApiLoading(false);
-            } catch (err: any) {
-                setError("Our transformation engine is temporarily unavailable. Please try again later.");
-                setIsApiLoading(false);
-            }
+        const dto: any = { 
+            startup_id: details.startupId,
+            startup_name: details.startupName,
+            startup_pitch_link: details.pitchLink, 
+            blurb: details.startupBlurb,
+            startup_tags: details.startupTags,
+            founder_id: details.founderId,
+            founder_name: details.founderName,
+            founder_email: details.founderEmail,
+            investor_id: details.investorId,
+            investor_name: details.investorName,
+            investor_email: details.investorEmail,
+            investor_tags: details.investorTags,
+            investor_preference: details.format,
+            intro_preferences_text: details.prefText,
+            workspace_id: details.workspaceId
         };
 
-        triggerTransform();
+        try {
+            const res = await transformIntroApi(dto);
+            const cleanText = res.transformed_intro.replace(/\\n/g, '\n').trim();
+            setDisplayedIntro(cleanText);
+            setError(null); 
+        } catch (err: any) {
+            setError("Our transformation engine is temporarily unavailable. Please try again later.");
+        } finally {
+            setIsApiLoading(false);
+            setIsRegenerating(false);
+        }
+    };
+
+    useEffect(() => {
+        if (hasTriggeredRef.current) return;
+        hasTriggeredRef.current = true;
+        fetchIntro();
     }, []);
+
+    const handleRegenerate = () => {
+        fetchIntro(true);
+    };
 
     const handleCopy = async () => {
         try {
@@ -247,17 +261,34 @@ export default function GeneratedIntroPage() {
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center gap-2 text-white font-semibold">
                                     <Sparkles className="w-5 h-5 text-indigo-600" />
-                                    <span>AI Generated Draft</span>
+                                    <span>AI Generated Draft - Editable</span>
                                 </div>
                                 
                                 {!isApiLoading && (
-                                    <button onClick={handleCopy} className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white">
-                                        {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={handleRegenerate}
+                                            disabled={isRegenerating}
+                                            className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white disabled:opacity-50"
+                                            title="Regenerate draft"
+                                        >
+                                            <RotateCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+                                        </button>
+
+                                        <button onClick={handleCopy} className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white">
+                                            {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
                             <div className="flex-1 bg-[#0a0b1e]/50 border border-gray-800 rounded-xl relative overflow-hidden flex flex-col">
+                                {isRegenerating && (
+                                    <div className="absolute inset-0 z-10 bg-[#0a0b1e]/40 backdrop-blur-[2px] flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+                                    </div>
+                                )}
+
                                 {isApiLoading ? (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
                                         <div className="w-12 h-12 bg-indigo-600/20 rounded-xl flex items-center justify-center mb-4 border border-indigo-500/30">
