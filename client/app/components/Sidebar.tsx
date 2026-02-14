@@ -97,9 +97,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
           </button>
 
         <div className="overflow-y-auto px-4 custom-scrollbar">
-          {!isCollapsed && (
             <div className="px-3 mb-8">
-              <Link href="/" className="flex items-center no-underline">
+              <Link 
+                href="/" 
+                className={`flex items-center no-underline
+                  ${isCollapsed ? "justify-center invisible pointer-events-none" : "justify-start"}`}
+              >
                 <Image
                   src="/logo.png"
                   alt="Logo"
@@ -108,9 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
                   className="sm:w-[55px] sm:h-[55px]"
                 />
               </Link>
-              <div className="h-1px bg-white/10 mt-4"></div>
             </div>
-          )}
 
           <nav>
             <ul className="space-y-1 list-none p-0 m-0">

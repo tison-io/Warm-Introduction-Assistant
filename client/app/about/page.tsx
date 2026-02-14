@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ShieldCheck, Award, Leaf, Scale } from "lucide-react";
+import { ArrowLeft, Zap, Target, ShieldCheck, BarChart3 } from "lucide-react";
 import ContactPage from "../contact/page";
 
 export default function AboutPage() {
@@ -9,102 +9,96 @@ export default function AboutPage() {
 
   const values = [
     {
-      icon: <ShieldCheck className="w-10 h-10 mb-2 text-blue-400" />,
-      name: "Privacy",
-      desc: "Your data is always handled with respect and responsibility.",
+      icon: <Zap className="w-10 h-10 mb-2 text-blue-400" />,
+      name: "No more Copy-Paste",
+      desc: "Stop wasting hours rewriting emails and sending cold intros. Our AI engine personalizes intros in seconds.",
     },
     {
-      icon: <Award className="w-10 h-10 mb-2 text-yellow-400" />,
-      name: "Reliability",
-      desc: "A platform you can depend on, anytime.",
+      icon: <Target className="w-10 h-10 mb-2 text-emerald-400" />,
+      name: "Automated mails",
+      desc: "Send consent requests and intro mails without ever touching the keyboard.",
     },
     {
-      icon: <Leaf className="w-10 h-10 mb-2 text-green-400" />,
-      name: "Simplicity",
-      desc: "Clean, intuitive experiences without the clutter.",
+      icon: <ShieldCheck className="w-10 h-10 mb-2 text-purple-400" />,
+      name: "Double Opt-In",
+      desc: "Protect your reputation. We ensure investors only see what they want, when they want it.",
     },
     {
-      icon: <Scale className="w-10 h-10 mb-2 text-purple-400" />,
-      name: "Integrity",
-      desc: "Clear policies, honest communication, and ethical practices.",
+      icon: <BarChart3 className="w-10 h-10 mb-2 text-cyan-400" />,
+      name: "See What's Working",
+      desc: "Track every intro from start to finish. Know exactly which matches turn into real deals.",
     },
   ];
 
   return (
-    <div className="min-h-screen w-full bg-linear-to-r from-blue-900 via-slate-800 to-gray-950 flex flex-col items-center overflow-x-hidden pb-20">
-      <div className="w-full max-w-7xl pt-8 px-6 grid grid-cols-3 items-center">
+    <div className="relative min-h-screen w-full bg-[#010204] flex flex-col items-center overflow-x-hidden pb-20">
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div 
+          className="absolute top-[10%] left-[-5%] w-[500px] h-[500px] rounded-full"
+          style={{
+            background: 'rgba(33, 162, 255, 0.12)',
+            filter: 'blur(120px)',
+          }}
+        />
+        <div 
+          className="absolute bottom-[20%] right-[-5%] w-[500px] h-[500px] rounded-full"
+          style={{
+            background: 'rgba(132, 86, 201, 0.18)',
+            filter: 'blur(120px)',
+          }}
+        />
+      </div>
+
+      <div className="w-full max-w-7xl pt-8 px-6 grid grid-cols-3 items-center relative z-10">
         <div className="flex justify-start">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 bg-transparent text-slate-300 text-[17px] cursor-pointer font-medium hover:text-white transition-colors group"
-          >
-            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> 
-            Back
-          </button>
         </div>
 
         <div className="flex justify-center">
           <h1 className="text-white text-2xl md:text-3xl font-bold whitespace-nowrap tracking-tight">
-            About Us
+            The Vision
           </h1>
         </div>
-
         <div className="hidden md:block"></div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-[1000px] mx-auto w-[92vw] mt-12 p-8 md:p-12">
+      <div className="max-w-[1000px] mx-auto w-[92vw] mt-16 relative z-10">
         <div className="text-center">
-          <p className="text-slate-200 text-lg md:text-xl leading-relaxed mb-12 max-w-3xl mx-auto">
-            We are a platform built to make meaningful connections simple, secure,
-            and effortless. Our focus is on creating a smooth experience that
-            helps people interact, collaborate, and get things done without
-            unnecessary complexity.
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tighter">
+            We help Community Owners <br /> 
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-emerald-400">
+              reduce time spent on making manual intros.
+            </span>
+          </h2>
+          
+          <p className="text-slate-400 text-lg md:text-xl leading-relaxed mb-12 max-w-3xl mx-auto font-light">
+            Warm Intro Assistant was built to solve the "Middleman Bottleneck." 
+            We provide Community Owners with the tools to manage high-volume 
+            founder-investor matching and reduce the time spent by the connector through our Transform AI engine that crafts warm intros based on investor's preference.
           </p>
 
-          <hr className="border-white/10 my-10" />
+          <div className="w-full h-px bg-linear-to-r from-transparent via-white/10 to-transparent my-16" />
 
-          <h2 className="text-white text-3xl font-bold mb-6 italic tracking-tight">Our Purpose</h2>
-          <p className="text-slate-200 text-lg md:text-xl leading-relaxed mb-16 max-w-3xl mx-auto">
-            Our purpose is to bridge gaps—between people, ideas, and
-            opportunities. We exist to make communication easier by providing a
-            trusted space where users can connect confidently.
-          </p>
+          <h2 className="text-white text-3xl font-bold mb-10 tracking-tight">Built for Community Owners</h2>
 
-          <h2 className="text-white text-3xl font-bold mb-10 tracking-tight">What We Stand For</h2>
-
-          {/* Value Cards*/}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((value, index) => (
               <div
                 key={index}
-                className="p-6 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-blue-500/30 hover:bg-slate-900/80 transition-all duration-300 group shadow-lg"
+                className="p-8 rounded-2xl bg-slate-900/40 border border-white/5 backdrop-blur-sm hover:border-blue-500/50 transition-all duration-500 group text-left"
               >
-                <div className="flex justify-center group-hover:scale-110 transition-transform duration-300">
+                <div className="group-hover:scale-110 transition-transform duration-300">
                   {value.icon}
                 </div>
-                <h3 className="text-white font-bold text-lg mt-4 mb-2">
+                <h3 className="text-white font-bold text-lg mt-6 mb-3">
                   {value.name}
                 </h3>
-                <p className="text-slate-400 text-sm leading-snug font-light">
+                <p className="text-slate-500 text-sm leading-relaxed">
                   {value.desc}
                 </p>
               </div>
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="w-full max-w-5xl mx-auto px-6 my-16">
-        <hr className="border-t border-white/10" />
-      </div>
-      
-      {/* Contact page Section */}
-      <div className="text-white text-2xl md:text-3xl font-bold whitespace-nowrap tracking-tight">
-        Contact Us
-      </div>
-      <div className="w-full">
-        <ContactPage />
       </div>
     </div>
   );

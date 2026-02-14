@@ -106,6 +106,7 @@ export default function Navbar() {
       {!isDashboardPage && !isThirdPartyPage && (
         <div className="hidden md:flex items-center gap-10 relative z-10">
           <Link href="/about" className={navLinkStyles}>About</Link>
+          <Link href="/contact" className={navLinkStyles}>Contact</Link>
         </div>
       )}
 
