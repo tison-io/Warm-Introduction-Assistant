@@ -25,6 +25,13 @@ export class Startup {
 
     @Prop({ type: Types.ObjectId, ref:'Founder', required:true })
     founderId:Types.ObjectId;
+
+    @Prop({
+        type: String,
+        enum: ['pending', 'done'],
+        default: 'pending'
+    })
+    status: string;
 }
 
 export const StartupSchema = SchemaFactory.createForClass(Startup);

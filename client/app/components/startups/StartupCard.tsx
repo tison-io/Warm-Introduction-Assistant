@@ -1,7 +1,7 @@
 'use client';
 import { useState } from "react";
 import { Startup } from "../../types/startup";
-import { FileText, ArrowRight, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { FileText, ArrowRight, ChevronDown, Clock, CheckCircle2, ChevronUp, Trash2 } from "lucide-react";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import { deleteStartup } from "@/app/lib/startup-api";
 
@@ -92,24 +92,41 @@ export default function StartupCard({ startup, isSelectable, compact, onMakeIntr
           </div>
         </div>
 
-        {!isSelectable && (
-          <div className="flex flex-row md:flex-row items-center gap-3 md:pl-6 md:border-l border-white/5 shrink-0 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0">
-            <button 
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="p-2.5 rounded-lg bg-red-500/5 text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/10 active:scale-95"
-              aria-label="Delete Request"
-            >
-              <Trash2 size={18} />
-            </button>
-            <button 
-              onClick={() => onMakeIntro?.(startup)} 
-              className="flex-1 md:flex-none bg-linear-to-r from-blue-600 to-blue-400 text-white font-medium py-2 px-6 rounded-lg text-sm flex items-center justify-center group/btn active:scale-95 transition-all shadow-lg shadow-blue-500/20"
-            >
-              <span className="whitespace-nowrap">Make Intro</span>
-              <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-            </button>
+        <div className="flex flex-col justify-center items-end gap-3 md:pl-6 md:border-l border-white/5 shrink-0 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0">
+          
+          <div className="w-full flex justify-start mb-5">
+            {startup.status === 'done' ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wide uppercase">
+                <CheckCircle2 size={12} className="stroke-[3px]" />
+                Done
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-700/30 border border-slate-700/50 text-slate-400 text-[10px] font-bold tracking-wide uppercase">
+                <Clock size={12} className="stroke-[3px]" />
+                Pending
+              </div>
+            )}
           </div>
-        )}
+
+          {!isSelectable && (
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <button 
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="p-2.5 rounded-lg bg-red-500/5 text-red-500 hover:bg-red-500 hover:text-white transition-all border border-red-500/10 active:scale-95"
+                aria-label="Delete Request"
+              >
+                <Trash2 size={18} />
+              </button>
+              <button 
+                onClick={() => onMakeIntro?.(startup)} 
+                className="flex-1 md:flex-none bg-linear-to-r from-blue-600 to-blue-400 text-white font-medium py-2 px-6 rounded-lg text-sm flex items-center justify-center group/btn active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+              >
+                <span className="whitespace-nowrap">Make Intro</span>
+                <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <DeleteConfirmModal 

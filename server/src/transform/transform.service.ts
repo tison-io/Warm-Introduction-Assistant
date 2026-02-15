@@ -9,6 +9,7 @@ import { Investor, InvestorDocument } from '../schemas/investor.schema';
 import { WorkspacesService } from '../workspace/workspace.service';
 import { IntroOutcomeLogDocument } from './entities/intro-logs.schema';
 import { Founder, FounderDocument } from '../founder/entities/founder.entity';
+import { StartupsService } from 'src/startups/startups.service';
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class TransformService {
     private readonly reminderService: ReminderService,
     private readonly workspaceService: WorkspacesService,
     private readonly mailService: MailService,
+    private readonly startupsService: StartupsService,
   ) {}
 
   async transformIntro(dto: TransformIntroDto, userId: string) {
@@ -265,11 +267,19 @@ export class TransformService {
     intro.sentDate = new Date();
     await intro.save();
 
+    if (intro.startupId) {
+      try {
+        await this.startupsService.markAsDone(intro.startupId.toString());
+      } catch (error) {
+        console.error(`Failed to update startup ${intro.startupId} to done:`, error);
+      }
+    }
+
     await this.captureLog(intro, 'intro_mail_delivered', `Final intro of ${intro.startupName} sent to ${intro.investorEmail} and ${intro.founderEmail}.`);
 
     return {
       success: true,
-      message: 'Double opt-in complete! Intro email sent.',
+      message: 'Double opt-in complete! Intro email sent and request marked done.',
       intro,
     };
   }

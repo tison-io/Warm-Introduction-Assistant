@@ -7,6 +7,7 @@ export interface Startup {
   pitchLink: string;
   tags: string[];
   founderId: string;
+  status: 'pending' | 'done';
   createdAt: string;
   updatedAt: string;
 }

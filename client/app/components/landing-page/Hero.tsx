@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AUTH_EVENT } from '@/app/lib/auth-events';
 import Typewriter from 'typewriter-effect';
+import Image from 'next/image';
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -113,20 +114,26 @@ const Hero = () => {
         </div>
 
         {/* === RIGHT COLUMN === */}
-        <div className="md:w-[45%] w-full flex justify-end items-center relative">
-          <div className="absolute inset-0 bg-linear-to-r from-[#010204] via-transparent to-transparent z-20 pointer-events-none" />
-          <img
-            src="/public-network.jpeg"
-            alt="People network"
-            className="hidden lg:block w-[125%] md:scale-[1.45] max-w-none object-contain relative z-10 translate-x-20"
-            style={{
-              mixBlendMode: 'screen', 
-              maskImage: 'radial-gradient(circle at 40% 50%, white 20%, transparent 85%)',
-              WebkitMaskImage: 'radial-gradient(circle at 40% 50%, white 20%, transparent 85%)',
-              filter: 'brightness(1.1) contrast(1.1) saturate(1.2)',
-            }}
-            draggable={false}
-          />
+        <div className="hidden md:flex md:w-[45%] w-full justify-end items-center relative min-h-[600px]">
+          <div className="absolute inset-0 bg-transparent z-20 pointer-events-none" />
+          <div className="relative w-[125%] h-[600px] translate-x-10 z-10 hidden lg:block">
+            <Image
+              src="/public-network.jpeg"
+              alt="People network"
+              fill
+              priority
+              quality={100}
+              className="object-contain"
+              sizes="(max-width: 1024px) 100vw, 45vw"
+              style={{
+                maskImage: 'radial-gradient(circle at center, black 30%, transparent 80%)',
+                WebkitMaskImage: 'radial-gradient(circle at center, black 30%, transparent 80%)',
+                mixBlendMode: 'screen',
+                filter: 'contrast(1.2) brightness(1.1)',
+              }}
+              draggable={false}
+            />
+          </div>
         </div>
       </div>
 

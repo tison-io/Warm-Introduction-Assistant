@@ -7,8 +7,8 @@ const CTA = () => {
   const stats = [
     { label: "Community Owners", value: "500+" },
     { label: "Intros Sent", value: "10K+" },
-    { label: "Successful Matches", value: "2,500+" },
-    { label: "Average Rating", value: "4.9/5" }
+    { label: "Successful Matches", value: "2.5K+" },
+    { label: "Average Rating", value: "4/5" }
   ];
 
   const features = [

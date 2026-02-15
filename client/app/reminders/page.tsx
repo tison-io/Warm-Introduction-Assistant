@@ -7,7 +7,7 @@ import {
   fetchReminders,
   markReminderCompleted,
 } from '../lib/reminder-api';
-import { Trash, Loader2, Check, Bell, Calendar } from 'lucide-react';
+import { Trash2, Loader2, Check, Bell, Calendar } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import Link from 'next/link';
 
@@ -116,8 +116,8 @@ export default function RemindersPage({ workspaceId }: { workspaceId?: string })
               </p>
             </div>
             <div className="bg-[#0f172a]/40 border border-slate-800 px-4 py-2 rounded-xl">
-               <span className="text-2xl font-bold text-white">{reminders.length}</span>
-               <span className="text-xs text-slate-500 ml-2 uppercase font-semibold">Pending</span>
+                <span className="text-2xl font-bold text-white">{reminders.length}</span>
+                <span className="text-xs text-slate-500 ml-2 uppercase font-semibold">Pending</span>
             </div>
           </div>
         </header>
@@ -141,7 +141,7 @@ export default function RemindersPage({ workspaceId }: { workspaceId?: string })
               return (
                 <div 
                   key={reminder._id}
-                  className={`bg-gray-800 border p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all group `}
+                  className="bg-gray-800 p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
                 >
                   <Link 
                     href={`/intro-queue`}
@@ -149,8 +149,7 @@ export default function RemindersPage({ workspaceId }: { workspaceId?: string })
                   >
                     <div className="flex flex-wrap items-center gap-3">
                       <p className="text-slate-400 text-sm">
-                        Follow up with <span className="text-slate-200 font-semibold">{reminder.investorName}</span> 
-                        {" "}regarding <span className="text-slate-200 font-medium">{reminder.startupName}</span>
+                        Follow up on intro regarding <span className="text-slate-200 font-medium">{reminder.startupName}</span>
                       </p>
                       <DueBadge date={dueDate} />
                       
@@ -188,9 +187,9 @@ export default function RemindersPage({ workspaceId }: { workspaceId?: string })
                         e.preventDefault();
                         handleDelete(reminder._id);
                       }}
-                      className="p-2 bg-slate-900/50 border border-slate-800 text-slate-400 hover:text-rose-500 hover:border-rose-500/50 rounded-xl transition-all"
+                      className="p-2 bg-slate-900/50 text-slate-200 hover:bg-rose-700 rounded-xl transition-all"
                     >
-                      <Trash size={18} />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>

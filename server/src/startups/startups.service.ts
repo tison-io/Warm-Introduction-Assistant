@@ -77,6 +77,18 @@ export class StartupsService {
     return updated;
   }
 
+  async markAsDone(startupId: string) {
+    const updated = await this.startupModel.findByIdAndUpdate(
+      startupId,
+      { status: 'done' },
+      { new: true }
+    );
+    if (!updated) {
+      throw new NotFoundException(`Startup with ID ${startupId} not found`);
+    }
+    return updated;
+  }
+
   async remove(id:string, founderId:string) {
     const deleted = await this.startupModel.findOneAndDelete({
       _id: id,

@@ -267,10 +267,25 @@ export default function DashboardPage() {
                                                 <div className="w-10 h-10 bg-[#1c212c] border border-slate-800 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 transition-colors">
                                                     {request.founderName.split(' ').map(n => n[0]).join('').toUpperCase()}
                                                 </div>
+                                                
                                                 <div className="overflow-hidden">
                                                     <p className="text-sm font-bold text-white truncate">{request.name}</p>
                                                     <p className="text-xs text-slate-500 truncate">{request.founderName}</p>
                                                 </div>
+                                            </div>
+
+                                            <div className="shrink-0 ml-4">
+                                                {request.status === 'done' ? (
+                                                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                                                        <CheckCircle2 size={12} className="stroke-[3px]" />
+                                                        <span className="hidden sm:inline">Done</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/50 border border-slate-700/50 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                                        <Clock size={12} className="stroke-[3px]" />
+                                                        <span className="hidden sm:inline">Pending</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </Link>

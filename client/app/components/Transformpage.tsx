@@ -261,7 +261,10 @@ export default function GeneratedIntroPage() {
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center gap-2 text-white font-semibold">
                                     <Sparkles className="w-5 h-5 text-indigo-600" />
-                                    <span>AI Generated Draft - Editable</span>
+                                    <span>
+                                        AI Generated Draft 
+                                        <span className="text-gray-400 italic font-normal"> (Editable)</span>
+                                    </span>
                                 </div>
                                 
                                 {!isApiLoading && (
