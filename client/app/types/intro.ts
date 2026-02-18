@@ -1,6 +1,6 @@
 // types/intro.ts
 
-export type IntroStatus = 'queued' | 'sent' | 'completed' | 'investor_approval_requested' | 'investor_approved';
+export type IntroStatus = 'queued' | 'approvals_requested' | 'investor_approved' | 'founder_approved' | 'sent' | 'completed';
 
 export interface IntroQueue {
     _id: string;
