@@ -133,7 +133,7 @@ export default function InvestorForm({ initialData, workspaceId, isEdit, onSubmi
 
       {/* Tag Selection */}
       <div>
-        <label className={labelClasses}>Focus Sectors (Select 2-5)*</label>
+        <label className={labelClasses}>Focus Sectors <span className='italic text-sm text-gray-500 mb-1 font-bold'>(Select 2-5)</span>*</label>
         <div className="flex flex-wrap gap-2 p-4 bg-[#1c212c]/30 rounded-xl border border-gray-800/50">
           {VALID_TAGS.map((tag) => (
             <button
@@ -155,7 +155,7 @@ export default function InvestorForm({ initialData, workspaceId, isEdit, onSubmi
 
       {/* Intro Preferences */}
       <div>
-        <label className={labelClasses}>Intro Preferences & Notes</label>
+        <label className={labelClasses}>Intro Preferences & Notes - <span className='italic text-sm text-gray-500 mb-1'>Optional</span></label>
         <textarea 
           name="intro_preferences_text" 
           value={formData.intro_preferences_text} 
