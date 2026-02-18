@@ -7,9 +7,12 @@ import Footer from "../components/landing-page/Footer";
 
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://warmly-intro-assistant.vercel.app"),
   title: "Warmly Intro Assistant",
-  description:
-    "The connector tool for community owners. Generate AI-crafted warm introductions for your investor network.",
+  description: "The connector tool for community owners. Generate AI-crafted warm introductions for your investor network.",
+  verification: {
+    google: "omVhXD5rWFuxIqh7lY5rNhE9Xi3-nz5ZPWT5f1F0uZo",
+  },
   openGraph: {
     title: "Warmly Intro Assistant",
     description:
@@ -35,11 +38,27 @@ export const metadata: Metadata = {
       "https://warmly-intro-assistant.vercel.app/og-image.png",
     ],
   },
+  alternates: {
+    canonical: "https://warmly-intro-assistant.vercel.app",
+  },
 };
 
 export default function HomePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Warmly Intro Assistant",
+    "operatingSystem": "WEB",
+    "applicationCategory": "BusinessApplication",
+    "description": "Generate AI-crafted warm introductions for your investor network.",
+  };
+
   return (
     <main className="min-h-screen bg-[#010204]">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <Hero />
         <section id="features">
           <Features />
