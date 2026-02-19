@@ -1,7 +1,7 @@
 'use client';
 import { useState } from "react";
 import { Startup } from "../../types/startup";
-import { FileText, ArrowRight, ChevronDown, Clock, CheckCircle2, ChevronUp, Trash2 } from "lucide-react";
+import { FileText, ArrowRight, ChevronDown, Clock, CheckCircle2, ChevronUp, Trash2, Link } from "lucide-react";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import { deleteStartup } from "@/app/lib/startup-api";
 
@@ -83,10 +83,10 @@ export default function StartupCard({ startup, isSelectable, compact, onMakeIntr
                 target="_blank" 
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()} 
-                className="flex items-center gap-1 text-gray-500 hover:text-white text-[10px] transition-colors"
+                className="flex items-center gap-1 text-gray-500 hover:text-gray-200 text-[10px] transition-colors"
               >
-                <FileText size={12} className="text-blue-500/70" />
-                <span>Pitch</span>
+                <Link size={12} className="text-blue-500/70" />
+                <span>Pitch Link</span>
               </a>
             </div>
           </div>

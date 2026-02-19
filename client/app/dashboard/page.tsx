@@ -59,6 +59,8 @@ export default function DashboardPage() {
     const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
     const [shareUrl, setShareUrl] = useState("");
     const [copied, setCopied] = useState(false);
+    const [pendingId, setPendingId] = useState<String | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const loadDashboardData = async () => {
         try {
@@ -119,21 +121,29 @@ export default function DashboardPage() {
     };
 
     const handleMarkAsDone = async (reminder: Reminder) => {
+        if (pendingId !== reminder._id) {
+            setPendingId(reminder._id);
+            return;
+        }
+
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
         try {
-            setProcessingId(reminder._id);
             await markReminderCompleted(reminder._id);
-            showToast('Reminder completed', 'success');
+            showToast('Follow-up marked as completed', 'success');
             await loadDashboardData();
+            setPendingId(null);
         } catch (err) {
             showToast('Update failed', 'error');
         } finally {
-            setProcessingId(null);
+            setIsSubmitting(false);
         }
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 p-6 lg:p-10 space-y-8">
+            <div data-testid="dashboard-page" className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 p-6 lg:p-10 space-y-8">
                 <div className="max-w-7xl mx-auto space-y-8">
                     <div className="h-10 w-64 bg-slate-800/50 rounded-lg animate-pulse" />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -151,11 +161,11 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-slate-200 p-6 lg:p-10">
+        <div data-testid="dashboard-page" className="min-h-screen bg-linear-to-br from-gray-950 via-slate-800 to-blue-950 text-slate-200 p-6 lg:p-10">
             <div className="max-w-7xl mx-auto space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                     {founder && (
-                        <h2 className="text-4xl font-bold text-white tracking-tight">
+                        <h2 data-testid="dashboard-welcome" className="text-4xl font-bold text-white tracking-tight">
                             Welcome back, <span className="text-blue-500">{founder.name}</span>
                         </h2>
                     )}
@@ -227,25 +237,51 @@ export default function DashboardPage() {
                                 );
                             }
 
-                            // 3. Otherwise, map through the reminders
                             return activeReminders.map(reminder => (
-                                <div key={reminder._id} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-800/50 group hover:border-indigo-500/30 transition-all">
-                                <div className="flex items-center gap-4">
-                                    <button 
-                                    onClick={() => handleMarkAsDone(reminder)}
-                                    className="w-5 h-5 rounded-md border-2 border-slate-600 group-hover:border-indigo-500 flex items-center justify-center"
-                                    >
-                                    <Check size={14} className="text-indigo-500 scale-0 group-hover:scale-100 transition-transform" />
-                                    </button>
-                                    <div className="min-w-0">
-                                    <p className="text-sm font-medium text-slate-200 truncate">{reminder.investorName}</p>
-                                    <p className="text-[11px] text-slate-500">Follow up due</p>
+                                <Link
+                                    key={reminder._id}
+                                    href={`/reminders`}
+                                    className='block'
+                                >
+                                    <div key={reminder._id} data-testid="reminders-tile" className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-800/50 group hover:border-white/30 transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleMarkAsDone(reminder);
+                                            }}
+                                            disabled={isSubmitting && pendingId === reminder._id}
+                                            className={`
+                                                flex items-center justify-center rounded-md border transition-all duration-200 font-bold text-[10px]
+                                                ${pendingId === reminder._id 
+                                                    ? 'w-auto px-3 h-7 bg-blue-600 border-blue-600 text-white'
+                                                    : 'w-6 h-6 bg-transparent border-slate-700 group-hover:border-blue-500'
+                                                } 
+                                                ${isSubmitting && pendingId === reminder._id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                            `}
+                                        >
+                                            {pendingId === reminder._id ? (
+                                                <span className="whitespace-nowrap uppercase tracking-wider">
+                                                    {isSubmitting ? 'Saving...' : 'Confirm?'}
+                                                </span>
+                                            ) : (
+                                                <Check 
+                                                    size={14} 
+                                                    className="opacity-0 hover:opacity-100 text-blue-500 transition-opacity duration-200" 
+                                                />
+                                            )}
+                                        </button>
+                                        <div className="min-w-0">
+                                            <p className="text-sm sm:text-xs font-medium text-slate-200 truncate">Follow up on intro regarding {reminder.startupName}</p>
+                                            <p className="text-[11px] text-slate-500">Due Date</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <span className="text-[10px] font-bold text-slate-500">
-                                    {new Date(reminder.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                </span>
-                                </div>
+                                    <span className="text-[10px] font-bold text-slate-500">
+                                        {new Date(reminder.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                    </span>
+                                    </div>
+                                </Link>
                             ));
                             })()}
                         </div>
@@ -261,7 +297,7 @@ export default function DashboardPage() {
                         <div className="space-y-4 grow overflow-y-auto">
                             {data.recentRequests.length > 0 ? (
                                 data.recentRequests.map((request) => (
-                                    <Link key={request._id} href="/startups">
+                                    <Link key={request._id} data-testid="requests-tile" href="/startups">
                                         <div className="flex items-center justify-between p-4 mb-2 rounded-xl bg-slate-900/60 border border-slate-800/50 hover:border-blue-500/30 transition-all group">
                                             <div className="flex items-center gap-4 overflow-hidden">
                                                 <div className="w-10 h-10 bg-[#1c212c] border border-slate-800 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 transition-colors">
@@ -324,7 +360,7 @@ export default function DashboardPage() {
                         <div className="flex flex-col gap-3 overflow-y-auto pr-2 grow custom-scrollbar"> 
                             {data.logs.length > 0 ? (
                                 data.logs.map((log) => (
-                                    <div key={log._id} className="flex items-center justify-between p-4 rounded-xl bg-slate-900/40 border border-slate-800/50 hover:border-indigo-500/30 transition-all shrink-0">
+                                    <div key={log._id} data-testid="logs-tile" className="flex items-center justify-between p-4 rounded-xl bg-slate-900/40 border border-slate-800/50 hover:border-indigo-500/30 transition-all shrink-0">
                                         <div className="flex items-center gap-4 overflow-hidden">
                                             <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0">
                                                 <Clock size={16} />
@@ -373,7 +409,7 @@ function StatCard({ title, value, icon, iconBg }: any) {
     return (
         <div className="bg-gray-900 border border-slate-800 p-5 rounded-2xl flex justify-between items-start">
             <div>
-                <p className="text-sm text-slate-400 font-medium">{title}</p>
+                <p data-testid="stat-title" className="text-sm text-slate-400 font-medium">{title}</p>
                 <h4 className="text-3xl font-bold text-white mt-1">{value}</h4>
             </div>
             <div className={`${iconBg} p-2 rounded-xl`}>{icon}</div>

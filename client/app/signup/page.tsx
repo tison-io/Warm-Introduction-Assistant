@@ -109,6 +109,7 @@ export default function SignupPage() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Full Name</label>
               <input
+                data-testid="signup-name"
                 type="text"
                 className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                 value={form.name}
@@ -121,6 +122,7 @@ export default function SignupPage() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Email</label>
               <input
+                data-testid="signup-email"
                 type="email"
                 className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                 value={form.email}
@@ -135,6 +137,7 @@ export default function SignupPage() {
                 Phone Number - with country code
               </label>
               <input
+                data-testid="signup-phone"
                 type="tel"
                 className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 text-sm"
                 value={form.phone}
@@ -148,6 +151,7 @@ export default function SignupPage() {
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Create Password</label>
               <div className="relative">
                 <input
+                  data-testid="signup-password"
                   type={showPass ? "text" : "password"}
                   className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                   value={form.password}
@@ -155,7 +159,7 @@ export default function SignupPage() {
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required
                 />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <button data-testid="toggle-password-visibility" type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
@@ -166,6 +170,7 @@ export default function SignupPage() {
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Confirm Password</label>
               <div className="relative">
                 <input
+                  data-testid="signup-confirm-password"
                   type={showConf ? "text" : "password"}
                   className="w-full h-11 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400"
                   value={form.confirmPassword}
@@ -180,6 +185,7 @@ export default function SignupPage() {
             </div>
 
             <button
+              data-testid="signup-submit"
               type="submit"
               disabled={loading}
               className="w-full h-12 bg-[#0035C5] hover:bg-[#002db1] text-white font-bold rounded-none transition-all active:scale-[0.99] mt-2"
@@ -194,6 +200,7 @@ export default function SignupPage() {
             </div>
             
             <button
+              data-testid="google-signup"
               type="button"
               onClick={() => initiateGoogleLogin()}
               className="w-full h-12 rounded-none flex items-center gap-3 justify-center text-sm font-bold text-blue-400 border border-white/10 bg-[#070911]/50 hover:bg-black/80 transition-colors"

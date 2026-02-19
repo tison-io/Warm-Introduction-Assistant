@@ -102,6 +102,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Email</label>
               <input
+                data-testid="login-email"
                 type="email"
                 placeholder="email@example.com"
                 className="w-full h-12 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 transition-all"
@@ -116,6 +117,7 @@ export default function LoginPage() {
               <label className="text-xs font-medium text-slate-400 ml-1 uppercase tracking-wider">Password</label>
               <div className="relative">
                 <input
+                  data-testid="login-password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   className="w-full h-12 px-4 rounded-sm bg-white text-slate-900 outline-none focus:ring-1 focus:ring-slate-400 transition-all"
@@ -146,6 +148,7 @@ export default function LoginPage() {
             )}
 
             <button
+              data-testid="login-submit"
               type="submit"
               disabled={loading}
               className="w-full h-12 bg-[#0035C5] hover:bg-[#002db1] text-white font-bold rounded-none transition-all active:scale-[0.99]"
@@ -160,6 +163,7 @@ export default function LoginPage() {
             </div>
 
             <button
+              data-testid="login-google"
               type="button"
               onClick={() => initiateGoogleLogin()}
               className="w-full h-12 rounded-none flex items-center gap-3 justify-center text-sm font-bold text-blue-400 border border-white/10 bg-[#070911]/50 hover:bg-black/80 transition-colors"

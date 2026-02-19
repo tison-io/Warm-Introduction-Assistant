@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       
       <main 
         className={`
-          flex-1 min-h-screen w-full transition-all duration-300 ease-in-out ${isMobile ? "ml-[70px]" : (isCollapsed ? "ml-[70px]" : "ml-[220px]")}
+          flex-1 min-h-screen w-full transition-all duration-300 ease-in-out ${isMobile ? "ml-[54px]" : (isCollapsed ? "ml-[70px]" : "ml-[220px]")}
         `}
       >
         <div>

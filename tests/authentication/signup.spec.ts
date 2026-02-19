@@ -1,29 +1,45 @@
-// tests/signup.spec.ts
 import { test, expect } from '@playwright/test';
 
+test.describe('Signup Flow', () => {
 
-test.describe('Signup Flow (Real Backend)', () => {
+  test('should successfully create an account with valid data', async ({ page }) => {
+    const uniqueId = Date.now();
+    const email = `testuser@example.com`;
+    await page.goto('/signup');
 
-    test('should successfully create an account', async ({ page }) => {
-        const uniqueTimestamp = Date.now();
-        const randomName = `Playwright User ${uniqueTimestamp}`;
-        const randomEmail = `founder+${uniqueTimestamp}@example.com`;
+    await page.getByTestId('signup-name').fill(`John Playwright${uniqueId}`);
+    await page.getByTestId('signup-email').fill(email);
+    
+    await page.getByTestId('signup-phone').fill('+254700111222');
+    
+    await page.getByTestId('signup-password').fill('password123!');
+    await page.getByTestId('signup-confirm-password').fill('password123!');
 
-        await page.goto('/signup');
+    await page.getByTestId('signup-submit').click();
 
-        await page.getByTestId('signup-name').fill(randomName);
-        await page.getByTestId('signup-email').fill(randomEmail);
-        await page.getByTestId('signup-country-code').selectOption('+254');
-        await page.getByTestId('signup-phone').fill('712345678');
-        await page.getByTestId('signup-password').fill('Password123');
-        await page.getByTestId('signup-confirm-password').fill('Password123');
+    await expect(page.getByText(/account created/i)).toBeVisible();
 
-        await page.getByTestId('signup-terms').check();
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+  });
 
-        // Submit
-        await page.getByTestId('signup-submit').click();
+  test('should redirect to Google for authentication', async ({ page }) => {
+    await page.goto('/signup');
 
-        // Expect redirect to login after 2 seconds
-        await page.waitForURL('**/login', { timeout: 10000 });
-    });
+    await page.getByTestId('google-signup').click();
+
+    await expect(page).toHaveURL(/.*google\.com.*/);
+  });
+
+  test('should show error message for mismatched passwords', async ({ page }) => {
+    await page.goto('/signup');
+
+    await page.getByTestId('signup-name').fill('Error User');
+    await page.getByTestId('signup-email').fill('error@example.com');
+    await page.getByTestId('signup-phone').fill('+254700000000');
+    await page.getByTestId('signup-password').fill('Password123');
+    await page.getByTestId('signup-confirm-password').fill('Password456');
+
+    await page.getByTestId('signup-submit').click();
+    await expect(page.getByText(/passwords do not match/i)).toBeVisible();
+  });
 });

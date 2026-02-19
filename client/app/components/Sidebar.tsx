@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isMobile
       )}
       
       <aside 
-        className={`fixed top-0 left-0 h-screen bg-[#152E4D] not-visited: flex flex-col justify-between py-6 transition-all duration-300 ease-in-out border-r border-white/10
+        className={`fixed top-0 left-0 min-h-screen bg-[#152E4D] not-visited: flex flex-col justify-between py-6 transition-all duration-300 ease-in-out border-r border-white/10
           ${sidebarWidth} 
           ${isMobile ? "z-1011" : "z-999"}
         `}
