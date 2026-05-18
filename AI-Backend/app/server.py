@@ -36,6 +36,14 @@ allowed_origins = [
   "https://warmly-intro-assistant.vercel.app"
 ]
 
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
+main_server_url = os.getenv("MAIN_SERVER_URL")
+if main_server_url:
+    allowed_origins.append(main_server_url)
+
 app.add_middleware(
   CORSMiddleware, 
   allow_origins=allowed_origins, 

@@ -13,7 +13,8 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://warmly-intro-assistant.vercel.app',
-    ],
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
   });                                     
                                                                        
   const connection = app.get<Connection>(getConnectionToken());
