@@ -52,6 +52,14 @@ services:
         sync: false
       - key: BREVO_FROM_NAME
         sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_CURRENCY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
 
   # 3. Client (Next.js)
   - type: web
