@@ -4,7 +4,8 @@ export async function POST(request: NextRequest) {
   try {
     const { message, sessionId } = await request.json();
     
-    const response = await fetch('https://warm-introduction-assistant.onrender.com/chat', {
+    const aiUrl = process.env.GENAI_CHAT_URL || 'https://warm-introduction-assistant.onrender.com/chat';
+    const response = await fetch(aiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

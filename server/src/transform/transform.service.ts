@@ -51,7 +51,8 @@ export class TransformService {
     }
 
     try {
-      const response = await fetch("https://warm-introduction-assistant.onrender.com/transform", {
+      const aiUrl = process.env.GENAI_URL || "https://warm-introduction-assistant.onrender.com/transform";
+      const response = await fetch(aiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
