@@ -1,0 +1,65 @@
+services:
+  # 1. AI Backend (FastAPI)
+  - type: web
+    name: warmly-ai-backend
+    env: python
+    rootDir: AI-Backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: GROQ_API_KEY
+        sync: false
+      - key: BACKEND_SECRET_KEY
+        sync: false
+
+  # 2. Main Server (NestJS)
+  - type: web
+    name: warmly-main-server
+    env: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 18.18.0
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: BREVO_HOST
+        sync: false
+      - key: BREVO_PORT
+        sync: false
+      - key: BREVO_USERNAME
+        sync: false
+      - key: BREVO_PASSWORD
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_NAME
+        sync: false
+
+  # 3. Client (Next.js)
+  - type: web
+    name: warmly-frontend
+    env: node
+    rootDir: client
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.18.0
+      - key: NEXT_PUBLIC_FOUNDER_API_URL
+        sync: false
