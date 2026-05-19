@@ -103,7 +103,7 @@ export default function DashboardPage() {
         const stored = localStorage.getItem('user');
         if (stored) {
             const parsed = JSON.parse(stored);
-            const baseUrl = process.env.NEXT_PUBLIC_DEPLOYED_URL || 'http://localhost:3000';
+            const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_DEPLOYED_URL || 'http://localhost:3000';
             if (parsed.id) setFounder({ ...parsed, _id: parsed.id });
             setShareUrl(`${baseUrl}/submit/${parsed.id}`);
         }

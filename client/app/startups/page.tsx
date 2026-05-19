@@ -57,7 +57,7 @@ export default function FounderRequestsPage() {
         if (userData) {
             try {
                 const user = JSON.parse(userData);
-                const baseUrl = process.env.NEXT_PUBLIC_DEPLOYED_URL || 'http://localhost:3000';
+                const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_DEPLOYED_URL || 'http://localhost:3000';
                 setShareUrl(`${baseUrl}/submit/${user.id}`);
             } catch (e) {
                 console.error("Failed to parse user", e);
